@@ -121,7 +121,7 @@ function IssuesListPage() {
               active={saved === "star"}
               onClick={() =>
                 navigate({
-                  search: (p) => ({
+                  search: (p: z.infer<typeof searchSchema>) => ({
                     ...p,
                     saved: saved === "star" ? undefined : "star",
                     page: 1,
@@ -141,7 +141,7 @@ function IssuesListPage() {
               active={saved === "assigned"}
               onClick={() =>
                 navigate({
-                  search: (p) => ({
+                  search: (p: z.infer<typeof searchSchema>) => ({
                     ...p,
                     saved: saved === "assigned" ? undefined : "assigned",
                     page: 1,
@@ -155,7 +155,7 @@ function IssuesListPage() {
               active={saved === "commented"}
               onClick={() =>
                 navigate({
-                  search: (p) => ({
+                  search: (p: z.infer<typeof searchSchema>) => ({
                     ...p,
                     saved: saved === "commented" ? undefined : "commented",
                     page: 1,
@@ -169,7 +169,7 @@ function IssuesListPage() {
               active={saved === "reported"}
               onClick={() =>
                 navigate({
-                  search: (p) => ({
+                  search: (p: z.infer<typeof searchSchema>) => ({
                     ...p,
                     saved: saved === "reported" ? undefined : "reported",
                     page: 1,
@@ -188,7 +188,7 @@ function IssuesListPage() {
               onSubmit={(e) => {
                 e.preventDefault();
                 navigate({
-                  search: (p) => ({
+                  search: (p: z.infer<typeof searchSchema>) => ({
                     ...p,
                     q: searchText || undefined,
                     page: 1,
