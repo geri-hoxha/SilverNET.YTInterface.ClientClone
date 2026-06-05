@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Plus, RefreshCw, Search } from "lucide-react";
 import { z } from "zod";
@@ -24,6 +24,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIssues } from "@/features/issues/hooks";
+import { CreateIssueDialog } from "@/features/issues/CreateIssueDialog";
 import { StatusBadge, PriorityBadge } from "@/shared/components/StatusBadge";
 import { formatRelative } from "@/shared/utils/format";
 import type { IssueStatus } from "@/features/issues/types";
@@ -45,6 +46,7 @@ function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues" });
   const { page, pageSize, q, status, projectId } = Route.useSearch();
   const [searchText, setSearchText] = useState(q ?? "");
+  const [createOpen, setCreateOpen] = useState(false);
 
   const query = useIssues({
     page,
@@ -76,10 +78,8 @@ function IssuesListPage() {
             Browse, filter and manage all issues across projects.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/issues/new">
-            <Plus className="mr-2 h-4 w-4" /> New issue
-          </Link>
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> New issue
         </Button>
       </div>
 
