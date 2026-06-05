@@ -18,6 +18,8 @@ import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated.organizations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated.users.index'
+import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated.projects.index'
+import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated.organizations.index'
 import { Route as AuthenticatedIssuesIndexRouteImport } from './routes/_authenticated.issues.index'
 import { Route as AuthenticatedUsersIdRouteImport } from './routes/_authenticated.users.$id'
 import { Route as AuthenticatedIssuesNewRouteImport } from './routes/_authenticated.issues.new'
@@ -69,6 +71,18 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedUsersRoute,
 } as any)
+const AuthenticatedProjectsIndexRoute =
+  AuthenticatedProjectsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProjectsRoute,
+  } as any)
+const AuthenticatedOrganizationsIndexRoute =
+  AuthenticatedOrganizationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedOrganizationsRoute,
+  } as any)
 const AuthenticatedIssuesIndexRoute =
   AuthenticatedIssuesIndexRouteImport.update({
     id: '/issues/',
@@ -101,14 +115,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/organizations': typeof AuthenticatedOrganizationsRoute
-  '/projects': typeof AuthenticatedProjectsRoute
+  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
+  '/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
   '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues/': typeof AuthenticatedIssuesIndexRoute
+  '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
+  '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
@@ -116,13 +132,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/organizations': typeof AuthenticatedOrganizationsRoute
-  '/projects': typeof AuthenticatedProjectsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
   '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues': typeof AuthenticatedIssuesIndexRoute
+  '/organizations': typeof AuthenticatedOrganizationsIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
@@ -132,14 +148,16 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRoute
-  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
+  '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/_authenticated/issues/new': typeof AuthenticatedIssuesNewRoute
   '/_authenticated/users/$id': typeof AuthenticatedUsersIdRoute
   '/_authenticated/issues/': typeof AuthenticatedIssuesIndexRoute
+  '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
+  '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
@@ -157,6 +175,8 @@ export interface FileRouteTypes {
     | '/issues/new'
     | '/users/$id'
     | '/issues/'
+    | '/organizations/'
+    | '/projects/'
     | '/users/'
     | '/issues/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -164,13 +184,13 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
-    | '/organizations'
-    | '/projects'
     | '/settings'
     | '/issues/$id'
     | '/issues/new'
     | '/users/$id'
     | '/issues'
+    | '/organizations'
+    | '/projects'
     | '/users'
     | '/issues/$id/edit'
   id:
@@ -187,6 +207,8 @@ export interface FileRouteTypes {
     | '/_authenticated/issues/new'
     | '/_authenticated/users/$id'
     | '/_authenticated/issues/'
+    | '/_authenticated/organizations/'
+    | '/_authenticated/projects/'
     | '/_authenticated/users/'
     | '/_authenticated/issues/$id/edit'
   fileRoutesById: FileRoutesById
@@ -262,6 +284,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedUsersRoute
     }
+    '/_authenticated/projects/': {
+      id: '/_authenticated/projects/'
+      path: '/'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedProjectsRoute
+    }
+    '/_authenticated/organizations/': {
+      id: '/_authenticated/organizations/'
+      path: '/'
+      fullPath: '/organizations/'
+      preLoaderRoute: typeof AuthenticatedOrganizationsIndexRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsRoute
+    }
     '/_authenticated/issues/': {
       id: '/_authenticated/issues/'
       path: '/issues'
@@ -300,6 +336,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedOrganizationsRouteChildren {
+  AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
+}
+
+const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
+  {
+    AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
+  }
+
+const AuthenticatedOrganizationsRouteWithChildren =
+  AuthenticatedOrganizationsRoute._addFileChildren(
+    AuthenticatedOrganizationsRouteChildren,
+  )
+
+interface AuthenticatedProjectsRouteChildren {
+  AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+}
+
+const AuthenticatedProjectsRouteChildren: AuthenticatedProjectsRouteChildren = {
+  AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+}
+
+const AuthenticatedProjectsRouteWithChildren =
+  AuthenticatedProjectsRoute._addFileChildren(
+    AuthenticatedProjectsRouteChildren,
+  )
+
 interface AuthenticatedUsersRouteChildren {
   AuthenticatedUsersIdRoute: typeof AuthenticatedUsersIdRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -328,8 +391,8 @@ const AuthenticatedIssuesIdRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
-  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRouteWithChildren
   AuthenticatedIssuesIdRoute: typeof AuthenticatedIssuesIdRouteWithChildren
@@ -339,8 +402,8 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRoute,
-  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRouteWithChildren,
   AuthenticatedIssuesIdRoute: AuthenticatedIssuesIdRouteWithChildren,
@@ -360,3 +423,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
