@@ -1,6 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
   ListChecks,
   FolderKanban,
   Building2,
@@ -29,7 +28,6 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
   { title: "Issues", url: "/issues", icon: ListChecks, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
   { title: "Projects", url: "/projects", icon: FolderKanban, roles: ["SuperAdmin", "OrganizationAdmin"] },
   { title: "Organizations", url: "/organizations", icon: Building2, roles: ["SuperAdmin"] },
