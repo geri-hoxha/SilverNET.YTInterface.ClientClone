@@ -17,7 +17,9 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated.projects'
 import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated.organizations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated.users.index'
 import { Route as AuthenticatedIssuesIndexRouteImport } from './routes/_authenticated.issues.index'
+import { Route as AuthenticatedUsersIdRouteImport } from './routes/_authenticated.users.$id'
 import { Route as AuthenticatedIssuesNewRouteImport } from './routes/_authenticated.issues.new'
 import { Route as AuthenticatedIssuesIdRouteImport } from './routes/_authenticated.issues.$id'
 import { Route as AuthenticatedIssuesIdEditRouteImport } from './routes/_authenticated.issues.$id.edit'
@@ -62,12 +64,22 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedUsersRoute,
+} as any)
 const AuthenticatedIssuesIndexRoute =
   AuthenticatedIssuesIndexRouteImport.update({
     id: '/issues/',
     path: '/issues/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedUsersIdRoute = AuthenticatedUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedUsersRoute,
+} as any)
 const AuthenticatedIssuesNewRoute = AuthenticatedIssuesNewRouteImport.update({
   id: '/issues/new',
   path: '/issues/new',
@@ -92,10 +104,12 @@ export interface FileRoutesByFullPath {
   '/organizations': typeof AuthenticatedOrganizationsRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedUsersRoute
+  '/users': typeof AuthenticatedUsersRouteWithChildren
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues/': typeof AuthenticatedIssuesIndexRoute
+  '/users/': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -105,10 +119,11 @@ export interface FileRoutesByTo {
   '/organizations': typeof AuthenticatedOrganizationsRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/users': typeof AuthenticatedUsersRoute
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues': typeof AuthenticatedIssuesIndexRoute
+  '/users': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRoutesById {
@@ -120,10 +135,12 @@ export interface FileRoutesById {
   '/_authenticated/organizations': typeof AuthenticatedOrganizationsRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/_authenticated/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/_authenticated/users/$id': typeof AuthenticatedUsersIdRoute
   '/_authenticated/issues/': typeof AuthenticatedIssuesIndexRoute
+  '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRouteTypes {
@@ -138,7 +155,9 @@ export interface FileRouteTypes {
     | '/users'
     | '/issues/$id'
     | '/issues/new'
+    | '/users/$id'
     | '/issues/'
+    | '/users/'
     | '/issues/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -148,10 +167,11 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/projects'
     | '/settings'
-    | '/users'
     | '/issues/$id'
     | '/issues/new'
+    | '/users/$id'
     | '/issues'
+    | '/users'
     | '/issues/$id/edit'
   id:
     | '__root__'
@@ -165,7 +185,9 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/issues/$id'
     | '/_authenticated/issues/new'
+    | '/_authenticated/users/$id'
     | '/_authenticated/issues/'
+    | '/_authenticated/users/'
     | '/_authenticated/issues/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -233,12 +255,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/users/': {
+      id: '/_authenticated/users/'
+      path: '/'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedUsersRoute
+    }
     '/_authenticated/issues/': {
       id: '/_authenticated/issues/'
       path: '/issues'
       fullPath: '/issues/'
       preLoaderRoute: typeof AuthenticatedIssuesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/$id': {
+      id: '/_authenticated/users/$id'
+      path: '/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof AuthenticatedUsersIdRouteImport
+      parentRoute: typeof AuthenticatedUsersRoute
     }
     '/_authenticated/issues/new': {
       id: '/_authenticated/issues/new'
@@ -264,6 +300,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedUsersRouteChildren {
+  AuthenticatedUsersIdRoute: typeof AuthenticatedUsersIdRoute
+  AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+}
+
+const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
+  AuthenticatedUsersIdRoute: AuthenticatedUsersIdRoute,
+  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+}
+
+const AuthenticatedUsersRouteWithChildren =
+  AuthenticatedUsersRoute._addFileChildren(AuthenticatedUsersRouteChildren)
+
 interface AuthenticatedIssuesIdRouteChildren {
   AuthenticatedIssuesIdEditRoute: typeof AuthenticatedIssuesIdEditRoute
 }
@@ -282,7 +331,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRouteWithChildren
   AuthenticatedIssuesIdRoute: typeof AuthenticatedIssuesIdRouteWithChildren
   AuthenticatedIssuesNewRoute: typeof AuthenticatedIssuesNewRoute
   AuthenticatedIssuesIndexRoute: typeof AuthenticatedIssuesIndexRoute
@@ -293,7 +342,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRouteWithChildren,
   AuthenticatedIssuesIdRoute: AuthenticatedIssuesIdRouteWithChildren,
   AuthenticatedIssuesNewRoute: AuthenticatedIssuesNewRoute,
   AuthenticatedIssuesIndexRoute: AuthenticatedIssuesIndexRoute,

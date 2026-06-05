@@ -9,6 +9,24 @@ export function formatDate(iso?: string) {
   }
 }
 
+export function formatShortDate(iso?: string) {
+  if (!iso) return "—";
+  try {
+    return format(parseISO(iso), "dd MMM yyyy");
+  } catch {
+    return iso;
+  }
+}
+
+export function formatDateTime(iso?: string) {
+  if (!iso) return "—";
+  try {
+    return format(parseISO(iso), "MMM d, yyyy h:mm:ss a");
+  } catch {
+    return iso;
+  }
+}
+
 export function formatRelative(iso?: string) {
   if (!iso) return "—";
   try {
