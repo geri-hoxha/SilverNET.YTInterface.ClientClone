@@ -5,7 +5,7 @@ export const Route = createFileRoute("/")({
   beforeLoad: () => {
     if (typeof window === "undefined") return;
     const stored = tokenStore.get();
-    if (stored) throw redirect({ to: "/dashboard" });
+    if (stored) throw redirect({ to: "/issues" });
     throw redirect({ to: "/login" });
   },
   component: () => null,
