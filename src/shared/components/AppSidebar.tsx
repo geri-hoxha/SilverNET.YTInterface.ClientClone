@@ -54,7 +54,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {visible.map((item) => {
+              {NAV.map((item) => {
                 const active =
                   path === item.url || path.startsWith(item.url + "/");
                 return (
