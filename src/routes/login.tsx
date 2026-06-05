@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-import { tokenStore } from "@/shared/api/tokens";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
