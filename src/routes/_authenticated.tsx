@@ -1,19 +1,9 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
 import { AppHeader } from "@/shared/components/AppHeader";
-import { tokenStore } from "@/shared/api/tokens";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: ({ location }) => {
-    if (typeof window === "undefined") return;
-    if (!tokenStore.get()) {
-      throw redirect({
-        to: "/login",
-        search: { redirect: location.href },
-      });
-    }
-  },
   component: AuthenticatedLayout,
 });
 

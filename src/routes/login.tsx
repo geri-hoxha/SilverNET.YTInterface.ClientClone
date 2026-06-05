@@ -21,10 +21,6 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
-    if (typeof window === "undefined") return;
-    if (tokenStore.get()) throw redirect({ to: "/dashboard" });
-  },
   component: LoginPage,
 });
 
@@ -42,7 +38,7 @@ function LoginPage() {
     try {
       await login(values.email, values.password);
       toast.success("Welcome back");
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/issues" });
     } catch (e) {
       toast.error((e as ApiError).message ?? "Login failed");
     } finally {
