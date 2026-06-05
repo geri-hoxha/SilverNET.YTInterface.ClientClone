@@ -1,0 +1,83 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  ListChecks,
+  FolderKanban,
+  Building2,
+  Users,
+  Settings,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { useAuth } from "@/features/auth/AuthProvider";
+import type { PortalRole } from "@/features/auth/types";
+
+interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles: PortalRole[];
+}
+
+const NAV: NavItem[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
+  { title: "Issues", url: "/issues", icon: ListChecks, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
+  { title: "Projects", url: "/projects", icon: FolderKanban, roles: ["SuperAdmin", "OrganizationAdmin"] },
+  { title: "Organizations", url: "/organizations", icon: Building2, roles: ["SuperAdmin"] },
+  { title: "Users", url: "/users", icon: Users, roles: ["SuperAdmin"] },
+  { title: "Settings", url: "/settings", icon: Settings, roles: ["SuperAdmin"] },
+];
+
+export function AppSidebar() {
+  const { user } = useAuth();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const visible = NAV.filter((i) => user && i.roles.includes(user.role));
+
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="px-3 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
+            Y
+          </div>
+          <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="text-sm font-semibold">YTInterface</span>
+            <span className="text-xs text-muted-foreground">Internal portal</span>
+          </div>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {visible.map((item) => {
+                const active =
+                  path === item.url || path.startsWith(item.url + "/");
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={active}>
+                      <Link to={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
