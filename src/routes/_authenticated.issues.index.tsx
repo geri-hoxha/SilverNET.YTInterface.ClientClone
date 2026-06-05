@@ -55,7 +55,13 @@ function IssuesListPage() {
   });
 
   const updateSearch = (patch: Partial<z.infer<typeof searchSchema>>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch, page: 1 }) });
+    navigate({
+      search: (prev: z.infer<typeof searchSchema>) => ({
+        ...prev,
+        ...patch,
+        page: 1,
+      }),
+    });
 
   const totalPages = query.data
     ? Math.max(1, Math.ceil(query.data.total / pageSize))
@@ -226,7 +232,12 @@ function IssuesListPage() {
                 variant="outline"
                 disabled={page <= 1}
                 onClick={() =>
-                  navigate({ search: (p) => ({ ...p, page: page - 1 }) })
+                  navigate({
+                    search: (p: z.infer<typeof searchSchema>) => ({
+                      ...p,
+                      page: page - 1,
+                    }),
+                  })
                 }
               >
                 Previous
@@ -236,7 +247,12 @@ function IssuesListPage() {
                 variant="outline"
                 disabled={page >= totalPages}
                 onClick={() =>
-                  navigate({ search: (p) => ({ ...p, page: page + 1 }) })
+                  navigate({
+                    search: (p: z.infer<typeof searchSchema>) => ({
+                      ...p,
+                      page: page + 1,
+                    }),
+                  })
                 }
               >
                 Next
