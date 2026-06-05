@@ -1,6 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
   ListChecks,
   FolderKanban,
   Building2,
@@ -18,29 +17,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/features/auth/AuthProvider";
 import type { PortalRole } from "@/features/auth/types";
 
 interface NavItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  roles: PortalRole[];
 }
 
 const NAV: NavItem[] = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
-  { title: "Issues", url: "/issues", icon: ListChecks, roles: ["SuperAdmin", "OrganizationAdmin", "OrganizationUser"] },
-  { title: "Projects", url: "/projects", icon: FolderKanban, roles: ["SuperAdmin", "OrganizationAdmin"] },
-  { title: "Organizations", url: "/organizations", icon: Building2, roles: ["SuperAdmin"] },
-  { title: "Users", url: "/users", icon: Users, roles: ["SuperAdmin"] },
-  { title: "Settings", url: "/settings", icon: Settings, roles: ["SuperAdmin"] },
+  { title: "Issues", url: "/issues", icon: ListChecks },
+  { title: "Projects", url: "/projects", icon: FolderKanban },
+  { title: "Organizations", url: "/organizations", icon: Building2 },
+  { title: "Users", url: "/users", icon: Users },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const { user } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const visible = NAV.filter((i) => user && i.roles.includes(user.role));
 
   return (
     <Sidebar collapsible="icon">
@@ -60,7 +54,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {visible.map((item) => {
+              {NAV.map((item) => {
                 const active =
                   path === item.url || path.startsWith(item.url + "/");
                 return (
