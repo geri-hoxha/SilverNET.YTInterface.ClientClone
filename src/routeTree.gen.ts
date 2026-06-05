@@ -19,6 +19,7 @@ import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated.users.index'
 import { Route as AuthenticatedIssuesIndexRouteImport } from './routes/_authenticated.issues.index'
+import { Route as AuthenticatedUsersIdRouteImport } from './routes/_authenticated.users.$id'
 import { Route as AuthenticatedIssuesNewRouteImport } from './routes/_authenticated.issues.new'
 import { Route as AuthenticatedIssuesIdRouteImport } from './routes/_authenticated.issues.$id'
 import { Route as AuthenticatedIssuesIdEditRouteImport } from './routes/_authenticated.issues.$id.edit'
@@ -74,6 +75,11 @@ const AuthenticatedIssuesIndexRoute =
     path: '/issues/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedUsersIdRoute = AuthenticatedUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedUsersRoute,
+} as any)
 const AuthenticatedIssuesNewRoute = AuthenticatedIssuesNewRouteImport.update({
   id: '/issues/new',
   path: '/issues/new',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRouteWithChildren
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues/': typeof AuthenticatedIssuesIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues': typeof AuthenticatedIssuesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
   '/_authenticated/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
   '/_authenticated/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/_authenticated/users/$id': typeof AuthenticatedUsersIdRoute
   '/_authenticated/issues/': typeof AuthenticatedIssuesIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/issues/$id'
     | '/issues/new'
+    | '/users/$id'
     | '/issues/'
     | '/users/'
     | '/issues/$id/edit'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/issues/$id'
     | '/issues/new'
+    | '/users/$id'
     | '/issues'
     | '/users'
     | '/issues/$id/edit'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/issues/$id'
     | '/_authenticated/issues/new'
+    | '/_authenticated/users/$id'
     | '/_authenticated/issues/'
     | '/_authenticated/users/'
     | '/_authenticated/issues/$id/edit'
@@ -257,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIssuesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/users/$id': {
+      id: '/_authenticated/users/$id'
+      path: '/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof AuthenticatedUsersIdRouteImport
+      parentRoute: typeof AuthenticatedUsersRoute
+    }
     '/_authenticated/issues/new': {
       id: '/_authenticated/issues/new'
       path: '/issues/new'
@@ -282,10 +301,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedUsersRouteChildren {
+  AuthenticatedUsersIdRoute: typeof AuthenticatedUsersIdRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
 const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
+  AuthenticatedUsersIdRoute: AuthenticatedUsersIdRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
