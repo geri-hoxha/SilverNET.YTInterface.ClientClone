@@ -8,9 +8,14 @@ export interface Issue {
   description?: string;
   projectId: string;
   projectName?: string;
+  projectShortCode?: string;
   status: IssueStatus;
   priority: IssuePriority;
+  priorityLabel?: string;
   assigneeName?: string;
+  clientState?: string;
+  spentTime?: string;
+  starred?: boolean;
   createdAt: string;
 }
 
