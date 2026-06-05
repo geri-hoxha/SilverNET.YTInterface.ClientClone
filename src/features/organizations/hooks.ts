@@ -13,7 +13,10 @@ export const orgsKeys = {
 export function useOrganizations() {
   return useQuery({
     queryKey: orgsKeys.list(),
-    queryFn: () => organizationsApi.list(),
+    queryFn: async () => {
+      const result = await organizationsApi.list();
+      return result.items;
+    },
   });
 }
 

@@ -2,12 +2,16 @@ import { apiRequest } from "@/shared/api/client";
 import type {
   CreateOrganizationDto,
   Organization,
+  PaginatedResult,
   UpdateOrganizationDto,
 } from "./types";
 
 export const organizationsApi = {
   list: () =>
-    apiRequest<Organization[]>({ method: "GET", url: "/organizations" }),
+    apiRequest<PaginatedResult<Organization>>({
+      method: "GET",
+      url: "/organizations",
+    }),
   get: (id: string) =>
     apiRequest<Organization>({ method: "GET", url: `/organizations/${id}` }),
   create: (data: CreateOrganizationDto) =>
