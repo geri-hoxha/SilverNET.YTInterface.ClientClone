@@ -108,8 +108,7 @@ export function CreateIssueDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[1080px] p-0 gap-0 overflow-hidden"
-        showCloseButton={false}
+        className="max-w-[1080px] p-0 gap-0 overflow-hidden [&>button.absolute]:hidden"
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
