@@ -96,7 +96,7 @@ function LoginPage() {
               Sign in
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              Backend: <code className="font-mono">https://localhost:7196/api</code>
+              Backend: <code className="font-mono">{import.meta.env.VITE_API_BASE_URL ?? "/api"}</code>
             </p>
           </form>
         </CardContent>

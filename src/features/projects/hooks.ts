@@ -14,7 +14,10 @@ export const projectsKeys = {
 export function useProjects(params?: { organizationId?: string; search?: string }) {
   return useQuery({
     queryKey: projectsKeys.list(params),
-    queryFn: () => projectsApi.list(params),
+    queryFn: async () => {
+      const result = await projectsApi.list(params);
+      return result.items;
+    },
   });
 }
 

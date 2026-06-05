@@ -6,7 +6,9 @@ import axios, {
 import { tokenStore } from "./tokens";
 import { normalizeError } from "./errors";
 
-export const API_BASE_URL = "https://localhost:7196/api";
+// In dev, use the Vite proxy (/api) to avoid CORS — the backend does not handle OPTIONS.
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

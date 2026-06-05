@@ -1,9 +1,18 @@
 import { apiRequest } from "@/shared/api/client";
-import type { CreateProjectDto, Project, UpdateProjectDto } from "./types";
+import type {
+  CreateProjectDto,
+  PaginatedResult,
+  Project,
+  UpdateProjectDto,
+} from "./types";
 
 export const projectsApi = {
   list: (params?: { organizationId?: string; search?: string }) =>
-    apiRequest<Project[]>({ method: "GET", url: "/projects", params }),
+    apiRequest<PaginatedResult<Project>>({
+      method: "GET",
+      url: "/projects",
+      params,
+    }),
   get: (id: string) =>
     apiRequest<Project>({ method: "GET", url: `/projects/${id}` }),
   create: (data: CreateProjectDto) =>
