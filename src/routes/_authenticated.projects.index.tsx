@@ -82,7 +82,7 @@ const formSchema = z.object({
   organizationId: z.string().uuid("Select an organization"),
   name: z.string().min(1, "Name is required").max(120),
   youTrackProjectId: z.string().min(1, "YouTrack short name required").max(20),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 type FormValues = z.infer<typeof formSchema>;
 

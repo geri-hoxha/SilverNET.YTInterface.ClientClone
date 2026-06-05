@@ -63,7 +63,7 @@ export const Route = createFileRoute("/_authenticated/organizations/")({
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(120),
   description: z.string().max(500).optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 type FormValues = z.infer<typeof formSchema>;
 
