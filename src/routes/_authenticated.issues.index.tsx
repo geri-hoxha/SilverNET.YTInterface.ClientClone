@@ -261,6 +261,15 @@ function IssuesListPage() {
           </div>
         )}
       </Card>
+
+      <CreateIssueDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        defaultProjectId={projectId}
+        onCreated={(id) =>
+          navigate({ to: "/issues/$id", params: { id } })
+        }
+      />
     </div>
   );
 }
