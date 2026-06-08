@@ -62,6 +62,18 @@ export function CreateIssueDialog({
 }: Props) {
   const projectsQ = useProjects();
   const createMut = useCreateIssue();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+
+  const addFiles = (files: FileList | File[] | null) => {
+    if (!files) return;
+    const arr = Array.from(files);
+    if (!arr.length) return;
+    setAttachments((prev) => [...prev, ...arr]);
+  };
+  const removeFile = (idx: number) =>
+    setAttachments((prev) => prev.filter((_, i) => i !== idx));
   
 
   const form = useForm<FormValues>({
