@@ -1,32 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  AtSign,
-  Bold,
-  Code2,
   ExternalLink,
   Eye,
-  Italic,
   Link as LinkIcon,
-  List,
-  ListOrdered,
   Loader2,
   MoreHorizontal,
   Paperclip,
-  Quote,
-  Strikethrough,
   Tag,
-  Type as TypeIcon,
   X,
 } from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -45,6 +34,7 @@ import {
 import { useProjects } from "@/features/projects/hooks";
 import { useCreateIssue } from "@/features/issues/hooks";
 import { EntityLogo } from "@/shared/components/EntityLogo";
+import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import type { IssuePriority } from "@/features/issues/types";
 import { cn } from "@/lib/utils";
 
