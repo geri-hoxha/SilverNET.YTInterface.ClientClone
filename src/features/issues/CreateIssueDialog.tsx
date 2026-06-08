@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   ExternalLink,
   Eye,
+  FileText,
   Link as LinkIcon,
   Loader2,
   MoreHorizontal,
@@ -61,6 +62,18 @@ export function CreateIssueDialog({
 }: Props) {
   const projectsQ = useProjects();
   const createMut = useCreateIssue();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+
+  const addFiles = (files: FileList | File[] | null) => {
+    if (!files) return;
+    const arr = Array.from(files);
+    if (!arr.length) return;
+    setAttachments((prev) => [...prev, ...arr]);
+  };
+  const removeFile = (idx: number) =>
+    setAttachments((prev) => prev.filter((_, i) => i !== idx));
   
 
   const form = useForm<FormValues>({
@@ -81,6 +94,7 @@ export function CreateIssueDialog({
         description: "",
         priority: "Normal",
       });
+      setAttachments([]);
     }
   }, [open, defaultProjectId, form]);
 
@@ -150,13 +164,91 @@ export function CreateIssueDialog({
             </div>
 
             {/* attachments */}
-            <div className="mx-5 mb-3 flex items-center justify-center rounded-md border border-dashed py-4 text-sm text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors">
-              <Paperclip className="mr-2 h-4 w-4" />
-              Click to{" "}
-              <span className="mx-1 text-primary underline-offset-2 hover:underline">
-                browse
-              </span>{" "}
-              or drag files here
+            <div className="mx-5 mb-3 space-y-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  addFiles(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  addFiles(e.dataTransfer.files);
+                }}
+                className={cn(
+                  "flex w-full items-center justify-center rounded-md border border-dashed py-4 text-sm text-muted-foreground transition-colors",
+                  dragOver
+                    ? "border-primary bg-primary/5 text-foreground"
+                    : "hover:border-foreground/30 hover:text-foreground",
+                )}
+              >
+                <Paperclip className="mr-2 h-4 w-4" />
+                Click to{" "}
+                <span className="mx-1 text-primary underline-offset-2 hover:underline">
+                  browse
+                </span>{" "}
+                or drag files here
+              </button>
+
+              {attachments.length > 0 && (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {attachments.map((file, idx) => {
+                    const meta = fileTypeMeta(file.name);
+                    return (
+                      <div
+                        key={`${file.name}-${idx}`}
+                        className={cn(
+                          "group flex items-center gap-3 rounded-md border px-3 py-2",
+                          meta.bg,
+                          meta.border,
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
+                            meta.badge,
+                          )}
+                        >
+                          {meta.label ? (
+                            meta.label
+                          ) : (
+                            <FileText className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium text-foreground">
+                            {file.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {meta.typeLabel} · {formatBytes(file.size)}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(idx)}
+                          title="Remove"
+                          className="rounded p-1 text-muted-foreground opacity-60 hover:bg-background hover:text-foreground group-hover:opacity-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* similar issues collapsible (visual only) */}
@@ -442,5 +534,54 @@ function IconBtn({
     >
       {children}
     </button>
+  );
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+interface FileMeta {
+  label: string;
+  typeLabel: string;
+  bg: string;
+  border: string;
+  badge: string;
+}
+
+function fileTypeMeta(name: string): FileMeta {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  const map: Record<string, FileMeta> = {
+    xlsx: { label: "XLS", typeLabel: "Excel spreadsheet", bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-green-600" },
+    xls:  { label: "XLS", typeLabel: "Excel spreadsheet", bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-green-600" },
+    csv:  { label: "CSV", typeLabel: "CSV file",           bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-emerald-600" },
+    doc:  { label: "DOC", typeLabel: "Word document",      bg: "bg-blue-50 dark:bg-blue-950/30",   border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-600" },
+    docx: { label: "DOC", typeLabel: "Word document",      bg: "bg-blue-50 dark:bg-blue-950/30",   border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-600" },
+    pdf:  { label: "PDF", typeLabel: "PDF document",       bg: "bg-red-50 dark:bg-red-950/30",     border: "border-red-200 dark:border-red-900",     badge: "bg-red-600" },
+    ppt:  { label: "PPT", typeLabel: "PowerPoint",         bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-200 dark:border-orange-900", badge: "bg-orange-600" },
+    pptx: { label: "PPT", typeLabel: "PowerPoint",         bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-200 dark:border-orange-900", badge: "bg-orange-600" },
+    png:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
+    jpg:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
+    jpeg: { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
+    gif:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
+    webp: { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
+    svg:  { label: "SVG", typeLabel: "Vector image",       bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-fuchsia-600" },
+    zip:  { label: "ZIP", typeLabel: "Archive",            bg: "bg-amber-50 dark:bg-amber-950/30",   border: "border-amber-200 dark:border-amber-900",   badge: "bg-amber-600" },
+    rar:  { label: "RAR", typeLabel: "Archive",            bg: "bg-amber-50 dark:bg-amber-950/30",   border: "border-amber-200 dark:border-amber-900",   badge: "bg-amber-600" },
+    txt:  { label: "TXT", typeLabel: "Text file",          bg: "bg-slate-50 dark:bg-slate-900/40",   border: "border-slate-200 dark:border-slate-800",   badge: "bg-slate-600" },
+    md:   { label: "MD",  typeLabel: "Markdown",           bg: "bg-slate-50 dark:bg-slate-900/40",   border: "border-slate-200 dark:border-slate-800",   badge: "bg-slate-600" },
+  };
+  return (
+    map[ext] ?? {
+      label: ext ? ext.slice(0, 3).toUpperCase() : "",
+      typeLabel: ext ? `${ext.toUpperCase()} file` : "File",
+      bg: "bg-muted/40",
+      border: "border-border",
+      badge: "bg-slate-500",
+    }
   );
 }
