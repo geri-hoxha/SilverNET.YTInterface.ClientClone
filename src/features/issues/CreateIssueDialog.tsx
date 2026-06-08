@@ -114,9 +114,6 @@ export function CreateIssueDialog({
   }, [open, defaultProjectId, form]);
 
   const projects = projectsQ.data ?? [];
-  const selectedProject = projects.find(
-    (p) => p.id === form.watch("projectId"),
-  );
 
   const onSubmit = async (values: FormValues) => {
     const issue = await createMut.mutateAsync(values);
