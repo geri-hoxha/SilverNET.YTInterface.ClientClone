@@ -315,13 +315,6 @@ export function CreateIssueDialog({
                 Visible to issue readers
                 <span>▾</span>
               </button>
-              <button
-                type="button"
-                className="ml-auto inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                <ExternalLink className="h-3 w-3" />
-                View in full page
-              </button>
             </div>
           </div>
 
