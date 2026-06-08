@@ -94,6 +94,7 @@ export function CreateIssueDialog({
         description: "",
         priority: "Normal",
       });
+      setAttachments([]);
     }
   }, [open, defaultProjectId, form]);
 
