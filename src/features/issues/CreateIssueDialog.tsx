@@ -350,52 +350,13 @@ export function CreateIssueDialog({
           <aside className="border-l bg-muted/20 overflow-y-auto">
             <div className="px-4 py-4 space-y-4">
               <Field label="Project">
-                <Select
+                <ProjectPicker
+                  projects={projects}
                   value={form.watch("projectId")}
-                  onValueChange={(v) =>
-                    form.setValue("projectId", v, { shouldValidate: true })
+                  onChange={(id) =>
+                    form.setValue("projectId", id, { shouldValidate: true })
                   }
-                >
-                  <SelectTrigger className="h-auto border-0 bg-transparent px-0 py-0 shadow-none [&>svg]:hidden focus:ring-0">
-                    <SelectValue
-                      placeholder={
-                        <span className="text-muted-foreground">
-                          Select project
-                        </span>
-                      }
-                    >
-                      {selectedProject && (
-                        <div className="flex w-full items-center gap-2">
-                          <span className="font-medium text-foreground">
-                            {selectedProject.name}
-                          </span>
-                          <EntityLogo
-                            name={selectedProject.name}
-                            shortCode={selectedProject.youTrackProjectId}
-                            seed={selectedProject.id}
-                            size="sm"
-                            className="ml-auto"
-                          />
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <span className="font-mono text-[10px] mr-2 text-muted-foreground">
-                          {p.youTrackProjectId}
-                        </span>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                    {!projects.length && (
-                      <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                        No projects available
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
+                />
                 {form.formState.errors.projectId && (
                   <p className="mt-1 text-xs text-destructive">
                     {form.formState.errors.projectId.message}
@@ -403,73 +364,24 @@ export function CreateIssueDialog({
                 )}
               </Field>
 
-              <Field label="Estimation">
-                <span className="text-muted-foreground">?</span>
-              </Field>
-
-              <Field label="Billable">
-                <span className="text-muted-foreground">No billable</span>
-              </Field>
-
-              <Field label="Client State">
-                <span className="text-muted-foreground">No client state</span>
-              </Field>
-
-              <Field label="State" rightSlot={<TileBadge color="bg-sky-500">T</TileBadge>}>
-                <span>Todo</span>
-              </Field>
-
-              <Field label="Due Date">
-                <span className="text-muted-foreground">No due date</span>
-              </Field>
-
-              <Field label="Type" rightSlot={<TileBadge color="bg-sky-500">T</TileBadge>}>
-                <span>Task</span>
-              </Field>
-
               <Field
                 label="Priority"
                 rightSlot={
-                  <TileBadge color={priorityColor(form.watch("priority"))}>
-                    {form.watch("priority")[0]}
+                  <TileBadge
+                    color={
+                      PRIORITY_OPTIONS.find(
+                        (p) => p.value === form.watch("priority"),
+                      )?.badgeBg ?? "bg-slate-500"
+                    }
+                  >
+                    S
                   </TileBadge>
                 }
               >
-                <Select
+                <PriorityPicker
                   value={form.watch("priority")}
-                  onValueChange={(v) =>
-                    form.setValue("priority", v as IssuePriority)
-                  }
-                >
-                  <SelectTrigger className="h-auto border-0 bg-transparent px-0 py-0 shadow-none [&>svg]:hidden focus:ring-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Critical">Critical</SelectItem>
-                    <SelectItem value="Major">Major</SelectItem>
-                    <SelectItem value="Normal">Normal</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              <Field label="Assignee">
-                <span className="text-muted-foreground">Unassigned</span>
-              </Field>
-
-              <Field label="Spent time">
-                <span className="text-muted-foreground">?</span>
-              </Field>
-
-              <Field label="Boards">
-                {selectedProject ? (
-                  <Badge variant="secondary" className="gap-1 font-normal">
-                    {selectedProject.name} Board
-                    <X className="h-3 w-3 cursor-pointer text-muted-foreground" />
-                  </Badge>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
+                  onChange={(v) => form.setValue("priority", v)}
+                />
               </Field>
             </div>
           </aside>
