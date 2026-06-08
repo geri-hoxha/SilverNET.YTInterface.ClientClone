@@ -263,19 +263,6 @@ export function CreateIssueDialog({
               )}
             </div>
 
-            {/* similar issues collapsible (visual only) */}
-            <div className="px-5 pb-3">
-              <details className="group" open>
-                <summary className="cursor-pointer text-sm font-medium list-none flex items-center gap-2">
-                  <span className="text-primary">›</span>
-                  Similar Issues and Articles
-                </summary>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  When you enter a summary, items that may address the same
-                  topic are shown here
-                </p>
-              </details>
-            </div>
 
             {/* footer */}
             <div className="flex items-center gap-2 border-t bg-muted/20 px-5 py-3">
