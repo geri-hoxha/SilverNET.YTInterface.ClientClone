@@ -429,18 +429,134 @@ function TileBadge({
   );
 }
 
-function priorityColor(p: IssuePriority) {
-  switch (p) {
-    case "Critical":
-      return "bg-red-500";
-    case "Major":
-      return "bg-orange-500";
-    case "Normal":
-      return "bg-emerald-500";
-    case "Low":
-    default:
-      return "bg-slate-500";
-  }
+function ProjectPicker({
+  projects,
+  value,
+  onChange,
+}: {
+  projects: { id: string; name: string; youTrackProjectId: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = projects.find((p) => p.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 rounded text-left text-sm hover:text-foreground"
+        >
+          {selected ? (
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="truncate font-medium text-foreground">
+                {selected.name}
+              </span>
+              <EntityLogo
+                name={selected.name}
+                shortCode={selected.youTrackProjectId}
+                seed={selected.id}
+                size="sm"
+                className="ml-auto"
+              />
+            </div>
+          ) : (
+            <span className="text-muted-foreground">Select project</span>
+          )}
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="end">
+        <Command>
+          <CommandInput placeholder="Search projects..." />
+          <CommandList>
+            <CommandEmpty>No projects found.</CommandEmpty>
+            <CommandGroup>
+              {projects.map((p) => (
+                <CommandItem
+                  key={p.id}
+                  value={`${p.youTrackProjectId} ${p.name}`}
+                  onSelect={() => {
+                    onChange(p.id);
+                    setOpen(false);
+                  }}
+                  className="gap-2"
+                >
+                  <EntityLogo
+                    name={p.name}
+                    shortCode={p.youTrackProjectId}
+                    seed={p.id}
+                    size="sm"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">{p.name}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {p.youTrackProjectId}
+                    </span>
+                  </div>
+                  {p.id === value && <Check className="h-4 w-4" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function PriorityPicker({
+  value,
+  onChange,
+}: {
+  value: IssuePriority;
+  onChange: (v: IssuePriority) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = PRIORITY_OPTIONS.find((p) => p.value === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 text-left text-sm text-primary hover:underline underline-offset-2"
+        >
+          {selected?.label ?? value}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="end">
+        <Command>
+          <CommandInput placeholder="Filter items" />
+          <CommandList>
+            <CommandEmpty>No priority.</CommandEmpty>
+            <CommandGroup>
+              {PRIORITY_OPTIONS.map((p) => (
+                <CommandItem
+                  key={p.value}
+                  value={p.label}
+                  onSelect={() => {
+                    onChange(p.value);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <span className="flex-1">{p.label}</span>
+                  <span
+                    className={cn(
+                      "inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white",
+                      p.badgeBg,
+                    )}
+                  >
+                    {p.badge}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 function IconBtn({
