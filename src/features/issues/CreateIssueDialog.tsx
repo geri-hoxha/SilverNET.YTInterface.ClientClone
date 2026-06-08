@@ -148,93 +148,14 @@ export function CreateIssueDialog({
               </p>
             )}
 
-            {/* toolbar */}
-            <div className="flex flex-wrap items-center gap-1 border-y bg-muted/40 px-3 py-1.5 text-muted-foreground">
-              <Select defaultValue="normal">
-                <SelectTrigger className="h-7 w-[110px] border-0 bg-transparent text-xs shadow-none focus:ring-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="normal">Normal text</SelectItem>
-                  <SelectItem value="h1">Heading 1</SelectItem>
-                  <SelectItem value="h2">Heading 2</SelectItem>
-                  <SelectItem value="h3">Heading 3</SelectItem>
-                </SelectContent>
-              </Select>
-              <Separator orientation="vertical" className="mx-1 h-5" />
-              <ToolBtn label="Bold">
-                <Bold className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Italic">
-                <Italic className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Strikethrough">
-                <Strikethrough className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Text color">
-                <TypeIcon className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <Separator orientation="vertical" className="mx-1 h-5" />
-              <ToolBtn label="Quote">
-                <Quote className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Code">
-                <Code2 className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Link">
-                <LinkIcon className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Bullet list">
-                <List className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Numbered list">
-                <ListOrdered className="h-3.5 w-3.5" />
-              </ToolBtn>
-
-              <div className="ml-auto inline-flex rounded-md border bg-background p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setMode("visual")}
-                  className={cn(
-                    "rounded px-2 py-0.5",
-                    mode === "visual"
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Visual
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode("markdown")}
-                  className={cn(
-                    "rounded px-2 py-0.5",
-                    mode === "markdown"
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Markdown
-                </button>
-              </div>
-              <Separator orientation="vertical" className="mx-1 h-5" />
-              <ToolBtn label="Mention">
-                <AtSign className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Attachment">
-                <Paperclip className="h-3.5 w-3.5" />
-              </ToolBtn>
-              <ToolBtn label="Format">
-                <TypeIcon className="h-3.5 w-3.5" />
-              </ToolBtn>
-            </div>
-
-            {/* description */}
-            <div className="flex-1 px-5 py-3">
-              <Textarea
+            {/* rich text editor */}
+            <div className="flex-1">
+              <RichTextEditor
+                value={form.watch("description") ?? ""}
+                onChange={(html) =>
+                  form.setValue("description", html, { shouldDirty: true })
+                }
                 placeholder="Type or paste a description of the issue here"
-                className="min-h-[280px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                {...form.register("description")}
               />
             </div>
 
