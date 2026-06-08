@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
+  Check,
+  ChevronsUpDown,
   ExternalLink,
   Eye,
   FileText,
@@ -17,20 +19,21 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 import { useProjects } from "@/features/projects/hooks";
 import { useCreateIssue } from "@/features/issues/hooks";
@@ -38,6 +41,18 @@ import { EntityLogo } from "@/shared/components/EntityLogo";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import type { IssuePriority } from "@/features/issues/types";
 import { cn } from "@/lib/utils";
+
+const PRIORITY_OPTIONS: {
+  value: IssuePriority;
+  label: string;
+  badge: string;
+  badgeBg: string;
+}[] = [
+  { value: "Low", label: "S4 - Low", badge: "S", badgeBg: "bg-emerald-500" },
+  { value: "Normal", label: "S3 - Normal", badge: "S", badgeBg: "bg-yellow-500" },
+  { value: "Major", label: "S2 - Major", badge: "S", badgeBg: "bg-orange-500" },
+  { value: "Critical", label: "S1 - Critical", badge: "S", badgeBg: "bg-red-500" },
+];
 
 const schema = z.object({
   projectId: z.string().min(1, "Select a project"),
@@ -99,9 +114,6 @@ export function CreateIssueDialog({
   }, [open, defaultProjectId, form]);
 
   const projects = projectsQ.data ?? [];
-  const selectedProject = projects.find(
-    (p) => p.id === form.watch("projectId"),
-  );
 
   const onSubmit = async (values: FormValues) => {
     const issue = await createMut.mutateAsync(values);
@@ -335,52 +347,13 @@ export function CreateIssueDialog({
           <aside className="border-l bg-muted/20 overflow-y-auto">
             <div className="px-4 py-4 space-y-4">
               <Field label="Project">
-                <Select
+                <ProjectPicker
+                  projects={projects}
                   value={form.watch("projectId")}
-                  onValueChange={(v) =>
-                    form.setValue("projectId", v, { shouldValidate: true })
+                  onChange={(id) =>
+                    form.setValue("projectId", id, { shouldValidate: true })
                   }
-                >
-                  <SelectTrigger className="h-auto border-0 bg-transparent px-0 py-0 shadow-none [&>svg]:hidden focus:ring-0">
-                    <SelectValue
-                      placeholder={
-                        <span className="text-muted-foreground">
-                          Select project
-                        </span>
-                      }
-                    >
-                      {selectedProject && (
-                        <div className="flex w-full items-center gap-2">
-                          <span className="font-medium text-foreground">
-                            {selectedProject.name}
-                          </span>
-                          <EntityLogo
-                            name={selectedProject.name}
-                            shortCode={selectedProject.youTrackProjectId}
-                            seed={selectedProject.id}
-                            size="sm"
-                            className="ml-auto"
-                          />
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <span className="font-mono text-[10px] mr-2 text-muted-foreground">
-                          {p.youTrackProjectId}
-                        </span>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                    {!projects.length && (
-                      <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                        No projects available
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
+                />
                 {form.formState.errors.projectId && (
                   <p className="mt-1 text-xs text-destructive">
                     {form.formState.errors.projectId.message}
@@ -388,73 +361,24 @@ export function CreateIssueDialog({
                 )}
               </Field>
 
-              <Field label="Estimation">
-                <span className="text-muted-foreground">?</span>
-              </Field>
-
-              <Field label="Billable">
-                <span className="text-muted-foreground">No billable</span>
-              </Field>
-
-              <Field label="Client State">
-                <span className="text-muted-foreground">No client state</span>
-              </Field>
-
-              <Field label="State" rightSlot={<TileBadge color="bg-sky-500">T</TileBadge>}>
-                <span>Todo</span>
-              </Field>
-
-              <Field label="Due Date">
-                <span className="text-muted-foreground">No due date</span>
-              </Field>
-
-              <Field label="Type" rightSlot={<TileBadge color="bg-sky-500">T</TileBadge>}>
-                <span>Task</span>
-              </Field>
-
               <Field
                 label="Priority"
                 rightSlot={
-                  <TileBadge color={priorityColor(form.watch("priority"))}>
-                    {form.watch("priority")[0]}
+                  <TileBadge
+                    color={
+                      PRIORITY_OPTIONS.find(
+                        (p) => p.value === form.watch("priority"),
+                      )?.badgeBg ?? "bg-slate-500"
+                    }
+                  >
+                    S
                   </TileBadge>
                 }
               >
-                <Select
+                <PriorityPicker
                   value={form.watch("priority")}
-                  onValueChange={(v) =>
-                    form.setValue("priority", v as IssuePriority)
-                  }
-                >
-                  <SelectTrigger className="h-auto border-0 bg-transparent px-0 py-0 shadow-none [&>svg]:hidden focus:ring-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Critical">Critical</SelectItem>
-                    <SelectItem value="Major">Major</SelectItem>
-                    <SelectItem value="Normal">Normal</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-
-              <Field label="Assignee">
-                <span className="text-muted-foreground">Unassigned</span>
-              </Field>
-
-              <Field label="Spent time">
-                <span className="text-muted-foreground">?</span>
-              </Field>
-
-              <Field label="Boards">
-                {selectedProject ? (
-                  <Badge variant="secondary" className="gap-1 font-normal">
-                    {selectedProject.name} Board
-                    <X className="h-3 w-3 cursor-pointer text-muted-foreground" />
-                  </Badge>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
+                  onChange={(v) => form.setValue("priority", v)}
+                />
               </Field>
             </div>
           </aside>
@@ -505,18 +429,134 @@ function TileBadge({
   );
 }
 
-function priorityColor(p: IssuePriority) {
-  switch (p) {
-    case "Critical":
-      return "bg-red-500";
-    case "Major":
-      return "bg-orange-500";
-    case "Normal":
-      return "bg-emerald-500";
-    case "Low":
-    default:
-      return "bg-slate-500";
-  }
+function ProjectPicker({
+  projects,
+  value,
+  onChange,
+}: {
+  projects: { id: string; name: string; youTrackProjectId: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = projects.find((p) => p.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 rounded text-left text-sm hover:text-foreground"
+        >
+          {selected ? (
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="truncate font-medium text-foreground">
+                {selected.name}
+              </span>
+              <EntityLogo
+                name={selected.name}
+                shortCode={selected.youTrackProjectId}
+                seed={selected.id}
+                size="sm"
+                className="ml-auto"
+              />
+            </div>
+          ) : (
+            <span className="text-muted-foreground">Select project</span>
+          )}
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="end">
+        <Command>
+          <CommandInput placeholder="Search projects..." />
+          <CommandList>
+            <CommandEmpty>No projects found.</CommandEmpty>
+            <CommandGroup>
+              {projects.map((p) => (
+                <CommandItem
+                  key={p.id}
+                  value={`${p.youTrackProjectId} ${p.name}`}
+                  onSelect={() => {
+                    onChange(p.id);
+                    setOpen(false);
+                  }}
+                  className="gap-2"
+                >
+                  <EntityLogo
+                    name={p.name}
+                    shortCode={p.youTrackProjectId}
+                    seed={p.id}
+                    size="sm"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">{p.name}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {p.youTrackProjectId}
+                    </span>
+                  </div>
+                  {p.id === value && <Check className="h-4 w-4" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function PriorityPicker({
+  value,
+  onChange,
+}: {
+  value: IssuePriority;
+  onChange: (v: IssuePriority) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = PRIORITY_OPTIONS.find((p) => p.value === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 text-left text-sm text-primary hover:underline underline-offset-2"
+        >
+          {selected?.label ?? value}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="end">
+        <Command>
+          <CommandInput placeholder="Filter items" />
+          <CommandList>
+            <CommandEmpty>No priority.</CommandEmpty>
+            <CommandGroup>
+              {PRIORITY_OPTIONS.map((p) => (
+                <CommandItem
+                  key={p.value}
+                  value={p.label}
+                  onSelect={() => {
+                    onChange(p.value);
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <span className="flex-1">{p.label}</span>
+                  <span
+                    className={cn(
+                      "inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white",
+                      p.badgeBg,
+                    )}
+                  >
+                    {p.badge}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 function IconBtn({
