@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
+  Check,
+  ChevronsUpDown,
   ExternalLink,
   Eye,
   FileText,
@@ -17,20 +19,21 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 import { useProjects } from "@/features/projects/hooks";
 import { useCreateIssue } from "@/features/issues/hooks";
@@ -38,6 +41,18 @@ import { EntityLogo } from "@/shared/components/EntityLogo";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import type { IssuePriority } from "@/features/issues/types";
 import { cn } from "@/lib/utils";
+
+const PRIORITY_OPTIONS: {
+  value: IssuePriority;
+  label: string;
+  badge: string;
+  badgeBg: string;
+}[] = [
+  { value: "Low", label: "S4 - Low", badge: "S", badgeBg: "bg-emerald-500" },
+  { value: "Normal", label: "S3 - Normal", badge: "S", badgeBg: "bg-yellow-500" },
+  { value: "Major", label: "S2 - Major", badge: "S", badgeBg: "bg-orange-500" },
+  { value: "Critical", label: "S1 - Critical", badge: "S", badgeBg: "bg-red-500" },
+];
 
 const schema = z.object({
   projectId: z.string().min(1, "Select a project"),
