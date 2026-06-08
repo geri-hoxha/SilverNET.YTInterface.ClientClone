@@ -61,7 +61,7 @@ export function CreateIssueDialog({
 }: Props) {
   const projectsQ = useProjects();
   const createMut = useCreateIssue();
-  const [mode, setMode] = useState<"visual" | "markdown">("visual");
+  
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
