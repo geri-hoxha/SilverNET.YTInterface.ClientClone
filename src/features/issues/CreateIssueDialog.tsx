@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   ExternalLink,
   Eye,
+  FileText,
   Link as LinkIcon,
   Loader2,
   MoreHorizontal,
