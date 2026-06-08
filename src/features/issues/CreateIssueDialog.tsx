@@ -8,11 +8,8 @@ import {
   ExternalLink,
   Eye,
   FileText,
-  Link as LinkIcon,
   Loader2,
-  MoreHorizontal,
   Paperclip,
-  Tag,
   X,
 } from "lucide-react";
 
@@ -140,15 +137,6 @@ export function CreateIssueDialog({
                 {...form.register("title")}
               />
               <div className="flex items-center gap-1 text-muted-foreground">
-                <IconBtn title="Add tag">
-                  <Tag className="h-4 w-4" />
-                </IconBtn>
-                <IconBtn title="Add link">
-                  <LinkIcon className="h-4 w-4" />
-                </IconBtn>
-                <IconBtn title="More">
-                  <MoreHorizontal className="h-4 w-4" />
-                </IconBtn>
                 <IconBtn
                   title="Close"
                   onClick={() => onOpenChange(false)}
@@ -263,19 +251,6 @@ export function CreateIssueDialog({
               )}
             </div>
 
-            {/* similar issues collapsible (visual only) */}
-            <div className="px-5 pb-3">
-              <details className="group" open>
-                <summary className="cursor-pointer text-sm font-medium list-none flex items-center gap-2">
-                  <span className="text-primary">›</span>
-                  Similar Issues and Articles
-                </summary>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  When you enter a summary, items that may address the same
-                  topic are shown here
-                </p>
-              </details>
-            </div>
 
             {/* footer */}
             <div className="flex items-center gap-2 border-t bg-muted/20 px-5 py-3">
@@ -399,10 +374,10 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 flex items-center gap-2 text-sm">
+      <div className="mt-1.5 flex items-center gap-2 text-base">
         <div className="min-w-0 flex-1 truncate">{children}</div>
         {rightSlot}
       </div>
