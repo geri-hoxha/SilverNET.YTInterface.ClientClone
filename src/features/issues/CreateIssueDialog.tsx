@@ -8,11 +8,8 @@ import {
   ExternalLink,
   Eye,
   FileText,
-  Link as LinkIcon,
   Loader2,
-  MoreHorizontal,
   Paperclip,
-  Tag,
   X,
 } from "lucide-react";
 
