@@ -175,80 +175,87 @@ export function CreateIssueDialog({
                   e.target.value = "";
                 }}
               />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  addFiles(e.dataTransfer.files);
-                }}
-                className={cn(
-                  "flex w-full items-center justify-center rounded-md border border-dashed py-4 text-sm text-muted-foreground transition-colors",
-                  dragOver
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "hover:border-foreground/30 hover:text-foreground",
-                )}
-              >
-                <Paperclip className="mr-2 h-4 w-4" />
-                Click to{" "}
-                <span className="mx-1 text-primary underline-offset-2 hover:underline">
-                  browse
-                </span>{" "}
-                or drag files here
-              </button>
+              {(() => {
+                const uploadBtn = (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOver(true);
+                    }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOver(false);
+                      addFiles(e.dataTransfer.files);
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-center rounded-md border border-dashed py-4 text-sm text-muted-foreground transition-colors",
+                      dragOver
+                        ? "border-primary bg-primary/5 text-foreground"
+                        : "hover:border-foreground/30 hover:text-foreground",
+                    )}
+                  >
+                    <Paperclip className="mr-2 h-4 w-4" />
+                    Click to{" "}
+                    <span className="mx-1 text-primary underline-offset-2 hover:underline">
+                      browse
+                    </span>{" "}
+                    or drag files here
+                  </button>
+                );
 
-              {attachments.length > 0 && (
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {attachments.map((file, idx) => {
-                    const meta = fileTypeMeta(file.name);
-                    return (
-                      <div
-                        key={`${file.name}-${idx}`}
-                        className={cn(
-                          "group flex items-center gap-3 rounded-md border px-3 py-2",
-                          meta.bg,
-                          meta.border,
-                        )}
-                      >
+                if (attachments.length === 0) return uploadBtn;
+
+                return (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {attachments.map((file, idx) => {
+                      const meta = fileTypeMeta(file.name);
+                      return (
                         <div
+                          key={`${file.name}-${idx}`}
                           className={cn(
-                            "flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
-                            meta.badge,
+                            "group flex items-center gap-3 rounded-md border px-3 py-2",
+                            meta.bg,
+                            meta.border,
                           )}
                         >
-                          {meta.label ? (
-                            meta.label
-                          ) : (
-                            <FileText className="h-4 w-4" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium text-foreground">
-                            {file.name}
+                          <div
+                            className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
+                              meta.badge,
+                            )}
+                          >
+                            {meta.label ? (
+                              meta.label
+                            ) : (
+                              <FileText className="h-4 w-4" />
+                            )}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {meta.typeLabel} · {formatBytes(file.size)}
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-medium text-foreground">
+                              {file.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {meta.typeLabel} · {formatBytes(file.size)}
+                            </div>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(idx)}
+                            title="Remove"
+                            className="rounded p-1 text-muted-foreground opacity-60 hover:bg-background hover:text-foreground group-hover:opacity-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFile(idx)}
-                          title="Remove"
-                          className="rounded p-1 text-muted-foreground opacity-60 hover:bg-background hover:text-foreground group-hover:opacity-100"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                    {uploadBtn}
+                  </div>
+                );
+              })()}
             </div>
 
 
