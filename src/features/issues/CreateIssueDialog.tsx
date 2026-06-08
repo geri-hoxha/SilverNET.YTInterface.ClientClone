@@ -140,15 +140,6 @@ export function CreateIssueDialog({
                 {...form.register("title")}
               />
               <div className="flex items-center gap-1 text-muted-foreground">
-                <IconBtn title="Add tag">
-                  <Tag className="h-4 w-4" />
-                </IconBtn>
-                <IconBtn title="Add link">
-                  <LinkIcon className="h-4 w-4" />
-                </IconBtn>
-                <IconBtn title="More">
-                  <MoreHorizontal className="h-4 w-4" />
-                </IconBtn>
                 <IconBtn
                   title="Close"
                   onClick={() => onOpenChange(false)}
