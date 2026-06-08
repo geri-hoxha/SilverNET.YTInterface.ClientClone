@@ -444,21 +444,3 @@ function IconBtn({
     </button>
   );
 }
-
-function ToolBtn({
-  children,
-  label,
-}: {
-  children: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      title={label}
-      className="inline-flex h-7 w-7 items-center justify-center rounded hover:bg-muted hover:text-foreground"
-    >
-      {children}
-    </button>
-  );
-}
