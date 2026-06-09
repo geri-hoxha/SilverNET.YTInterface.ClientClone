@@ -1,27 +1,26 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  ArrowLeft,
   Pencil,
   Paperclip,
-  MessageSquare,
-  Info,
   Loader2,
+  Star,
+  Tag,
+  Link as LinkIcon,
+  MoreHorizontal,
+  Eye,
+  ThumbsUp,
+  MessageSquare,
+  Clock,
   AlertTriangle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 import {
   useIssue,
@@ -30,10 +29,10 @@ import {
   useAddComment,
   useUploadAttachment,
 } from "../hooks";
-import { StatusBadge, PriorityBadge } from "@/shared/components/StatusBadge";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
 import { issueReadableId } from "../utils";
+import type { Issue } from "../types";
 
 export function IssueDetailPage() {
   const { id } = issueDetailRouteApi.useParams();
@@ -41,7 +40,7 @@ export function IssueDetailPage() {
 
   if (issue.isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="mx-auto max-w-6xl space-y-4">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-32 w-full" />
       </div>
@@ -50,107 +49,267 @@ export function IssueDetailPage() {
 
   if (issue.isError || !issue.data) {
     return (
-      <Alert variant="destructive">
-        <AlertDescription>
-          {(issue.error as Error)?.message ?? "Issue not found."}
-        </AlertDescription>
-      </Alert>
+      <div className="mx-auto max-w-6xl">
+        <Alert variant="destructive">
+          <AlertDescription>
+            {(issue.error as Error)?.message ?? "Issue not found."}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   const data = issue.data;
+  const readable = issueReadableId(data);
 
   return (
-    <div className="space-y-4 max-w-5xl">
-      <div className="flex items-center justify-between">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/issues">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to issues
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/issues/$id/edit" params={{ id }}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit
-          </Link>
-        </Button>
+    <div className="mx-auto max-w-6xl">
+      {/* Top meta row */}
+      <div className="mb-4 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <span>
+            Created by{" "}
+            <span className="text-sky-500 hover:underline cursor-pointer">
+              {data.assigneeName ?? "Unknown"}
+            </span>{" "}
+            {formatRelative(data.createdAt)}
+          </span>
+          <span>·</span>
+          <span>
+            Updated by{" "}
+            <span className="text-sky-500 hover:underline cursor-pointer">
+              {data.assigneeName ?? "Unknown"}
+            </span>{" "}
+            {formatRelative(data.createdAt)}
+          </span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="flex items-center gap-1.5 hover:text-foreground">
+            <Eye className="h-3.5 w-3.5" />
+            Visible to issue readers
+          </button>
+          <div className="flex items-center gap-1">
+            <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent">
+              <ThumbsUp className="h-3.5 w-3.5" />
+            </button>
+            <span>1</span>
+            <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent">
+              <Star className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                {issueReadableId(data)} · {data.projectName}
-              </div>
-              <CardTitle className="text-xl">{data.title}</CardTitle>
+      {/* Main + sidebar */}
+      <div className="flex gap-6">
+        {/* Main content */}
+        <div className="min-w-0 flex-1">
+          {/* Title */}
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div className="flex items-start gap-2">
+              <button className="mt-1.5">
+                <Star className="h-4 w-4 text-muted-foreground hover:text-amber-400" />
+              </button>
+              <h1 className="text-xl font-semibold leading-snug">
+                {data.title}
+              </h1>
             </div>
-            <div className="flex gap-2 shrink-0">
-              {data.status ? <StatusBadge status={data.status} /> : null}
-              <PriorityBadge priority={data.priority} />
+            <div className="flex shrink-0 items-center gap-1 text-muted-foreground">
+              <Button asChild variant="ghost" size="icon" className="h-7 w-7">
+                <Link to="/issues/$id/edit" params={{ id }}>
+                  <Pencil className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Tag className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <LinkIcon className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-        </CardHeader>
-      </Card>
 
-      <Tabs defaultValue="details">
-        <TabsList>
-          <TabsTrigger value="details">
-            <Info className="mr-2 h-4 w-4" /> Details
-          </TabsTrigger>
-          <TabsTrigger value="comments">
-            <MessageSquare className="mr-2 h-4 w-4" /> Comments
-          </TabsTrigger>
-          <TabsTrigger value="attachments">
-            <Paperclip className="mr-2 h-4 w-4" /> Attachments
-          </TabsTrigger>
-        </TabsList>
+          {/* Description */}
+          <div className="mb-6 text-sm leading-relaxed">
+            {data.description ? (
+              <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: data.description }}
+              />
+            ) : (
+              <p className="italic text-muted-foreground">No description</p>
+            )}
+          </div>
 
-        <TabsContent value="details">
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <Field label="Description">
-                <div className="text-sm whitespace-pre-wrap">
-                  {data.description || (
-                    <span className="text-muted-foreground italic">No description</span>
-                  )}
-                </div>
-              </Field>
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Assignee">
-                  <span className="text-sm">{data.assigneeName ?? "Unassigned"}</span>
-                </Field>
-                <Field label="Created">
-                  <span className="text-sm">{formatDate(data.createdAt)}</span>
-                </Field>
+          {/* Activity */}
+          <div className="border-t pt-4">
+            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center gap-3">
+                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                </button>
+                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                </button>
+                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                </button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              <button className="hover:text-foreground">
+                Activity settings ▾
+              </button>
+            </div>
 
-        <TabsContent value="comments">
-          <CommentsTab id={id} />
-        </TabsContent>
+            <CommentsArea id={id} />
+            <AttachmentsArea id={id} />
+          </div>
+        </div>
 
-        <TabsContent value="attachments">
-          <AttachmentsTab id={id} />
-        </TabsContent>
-      </Tabs>
+        {/* Sidebar */}
+        <aside className="w-[200px] shrink-0">
+          <div className="rounded-md border bg-card/40 p-3 space-y-3 text-sm">
+            <SidebarField label="Project" badge={<ProjectBadge issue={data} />}>
+              <span className="text-sky-500 hover:underline cursor-pointer">
+                {data.projectName}
+              </span>
+            </SidebarField>
+            {data.spentTime && (
+              <SidebarField label="Estimation">
+                <span>{data.spentTime}</span>
+              </SidebarField>
+            )}
+            <SidebarField
+              label="Client State"
+              badge={
+                data.clientState ? (
+                  <LetterBadge text={data.clientState} color="emerald" />
+                ) : null
+              }
+            >
+              <span>{data.clientState ?? "—"}</span>
+            </SidebarField>
+            <SidebarField
+              label="State"
+              badge={
+                data.status ? <LetterBadge text={data.status} color="emerald" /> : null
+              }
+            >
+              <span>{data.status ?? "—"}</span>
+            </SidebarField>
+            <SidebarField
+              label="Priority"
+              badge={
+                <LetterBadge
+                  text={data.priorityLabel ?? data.priority}
+                  color={priorityColor(data.priorityLabel ?? data.priority)}
+                />
+              }
+            >
+              <span>{data.priorityLabel ?? data.priority}</span>
+            </SidebarField>
+            <SidebarField label="Assignee" badge={<AssigneeAvatar name={data.assigneeName} />}>
+              <span>{data.assigneeName ?? "Unassigned"}</span>
+            </SidebarField>
+            <SidebarField label="Created">
+              <span>{formatDate(data.createdAt)}</span>
+            </SidebarField>
+            <SidebarField label="ID">
+              <span className="font-mono text-xs">{readable}</span>
+            </SidebarField>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function SidebarField({
+  label,
+  badge,
+  children,
+}: {
+  label: string;
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">
-        {label}
+      <div className="mb-0.5 text-xs text-muted-foreground">{label}</div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 truncate text-sm font-medium">{children}</div>
+        {badge}
       </div>
-      {children}
     </div>
   );
 }
 
-function CommentsTab({ id }: { id: string }) {
+function LetterBadge({
+  text,
+  color = "slate",
+}: {
+  text: string;
+  color?: "emerald" | "sky" | "amber" | "rose" | "violet" | "orange" | "slate" | "blue";
+}) {
+  const map: Record<string, string> = {
+    emerald: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+    sky: "bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/30",
+    blue: "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30",
+    amber: "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    rose: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30",
+    violet: "bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30",
+    orange: "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30",
+    slate: "bg-slate-500/20 text-slate-700 dark:text-slate-300 border-slate-500/30",
+  };
+  return (
+    <span
+      className={cn(
+        "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border text-[10px] font-bold",
+        map[color],
+      )}
+      title={text}
+    >
+      {text[0]?.toUpperCase()}
+    </span>
+  );
+}
+
+function priorityColor(
+  p: string,
+): "rose" | "orange" | "emerald" | "slate" | "violet" {
+  if (/critical|show-stopper|s1/i.test(p)) return "rose";
+  if (/major|s2/i.test(p)) return "orange";
+  if (/normal|s3/i.test(p)) return "emerald";
+  if (/low|minor|s4/i.test(p)) return "slate";
+  return "violet";
+}
+
+function ProjectBadge({ issue }: { issue: Issue }) {
+  const code =
+    issue.youTrackReadableId?.split("-")[0] ??
+    issue.projectShortCode ??
+    issue.projectName?.slice(0, 3).toUpperCase() ??
+    "?";
+  return (
+    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded bg-slate-900 px-1 text-[10px] font-bold text-emerald-400">
+      {code}
+    </span>
+  );
+}
+
+function AssigneeAvatar({ name }: { name?: string }) {
+  return (
+    <Avatar className="h-5 w-5">
+      <AvatarFallback className="bg-violet-500 text-[10px] text-white">
+        {name?.[0]?.toUpperCase() ?? "?"}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
+function CommentsArea({ id }: { id: string }) {
   const q = useIssueComments(id);
   const add = useAddComment(id);
   const [text, setText] = useState("");
@@ -162,127 +321,104 @@ function CommentsTab({ id }: { id: string }) {
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-4">
-        {q.isLoading ? (
-          <Skeleton className="h-20 w-full" />
-        ) : q.isError ? (
-          <p className="text-sm text-destructive">{(q.error as Error).message}</p>
-        ) : !q.data?.length ? (
-          <p className="text-sm text-muted-foreground">No comments yet.</p>
-        ) : (
-          <ul className="space-y-4">
-            {q.data.map((c) => (
-              <li key={c.id} className="flex gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">
-                    {c.authorName?.[0]?.toUpperCase() ?? "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-medium">{c.authorName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatRelative(c.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+    <div className="space-y-4">
+      {q.isLoading ? (
+        <Skeleton className="h-16 w-full" />
+      ) : q.data?.length ? (
+        <ul className="space-y-4">
+          {q.data.map((c) => (
+            <li key={c.id} className="flex gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-violet-500 text-xs text-white">
+                  {c.authorName?.[0]?.toUpperCase() ?? "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-medium">{c.authorName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatRelative(c.createdAt)}
+                  </span>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
-        <div className="border-t pt-4 space-y-2">
+      <div className="flex gap-3">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback className="bg-fuchsia-500 text-xs text-white">
+            GH
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 space-y-2">
           <Textarea
-            placeholder="Add a comment..."
+            placeholder="Write a comment, @mention people"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={3}
+            rows={2}
+            className="resize-none bg-muted/30"
           />
-          <div className="flex justify-end">
-            <Button
-              onClick={submit}
-              disabled={add.isPending || !text.trim()}
-              size="sm"
-            >
-              {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Post comment
-            </Button>
-          </div>
+          {text.trim() && (
+            <div className="flex justify-end">
+              <Button
+                onClick={submit}
+                disabled={add.isPending}
+                size="sm"
+              >
+                {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Post
+              </Button>
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
-function AttachmentsTab({ id }: { id: string }) {
+function AttachmentsArea({ id }: { id: string }) {
   const q = useIssueAttachments(id);
   const upload = useUploadAttachment(id);
   const fileInput = useRef<HTMLInputElement>(null);
 
+  if (!q.data?.length && !q.isLoading) return null;
+
   return (
-    <Card>
-      <CardContent className="pt-6 space-y-4">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Attachment download is not available yet.
-          </AlertDescription>
-        </Alert>
-
-        {q.isLoading ? (
-          <Skeleton className="h-20 w-full" />
-        ) : q.isError ? (
-          <p className="text-sm text-destructive">{(q.error as Error).message}</p>
-        ) : !q.data?.length ? (
-          <p className="text-sm text-muted-foreground">No attachments.</p>
-        ) : (
-          <ul className="divide-y border rounded-md">
-            {q.data.map((a) => (
-              <li
-                key={a.id}
-                className="flex items-center gap-3 px-3 py-2 text-sm"
-              >
-                <Paperclip className="h-4 w-4 text-muted-foreground" />
-                <span className="flex-1 truncate">{a.fileName}</span>
-                <span className="text-xs text-muted-foreground">
-                  {formatBytes(a.size)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {formatRelative(a.uploadedAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <div>
-          <input
-            ref={fileInput}
-            type="file"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) upload.mutate(file);
-              e.target.value = "";
-            }}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInput.current?.click()}
-            disabled={upload.isPending}
-          >
-            {upload.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Paperclip className="mr-2 h-4 w-4" />
-            )}
-            Upload file
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="mt-6">
+      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Attachments
+      </div>
+      {q.isLoading ? (
+        <Skeleton className="h-16 w-full" />
+      ) : (
+        <ul className="divide-y rounded-md border">
+          {q.data!.map((a) => (
+            <li
+              key={a.id}
+              className="flex items-center gap-3 px-3 py-2 text-sm"
+            >
+              <Paperclip className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 truncate">{a.fileName}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatBytes(a.size)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <input
+        ref={fileInput}
+        type="file"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) upload.mutate(file);
+          e.target.value = "";
+        }}
+      />
+    </div>
   );
 }
