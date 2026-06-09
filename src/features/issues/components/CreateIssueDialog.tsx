@@ -150,11 +150,11 @@ export function CreateIssueDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-[1080px] p-0 gap-0 overflow-hidden [&>button.absolute]:hidden"
+        className="w-[calc(100vw-1rem)] max-w-[1080px] p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden"
       >
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[85vh]"
+          className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[90vh] md:max-h-[85vh]"
         >
           {/* LEFT: editor */}
           <div className="flex min-w-0 flex-col overflow-y-auto">
