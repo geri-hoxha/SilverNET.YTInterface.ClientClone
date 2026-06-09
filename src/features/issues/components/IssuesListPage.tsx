@@ -18,7 +18,7 @@ import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue } from "../types";
 
 const ISSUE_GRID =
-  "grid grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_112px] items-center gap-2";
+  "grid grid-cols-[36px_72px_minmax(0,1fr)_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_112px] items-center gap-2";
 
 export function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues" });
@@ -52,7 +52,7 @@ export function IssuesListPage() {
   };
 
   return (
-    <div className="-mx-6 -my-6 flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="-mx-3 -my-3 sm:-mx-6 sm:-my-6 flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Top bar */}
       <div className="flex items-center justify-between border-b bg-background px-5 py-3">
         <div className="flex items-baseline gap-2">
@@ -97,10 +97,10 @@ export function IssuesListPage() {
               />
               <SortHead label="ID" />
               <SortHead label="Summary" />
-              <SortHead label="Project" />
+              <span className="hidden md:block"><SortHead label="Project" /></span>
               <SortHead label="Priority" />
-              <SortHead label="Client state" />
-              <SortHead label="Created" />
+              <span className="hidden md:block"><SortHead label="Client state" /></span>
+              <span className="hidden md:block"><SortHead label="Created" /></span>
             </div>
 
             {query.isLoading ? (
@@ -109,10 +109,10 @@ export function IssuesListPage() {
                   <Skeleton className="h-4 w-4" />
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="hidden md:block h-4 w-28" />
                   <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="hidden md:block h-4 w-20" />
+                  <Skeleton className="hidden md:block h-4 w-20" />
                 </div>
               ))
             ) : query.isError ? (
@@ -251,7 +251,7 @@ function IssueRow({
         {projectBadge(issue)}
         <span className="truncate font-medium">{issue.title}</span>
       </div>
-      <div className="min-w-0 truncate text-muted-foreground" title={issue.projectName}>
+      <div className="min-w-0 truncate text-muted-foreground hidden md:block" title={issue.projectName}>
         {issue.projectName}
       </div>
     <div className="w-max">
@@ -259,7 +259,7 @@ function IssueRow({
     </div>
       <div
         className={cn(
-          "truncate",
+          "hidden md:block truncate",
           issue.clientState
             ? (CLIENT_STATE_STYLE[issue.clientState] ?? "text-foreground")
             : "text-muted-foreground italic",
@@ -269,7 +269,7 @@ function IssueRow({
         {issue.clientState || "—"}
       </div>
       <div
-        className="truncate text-xs text-muted-foreground"
+        className="hidden md:block truncate text-xs text-muted-foreground"
         title={formatShortDate(issue.createdAt)}
       >
         {formatRelative(issue.createdAt)}
