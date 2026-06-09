@@ -325,7 +325,7 @@ function CommentsArea({ id }: { id: string }) {
       {q.isLoading ? (
         <Skeleton className="h-16 w-full" />
       ) : q.data?.length ? (
-        <ul className="space-y-4">
+        <ul className="space-y-6">
           {q.data.map((c) => (
             <li key={c.id} className="flex gap-3">
               <Avatar className="h-8 w-8">
@@ -333,14 +333,19 @@ function CommentsArea({ id }: { id: string }) {
                   {c.authorName?.[0]?.toUpperCase() ?? "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-medium">{c.authorName}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatRelative(c.createdAt)}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-semibold text-sky-500 hover:underline cursor-pointer">
+                    {c.authorName}
+                  </span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    Commented {formatRelative(c.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+                <p className="mt-1 text-sm whitespace-pre-wrap break-words">
+                  {c.body}
+                </p>
               </div>
             </li>
           ))}
