@@ -7,7 +7,7 @@ import type {
   IssueListParams,
   PaginatedResult,
   UpdateIssueDto,
-} from "./types";
+} from "../types";
 
 export const issuesApi = {
   list: (params: IssueListParams) =>

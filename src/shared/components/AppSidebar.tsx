@@ -4,7 +4,6 @@ import {
   FolderKanban,
   Building2,
   Users,
-  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,7 +29,6 @@ const NAV: NavItem[] = [
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Organizations", url: "/organizations", icon: Building2 },
   { title: "Users", url: "/users", icon: Users },
-  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

@@ -5,12 +5,12 @@ import {
   keepPreviousData,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { issuesApi } from "./api";
+import { issuesApi } from "../api";
 import type {
   CreateIssueDto,
   IssueListParams,
   UpdateIssueDto,
-} from "./types";
+} from "../types";
 import type { ApiError } from "@/shared/api/errors";
 
 export const issuesKeys = {

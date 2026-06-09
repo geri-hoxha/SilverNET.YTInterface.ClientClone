@@ -1,18 +1,38 @@
 import { apiRequest } from "@/shared/api/client";
 import type {
+  ApiPaginatedResult,
   CreateProjectDto,
   PaginatedResult,
   Project,
+  ProjectListParams,
   UpdateProjectDto,
-} from "./types";
+} from "../types";
+
+function toListParams(params?: ProjectListParams) {
+  if (!params) return undefined;
+  return {
+    Page: params.page,
+    PageSize: params.pageSize,
+    OrganizationId: params.organizationId,
+  };
+}
 
 export const projectsApi = {
-  list: (params?: { organizationId?: string; search?: string }) =>
-    apiRequest<PaginatedResult<Project>>({
+  list: async (
+    params?: ProjectListParams,
+  ): Promise<PaginatedResult<Project>> => {
+    const result = await apiRequest<ApiPaginatedResult<Project>>({
       method: "GET",
       url: "/projects",
-      params,
-    }),
+      params: toListParams(params),
+    });
+    return {
+      items: result.items,
+      page: result.page,
+      pageSize: result.pageSize,
+      total: result.totalCount,
+    };
+  },
   get: (id: string) =>
     apiRequest<Project>({ method: "GET", url: `/projects/${id}` }),
   create: (data: CreateProjectDto) =>
@@ -24,6 +44,6 @@ export const projectsApi = {
   syncPriorities: (id: string) =>
     apiRequest<Project>({
       method: "POST",
-      url: `/projects/${id}/sync-priorities`,
+      url: `/projects/${id}/priorities/sync`,
     }),
 };

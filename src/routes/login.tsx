@@ -1,23 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useState } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth, loginSchema, type LoginFormValues } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import type { ApiError } from "@/shared/api/errors";
 
-const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
-type FormValues = z.infer<typeof schema>;
+type FormValues = LoginFormValues;
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -28,7 +23,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 

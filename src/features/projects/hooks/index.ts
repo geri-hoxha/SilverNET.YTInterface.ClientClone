@@ -1,17 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { projectsApi } from "./api";
-import type { CreateProjectDto, UpdateProjectDto } from "./types";
+import { projectsApi } from "../api";
+import type { CreateProjectDto, UpdateProjectDto } from "../types";
 import type { ApiError } from "@/shared/api/errors";
 
 export const projectsKeys = {
   all: ["projects"] as const,
-  list: (p?: { organizationId?: string; search?: string }) =>
+  list: (p?: { organizationId?: string; page?: number; pageSize?: number }) =>
     [...projectsKeys.all, "list", p ?? {}] as const,
   detail: (id: string) => [...projectsKeys.all, "detail", id] as const,
 };
 
-export function useProjects(params?: { organizationId?: string; search?: string }) {
+export function useProjects(params?: {
+  organizationId?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   return useQuery({
     queryKey: projectsKeys.list(params),
     queryFn: async () => {

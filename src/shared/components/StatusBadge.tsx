@@ -9,12 +9,21 @@ const STATUS_STYLES: Record<IssueStatus, string> = {
   Blocked: "bg-red-500/10 text-red-600 border-red-500/20",
 };
 
-const PRIORITY_STYLES: Record<IssuePriority, string> = {
-  Low: "bg-muted text-muted-foreground border-border",
-  Normal: "bg-sky-500/10 text-sky-600 border-sky-500/20",
-  Major: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-  Critical: "bg-red-500/10 text-red-600 border-red-500/20",
+const PRIORITY_STYLES: Record<string, string> = {
+  "Show-stopper": "bg-red-700 text-white border-red-700",
+  Critical: "bg-red-600 text-white border-red-600",
+  "S1 - Critical": "bg-red-600 text-white border-red-600",
+  Major: "bg-orange-500 text-white border-orange-500",
+  "S2 - Major": "bg-orange-500 text-white border-orange-500",
+  Normal: "bg-sky-500 text-white border-sky-500",
+  "S3 - Normal": "bg-sky-500 text-white border-sky-500",
+  Minor: "bg-slate-500 text-white border-slate-500",
+  Low: "bg-slate-400 text-white border-slate-400",
+  "S4 - Low": "bg-slate-400 text-white border-slate-400",
 };
+
+const DEFAULT_PRIORITY_STYLE =
+  "bg-violet-500 text-white border-violet-500";
 
 export function StatusBadge({ status }: { status: IssueStatus }) {
   return (
@@ -24,9 +33,15 @@ export function StatusBadge({ status }: { status: IssueStatus }) {
   );
 }
 
-export function PriorityBadge({ priority }: { priority: IssuePriority }) {
+export function PriorityBadge({ priority }: { priority: IssuePriority | string }) {
   return (
-    <Badge variant="outline" className={cn("font-medium", PRIORITY_STYLES[priority])}>
+    <Badge
+      variant="outline"
+      className={cn(
+        "font-semibold shadow-sm",
+        PRIORITY_STYLES[priority] ?? DEFAULT_PRIORITY_STYLE,
+      )}
+    >
       {priority}
     </Badge>
   );

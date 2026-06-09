@@ -4,36 +4,15 @@ export type UserType = "Standard" | "Reporter" | "Guest";
 
 export interface PortalUser {
   id: string;
-  fullName: string;
-  username: string;
   email: string;
-  emailVerified?: boolean;
-  avatarUrl?: string | null;
-  userType: UserType;
-  role: PortalRole;
-  banned?: boolean;
-  organizationId?: string;
-  organizationName?: string;
-  vcsUsernames?: string[];
-  registrationDate: string;
-  timeZoneRegion?: string;
-  timeZoneCity?: string;
-  language?: string;
-  dateFormat?: string;
-  periodFormat?: string;
-  firstDayOfWeek?: "Sunday" | "Monday";
-  defaultSorting?: "Relevance" | "Updated";
+  fullName: string;
+  organizationId: string;
+  isActive: boolean;
 }
 
 export interface UserListParams {
   page?: number;
   pageSize?: number;
-  search?: string;
-  role?: PortalRole;
-  organizationId?: string;
-  banned?: boolean;
-  sort?: "name" | "registrationDate";
-  order?: "asc" | "desc";
 }
 
 export interface PaginatedResult<T> {
@@ -41,6 +20,22 @@ export interface PaginatedResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface ApiPaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface CreateUserDto {
+  email: string;
+  fullName: string;
+  password: string;
+  organizationId: string;
+  role: string;
 }
 
 export interface UpdateUserDto {

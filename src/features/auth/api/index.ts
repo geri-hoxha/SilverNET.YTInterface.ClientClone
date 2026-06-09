@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import type { LoginResponse } from "./types";
+import type { LoginResponse } from "../types";
 
 export const authApi = {
   login: (email: string, password: string) =>

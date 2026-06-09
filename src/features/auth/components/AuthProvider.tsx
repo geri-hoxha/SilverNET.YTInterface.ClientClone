@@ -10,8 +10,8 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { onSessionExpired } from "@/shared/api/client";
 import { tokenStore } from "@/shared/api/tokens";
-import { authApi } from "./api";
-import type { AuthUser, PortalRole } from "./types";
+import { authApi } from "../api";
+import type { AuthUser, PortalRole } from "../types";
 
 interface AuthContextValue {
   user: AuthUser | null;

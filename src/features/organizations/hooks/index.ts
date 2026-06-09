@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { organizationsApi } from "./api";
-import type { CreateOrganizationDto, UpdateOrganizationDto } from "./types";
+import { organizationsApi } from "../api";
+import type { CreateOrganizationDto, UpdateOrganizationDto } from "../types";
 import type { ApiError } from "@/shared/api/errors";
 
 export const orgsKeys = {

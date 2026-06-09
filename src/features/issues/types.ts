@@ -3,26 +3,27 @@ export type IssuePriority = "Low" | "Normal" | "Major" | "Critical";
 
 export interface Issue {
   id: string;
-  key?: string;
+  organizationId: string;
+  projectId: string;
+  projectName: string;
   title: string;
   description?: string;
-  projectId: string;
-  projectName?: string;
+  clientState?: string;
+  youTrackReadableId: string;
+  priority: string;
+  createdAt: string;
+  key?: string;
   projectShortCode?: string;
-  status: IssueStatus;
-  priority: IssuePriority;
+  status?: IssueStatus;
   priorityLabel?: string;
   assigneeName?: string;
-  clientState?: string;
   spentTime?: string;
   starred?: boolean;
-  createdAt: string;
 }
 
 export interface IssueListParams {
   page: number;
   pageSize: number;
-  search?: string;
   status?: IssueStatus;
   projectId?: string;
   sort?: string;
