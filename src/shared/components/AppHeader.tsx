@@ -33,9 +33,9 @@ export function AppHeader() {
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background/80 px-3 sm:gap-3 sm:px-4 backdrop-blur">
       <SidebarTrigger />
-      <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+      <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto whitespace-nowrap text-sm text-muted-foreground scrollbar-none">
         {crumbs.map((c, i) => (
           <span key={c.href} className="flex items-center gap-1">
             {i > 0 && <span className="text-muted-foreground/50">/</span>}
@@ -48,7 +48,7 @@ export function AppHeader() {
           </span>
         ))}
       </nav>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2 px-2">
