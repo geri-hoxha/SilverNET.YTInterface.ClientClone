@@ -3,32 +3,32 @@ import { cn } from "@/lib/utils";
 import type { IssuePriority, IssueStatus } from "@/features/issues/types";
 
 const STATUS_STYLES: Record<IssueStatus, string> = {
-  Open: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  InProgress: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  Done: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  Blocked: "bg-red-500/10 text-red-600 border-red-500/20",
+  Open: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  InProgress: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
+  Done: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  Blocked: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
-  "Show-stopper": "bg-red-700 text-white border-red-700",
-  Critical: "bg-red-600 text-white border-red-600",
-  "S1 - Critical": "bg-red-600 text-white border-red-600",
-  Major: "bg-orange-500 text-white border-orange-500",
-  "S2 - Major": "bg-orange-500 text-white border-orange-500",
-  Normal: "bg-sky-500 text-white border-sky-500",
-  "S3 - Normal": "bg-sky-500 text-white border-sky-500",
-  Minor: "bg-slate-500 text-white border-slate-500",
-  Low: "bg-slate-400 text-white border-slate-400",
-  "S4 - Low": "bg-slate-400 text-white border-slate-400",
+  "Show-stopper": "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  Critical: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  "S1 - Critical": "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  Major: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+  "S2 - Major": "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+  Normal: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  "S3 - Normal": "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  Minor: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
+  Low: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25",
+  "S4 - Low": "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25",
 };
 
 const DEFAULT_PRIORITY_STYLE =
-  "bg-violet-500 text-white border-violet-500";
+  "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30";
 
 export function StatusBadge({ status }: { status: IssueStatus }) {
   return (
     <Badge variant="outline" className={cn("font-medium", STATUS_STYLES[status])}>
-      {status}
+      {status === "InProgress" ? "In Progress" : status}
     </Badge>
   );
 }
@@ -38,7 +38,7 @@ export function PriorityBadge({ priority }: { priority: IssuePriority | string }
     <Badge
       variant="outline"
       className={cn(
-        "font-semibold shadow-sm",
+        "font-medium",
         PRIORITY_STYLES[priority] ?? DEFAULT_PRIORITY_STYLE,
       )}
     >
