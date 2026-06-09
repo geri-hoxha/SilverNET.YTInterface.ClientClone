@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckSquare, ChevronDown, ChevronRight, Star } from "lucide-react";
+import { CheckSquare, ChevronDown, Star } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,15 +22,9 @@ const ISSUE_GRID =
 
 export function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues" });
-  const { page, pageSize, status, projectId, saved } = issuesRouteApi.useSearch();
+  const { page, pageSize, status, projectId } = issuesRouteApi.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
-  const [sections, setSections] = useState({
-    drafts: true,
-    projects: true,
-    tags: true,
-    saved: true,
-  });
 
   const query = useIssues({ page, pageSize, status, projectId });
   const items = query.data?.items ?? [];
@@ -89,95 +83,7 @@ export function IssuesListPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left filter sidebar */}
-        <aside className="w-[240px] shrink-0 border-r bg-muted/20 overflow-y-auto py-3 text-sm">
-          <FilterSection
-            label="Drafts"
-            open={sections.drafts}
-            onToggle={() => setSections((s) => ({ ...s, drafts: !s.drafts }))}
-          />
-          <FilterSection
-            label="Projects"
-            open={sections.projects}
-            onToggle={() =>
-              setSections((s) => ({ ...s, projects: !s.projects }))
-            }
-          >
-            <SidebarItem label="No favorite projects" muted />
-          </FilterSection>
-          <FilterSection
-            label="Tags"
-            open={sections.tags}
-            onToggle={() => setSections((s) => ({ ...s, tags: !s.tags }))}
-          >
-            <SidebarItem
-              label="Star"
-              icon={<Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
-              active={saved === "star"}
-              onClick={() =>
-                navigate({
-                  search: (p: z.infer<typeof issuesSearchSchema>) => ({
-                    ...p,
-                    saved: saved === "star" ? undefined : "star",
-                    page: 1,
-                  }),
-                })
-              }
-            />
-          </FilterSection>
-          <FilterSection
-            label="Saved Searches"
-            open={sections.saved}
-            onToggle={() => setSections((s) => ({ ...s, saved: !s.saved }))}
-          >
-            <SidebarItem
-              label="Assigned to me"
-              count={44}
-              active={saved === "assigned"}
-              onClick={() =>
-                navigate({
-                  search: (p: z.infer<typeof issuesSearchSchema>) => ({
-                    ...p,
-                    saved: saved === "assigned" ? undefined : "assigned",
-                    page: 1,
-                  }),
-                })
-              }
-            />
-            <SidebarItem
-              label="Commented by me"
-              count={0}
-              active={saved === "commented"}
-              onClick={() =>
-                navigate({
-                  search: (p: z.infer<typeof issuesSearchSchema>) => ({
-                    ...p,
-                    saved: saved === "commented" ? undefined : "commented",
-                    page: 1,
-                  }),
-                })
-              }
-            />
-            <SidebarItem
-              label="Reported by me"
-              count={0}
-              active={saved === "reported"}
-              onClick={() =>
-                navigate({
-                  search: (p: z.infer<typeof issuesSearchSchema>) => ({
-                    ...p,
-                    saved: saved === "reported" ? undefined : "reported",
-                    page: 1,
-                  }),
-                })
-              }
-            />
-          </FilterSection>
-        </aside>
-
-        {/* Main */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+      <main className="flex flex-1 flex-col overflow-hidden">
           <div className="min-w-full flex-1 overflow-auto">
             <div
               className={cn(
@@ -252,8 +158,7 @@ export function IssuesListPage() {
             pageSizeOptions={[25, 50, 100]}
             className="shrink-0 bg-background"
           />
-        </main>
-      </div>
+      </main>
 
       <CreateIssueDialog
         open={createOpen}
@@ -270,68 +175,6 @@ function SortHead({ label }: { label: string }) {
     <button className="flex items-center gap-1 text-left hover:text-foreground">
       {label}
       <span className="text-[10px] opacity-60">⇅</span>
-    </button>
-  );
-}
-
-function FilterSection({
-  label,
-  open,
-  onToggle,
-  children,
-}: {
-  label: string;
-  open: boolean;
-  onToggle: () => void;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="mb-1">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-1 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
-      >
-        {open ? (
-          <ChevronDown className="h-3.5 w-3.5" />
-        ) : (
-          <ChevronRight className="h-3.5 w-3.5" />
-        )}
-        {label}
-      </button>
-      {open && children ? <div className="pb-1">{children}</div> : null}
-    </div>
-  );
-}
-
-function SidebarItem({
-  label,
-  count,
-  icon,
-  active,
-  muted,
-  onClick,
-}: {
-  label: string;
-  count?: number;
-  icon?: React.ReactNode;
-  active?: boolean;
-  muted?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-2 px-6 py-1.5 text-left text-sm hover:bg-accent/60",
-        active && "bg-accent text-foreground font-medium",
-        muted && "text-muted-foreground italic cursor-default hover:bg-transparent",
-      )}
-    >
-      {icon}
-      <span className="flex-1 truncate">{label}</span>
-      {typeof count === "number" && (
-        <span className="text-xs text-muted-foreground">{count}</span>
-      )}
     </button>
   );
 }
@@ -411,7 +254,9 @@ function IssueRow({
       <div className="min-w-0 truncate text-muted-foreground" title={issue.projectName}>
         {issue.projectName}
       </div>
-      <PriorityBadge priority={priorityLabel} />
+    <div className="w-max">
+        <PriorityBadge priority={priorityLabel} />
+    </div>
       <div
         className={cn(
           "truncate",

@@ -192,7 +192,7 @@ export function ProjectsListPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="grid grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_minmax(0,1.2fr)_auto] items-center gap-3 border-b bg-muted/20 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(7rem,auto)_minmax(5.5rem,auto)_minmax(10rem,1fr)_minmax(0,1.2fr)_auto] items-center gap-x-6 gap-y-3 border-b bg-muted/20 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                           <span>Project</span>
                           <span>YouTrack ID</span>
                           <span>Status</span>
@@ -288,7 +288,7 @@ function ProjectRow({
 }) {
   return (
     <div
-      className="group grid grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_minmax(0,1.2fr)_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40 cursor-pointer"
+      className="group grid grid-cols-[minmax(0,1.4fr)_minmax(7rem,auto)_minmax(5.5rem,auto)_minmax(10rem,1fr)_minmax(0,1.2fr)_auto] items-center gap-x-6 gap-y-3 px-4 py-3 transition-colors hover:bg-accent/40 cursor-pointer"
       onClick={onEdit}
     >
       <div className="flex min-w-0 items-center gap-3">

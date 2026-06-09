@@ -31,8 +31,12 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import { useProjects } from "@/features/projects/hooks";
-import { useCreateIssue } from "../hooks";
+import { issuesApi } from "../api";
+import { issuesKeys, useCreateIssue } from "../hooks";
 import { EntityLogo } from "@/shared/components/EntityLogo";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import type { IssuePriority } from "../types";
@@ -67,11 +71,14 @@ export function CreateIssueDialog({
   defaultProjectId,
   onCreated,
 }: Props) {
+  const qc = useQueryClient();
   const projectsQ = useProjects();
   const createMut = useCreateIssue();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const isBusy = createMut.isPending || uploading;
 
   const addFiles = (files: FileList | File[] | null) => {
     if (!files) return;
@@ -107,8 +114,35 @@ export function CreateIssueDialog({
 
   const projects = projectsQ.data ?? [];
 
-  const onSubmit = async (values: FormValues) => {
+  const createWithAttachments = async (values: FormValues) => {
     const issue = await createMut.mutateAsync(values);
+    const files = attachments;
+    if (files.length > 0) {
+      setUploading(true);
+      try {
+        const results = await Promise.allSettled(
+          files.map((file) => issuesApi.uploadAttachment(issue.id, file)),
+        );
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed > 0) {
+          toast.error(
+            failed === files.length
+              ? "Issue created, but attachments failed to upload"
+              : `Issue created, but ${failed} of ${files.length} attachment(s) failed to upload`,
+          );
+        }
+        await qc.invalidateQueries({
+          queryKey: issuesKeys.attachments(issue.id),
+        });
+      } finally {
+        setUploading(false);
+      }
+    }
+    return issue;
+  };
+
+  const onSubmit = async (values: FormValues) => {
+    const issue = await createWithAttachments(values);
     onOpenChange(false);
     onCreated?.(issue.id);
   };
@@ -259,10 +293,10 @@ export function CreateIssueDialog({
               <div className="flex">
                 <Button
                   type="submit"
-                  disabled={createMut.isPending}
+                  disabled={isBusy}
                   className="rounded-r-none"
                 >
-                  {createMut.isPending && (
+                  {isBusy && (
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
                   )}
                   Create
@@ -272,7 +306,7 @@ export function CreateIssueDialog({
                     <Button
                       type="button"
                       className="rounded-l-none border-l border-primary-foreground/20 px-2"
-                      disabled={createMut.isPending}
+                      disabled={isBusy}
                     >
                       ▾
                     </Button>
@@ -285,7 +319,7 @@ export function CreateIssueDialog({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={form.handleSubmit(async (v) => {
-                        const issue = await createMut.mutateAsync(v);
+                        const issue = await createWithAttachments(v);
                         onOpenChange(false);
                         onCreated?.(issue.id);
                       })}

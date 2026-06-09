@@ -36,18 +36,29 @@ export interface PaginatedResult<T> {
   pageSize: number;
 }
 
+export interface ApiPaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface IssueComment {
   id: string;
-  authorName: string;
+  issueId: string;
   body: string;
   createdAt: string;
+  authorName?: string;
 }
 
 export interface IssueAttachment {
   id: string;
+  issueId: string;
   fileName: string;
-  size: number;
-  uploadedAt: string;
+  contentType: string;
+  fileSize: number;
+  createdAt: string;
 }
 
 export interface CreateIssueDto {

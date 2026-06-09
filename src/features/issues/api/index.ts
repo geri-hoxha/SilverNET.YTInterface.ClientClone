@@ -1,5 +1,6 @@
 import { apiRequest } from "@/shared/api/client";
 import type {
+  ApiPaginatedResult,
   CreateIssueDto,
   Issue,
   IssueAttachment,
@@ -8,6 +9,15 @@ import type {
   PaginatedResult,
   UpdateIssueDto,
 } from "../types";
+
+function toPaginatedResult<T>(result: ApiPaginatedResult<T>): PaginatedResult<T> {
+  return {
+    items: result.items,
+    page: result.page,
+    pageSize: result.pageSize,
+    total: result.totalCount,
+  };
+}
 
 export const issuesApi = {
   list: (params: IssueListParams) =>
@@ -26,11 +36,13 @@ export const issuesApi = {
   update: (id: string, data: UpdateIssueDto) =>
     apiRequest<Issue>({ method: "PUT", url: `/issues/${id}`, data }),
 
-  comments: (id: string) =>
-    apiRequest<IssueComment[]>({
+  comments: async (id: string): Promise<PaginatedResult<IssueComment>> => {
+    const result = await apiRequest<ApiPaginatedResult<IssueComment>>({
       method: "GET",
       url: `/issues/${id}/comments`,
-    }),
+    });
+    return toPaginatedResult(result);
+  },
 
   addComment: (id: string, body: string) =>
     apiRequest<IssueComment>({
@@ -39,11 +51,13 @@ export const issuesApi = {
       data: { body },
     }),
 
-  attachments: (id: string) =>
-    apiRequest<IssueAttachment[]>({
+  attachments: async (id: string): Promise<PaginatedResult<IssueAttachment>> => {
+    const result = await apiRequest<ApiPaginatedResult<IssueAttachment>>({
       method: "GET",
       url: `/issues/${id}/attachments`,
-    }),
+    });
+    return toPaginatedResult(result);
+  },
 
   uploadAttachment: (id: string, file: File) => {
     const form = new FormData();

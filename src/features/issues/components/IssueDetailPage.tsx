@@ -1,22 +1,18 @@
-import { Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Pencil,
-  Paperclip,
+  FileText,
   Loader2,
+  Paperclip,
   Star,
-  Tag,
-  Link as LinkIcon,
-  MoreHorizontal,
   Eye,
   ThumbsUp,
-  MessageSquare,
-  Clock,
-  AlertTriangle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -27,11 +23,12 @@ import {
   useIssueComments,
   useIssueAttachments,
   useAddComment,
+  useUpdateIssue,
   useUploadAttachment,
 } from "../hooks";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
-import { issueReadableId } from "../utils";
+import { fileTypeMeta, issueReadableId } from "../utils";
 import type { Issue } from "../types";
 
 export function IssueDetailPage() {
@@ -103,70 +100,7 @@ export function IssueDetailPage() {
       {/* Main + sidebar */}
       <div className="flex gap-6">
         {/* Main content */}
-        <div className="min-w-0 flex-1">
-          {/* Title */}
-          <div className="mb-4 flex items-start justify-between gap-4">
-            <div className="flex items-start gap-2">
-              <button className="mt-1.5">
-                <Star className="h-4 w-4 text-muted-foreground hover:text-amber-400" />
-              </button>
-              <h1 className="text-xl font-semibold leading-snug">
-                {data.title}
-              </h1>
-            </div>
-            <div className="flex shrink-0 items-center gap-1 text-muted-foreground">
-              <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                <Link to="/issues/$id/edit" params={{ id }}>
-                  <Pencil className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Tag className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <LinkIcon className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="mb-6 text-sm leading-relaxed">
-            {data.description ? (
-              <div
-                className="prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: data.description }}
-              />
-            ) : (
-              <p className="italic text-muted-foreground">No description</p>
-            )}
-          </div>
-
-          {/* Activity */}
-          <div className="border-t pt-4">
-            <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-3">
-                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                </button>
-                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                </button>
-                <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent hover:text-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                </button>
-              </div>
-              <button className="hover:text-foreground">
-                Activity settings ▾
-              </button>
-            </div>
-
-            <CommentsArea id={id} />
-            <AttachmentsArea id={id} />
-          </div>
-        </div>
+        <IssueMainContent id={id} issue={data} />
 
         {/* Sidebar */}
         <aside className="w-[200px] shrink-0">
@@ -221,6 +155,121 @@ export function IssueDetailPage() {
             </SidebarField>
           </div>
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(issue.title);
+  const [description, setDescription] = useState(issue.description ?? "");
+  const update = useUpdateIssue(id);
+
+  useEffect(() => {
+    if (!editing) {
+      setTitle(issue.title);
+      setDescription(issue.description ?? "");
+    }
+  }, [issue.title, issue.description, editing]);
+
+  const startEdit = () => {
+    setTitle(issue.title);
+    setDescription(issue.description ?? "");
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setTitle(issue.title);
+    setDescription(issue.description ?? "");
+    setEditing(false);
+  };
+
+  const save = async () => {
+    if (title.trim().length < 3) return;
+    await update.mutateAsync({
+      title: title.trim(),
+      description,
+    });
+    setEditing(false);
+  };
+
+  return (
+    <div className="min-w-0 flex-1">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-start gap-2">
+          <button type="button" className="mt-1.5 shrink-0">
+            <Star className="h-4 w-4 text-muted-foreground hover:text-amber-400" />
+          </button>
+          {editing ? (
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-xl font-semibold"
+              autoFocus
+            />
+          ) : (
+            <h1 className="text-xl font-semibold leading-snug">{issue.title}</h1>
+          )}
+        </div>
+        {!editing && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            onClick={startEdit}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      <div className="mb-6 text-sm leading-relaxed">
+        {editing ? (
+          <div className="space-y-4">
+            <RichTextEditor
+              value={description}
+              onChange={setDescription}
+              placeholder="Type or paste a description of the issue here"
+              minHeight={200}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={cancelEdit}
+                disabled={update.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={save}
+                disabled={update.isPending || title.trim().length < 3}
+              >
+                {update.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Save
+              </Button>
+            </div>
+          </div>
+        ) : issue.description ? (
+          <div
+            className="prose prose-sm dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: issue.description }}
+          />
+        ) : (
+          <p className="italic text-muted-foreground">No description</p>
+        )}
+      </div>
+
+      <div className="border-t pt-4">
+        <CommentsArea id={id} />
+        <AttachmentsArea id={id} />
       </div>
     </div>
   );
@@ -313,6 +362,7 @@ function CommentsArea({ id }: { id: string }) {
   const q = useIssueComments(id);
   const add = useAddComment(id);
   const [text, setText] = useState("");
+  const comments = q.data?.items ?? [];
 
   const submit = async () => {
     if (!text.trim()) return;
@@ -324,19 +374,21 @@ function CommentsArea({ id }: { id: string }) {
     <div className="space-y-4">
       {q.isLoading ? (
         <Skeleton className="h-16 w-full" />
-      ) : q.data?.length ? (
+      ) : comments.length ? (
         <ul className="space-y-6">
-          {q.data.map((c) => (
+          {comments.map((c) => {
+            const author = c.authorName ?? "User";
+            return (
             <li key={c.id} className="flex gap-3">
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-violet-500 text-xs text-white">
-                  {c.authorName?.[0]?.toUpperCase() ?? "?"}
+                  {author[0]?.toUpperCase() ?? "?"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="font-semibold text-sky-500 hover:underline cursor-pointer">
-                    {c.authorName}
+                    {author}
                   </span>
                   <span className="text-muted-foreground">•</span>
                   <span className="text-muted-foreground">
@@ -348,7 +400,8 @@ function CommentsArea({ id }: { id: string }) {
                 </p>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       ) : null}
 
@@ -388,41 +441,93 @@ function AttachmentsArea({ id }: { id: string }) {
   const q = useIssueAttachments(id);
   const upload = useUploadAttachment(id);
   const fileInput = useRef<HTMLInputElement>(null);
+  const attachments = q.data?.items ?? [];
 
-  if (!q.data?.length && !q.isLoading) return null;
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) upload.mutate(file);
+    e.target.value = "";
+  };
 
   return (
     <div className="mt-6">
-      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Attachments
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Attachments
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs"
+          disabled={upload.isPending}
+          onClick={() => fileInput.current?.click()}
+        >
+          {upload.isPending ? (
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Paperclip className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          Attach file
+        </Button>
       </div>
+
       {q.isLoading ? (
         <Skeleton className="h-16 w-full" />
+      ) : attachments.length > 0 ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {attachments.map((a) => {
+            const meta = fileTypeMeta(a.fileName);
+            return (
+              <div
+                key={a.id}
+                className={cn(
+                  "flex items-center gap-3 rounded-md border px-3 py-2",
+                  meta.bg,
+                  meta.border,
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
+                    meta.badge,
+                  )}
+                >
+                  {meta.label ? (
+                    meta.label
+                  ) : (
+                    <FileText className="h-4 w-4" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium text-foreground">
+                    {a.fileName}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {meta.typeLabel} · {formatBytes(a.fileSize)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
-        <ul className="divide-y rounded-md border">
-          {q.data!.map((a) => (
-            <li
-              key={a.id}
-              className="flex items-center gap-3 px-3 py-2 text-sm"
-            >
-              <Paperclip className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 truncate">{a.fileName}</span>
-              <span className="text-xs text-muted-foreground">
-                {formatBytes(a.size)}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          disabled={upload.isPending}
+          className="flex w-full items-center justify-center rounded-md border border-dashed py-6 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground disabled:opacity-50"
+        >
+          <Paperclip className="mr-2 h-4 w-4" />
+          Click to attach a file
+        </button>
       )}
+
       <input
         ref={fileInput}
         type="file"
         className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) upload.mutate(file);
-          e.target.value = "";
-        }}
+        onChange={handleFileSelect}
       />
     </div>
   );
