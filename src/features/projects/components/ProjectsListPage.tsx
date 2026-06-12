@@ -315,16 +315,12 @@ function ProjectRow({
         {project.youTrackProjectId}
       </Badge>
 
-      <span aria-hidden />
-
       <Badge
         variant={project.isActive ? "default" : "secondary"}
         className="w-fit shrink-0 font-normal"
       >
         {project.isActive ? "Active" : "Inactive"}
       </Badge>
-
-      <span aria-hidden />
 
       <ProjectOptionBadges
         items={project.priorityOptions}
