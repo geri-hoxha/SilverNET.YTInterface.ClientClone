@@ -2,8 +2,10 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
 import { AppHeader } from "@/shared/components/AppHeader";
+import { requireAuth } from "@/features/auth";
 
 export const Route = createFileRoute("/_authenticated")({
+  beforeLoad: requireAuth,
   component: AuthenticatedLayout,
 });
 

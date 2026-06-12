@@ -5,3 +5,8 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 export type LoginFormValues = z.infer<typeof loginSchema>;
+
+export const loginSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+export type LoginSearch = z.infer<typeof loginSearchSchema>;

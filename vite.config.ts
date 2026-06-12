@@ -7,7 +7,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const API_PROXY_TARGET =
-  process.env.VITE_API_PROXY_TARGET ?? "http://10.10.1.51:5000";
+  process.env.VITE_API_PROXY_TARGET ?? "http://10.1.1.102:5000";
 
 export default defineConfig({
   tanstackStart: {

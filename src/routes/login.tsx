@@ -1,11 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { zodValidator } from "@tanstack/zod-adapter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-import { useAuth, loginSchema, type LoginFormValues } from "@/features/auth";
+import {
+  useAuth,
+  loginSchema,
+  loginSearchSchema,
+  requireGuest,
+  safeRedirectPath,
+  type LoginFormValues,
+} from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,12 +23,15 @@ import type { ApiError } from "@/shared/api/errors";
 type FormValues = LoginFormValues;
 
 export const Route = createFileRoute("/login")({
+  validateSearch: zodValidator(loginSearchSchema),
+  beforeLoad: requireGuest,
   component: LoginPage,
 });
 
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { redirect: redirectTo } = Route.useSearch();
   const [submitting, setSubmitting] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(loginSchema),
@@ -32,7 +43,7 @@ function LoginPage() {
     try {
       await login(values.email, values.password);
       toast.success("Welcome back");
-      navigate({ to: "/issues" });
+      navigate({ to: safeRedirectPath(redirectTo) });
     } catch (e) {
       toast.error((e as ApiError).message ?? "Login failed");
     } finally {
