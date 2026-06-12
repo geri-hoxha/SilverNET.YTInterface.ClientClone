@@ -78,7 +78,7 @@ import type { Project } from "../types";
 import type { Organization } from "@/features/organizations/types";
 
 const PROJECT_GRID_COLS =
-  "grid-cols-[minmax(7rem,1.2fr)_4.5rem_1.75rem_4rem_1.75rem_minmax(6rem,0.85fr)_minmax(5.5rem,0.85fr)_auto]";
+  "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
 const PROJECT_ROW_LAYOUT =
   "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
 
@@ -196,15 +196,13 @@ export function ProjectsListPage() {
                         No projects in this organization.
                       </div>
                     ) : (
-                      <div className={`grid w-full min-w-xl ${PROJECT_GRID_COLS}`}>
+                      <div className={`grid w-full min-w-[640px] ${PROJECT_GRID_COLS}`}>
                         <div
                           className={`${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b bg-muted/20 py-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground`}
                         >
                           <span>Project</span>
                           <span>YouTrack ID</span>
-                          <span aria-hidden />
                           <span>Status</span>
-                          <span aria-hidden />
                           <span>Priorities</span>
                           <span>Workflow states</span>
                           <span className="text-right">Actions</span>
@@ -317,16 +315,12 @@ function ProjectRow({
         {project.youTrackProjectId}
       </Badge>
 
-      <span aria-hidden />
-
       <Badge
         variant={project.isActive ? "default" : "secondary"}
         className="w-fit shrink-0 font-normal"
       >
         {project.isActive ? "Active" : "Inactive"}
       </Badge>
-
-      <span aria-hidden />
 
       <ProjectOptionBadges
         items={project.priorityOptions}
