@@ -77,6 +77,11 @@ import { EntityLogo } from "@/shared/components/EntityLogo";
 import type { Project } from "../types";
 import type { Organization } from "@/features/organizations/types";
 
+const PROJECT_GRID_COLS =
+  "grid-cols-[minmax(7rem,1.2fr)_4.5rem_1.75rem_4rem_1.75rem_minmax(6rem,0.85fr)_minmax(5.5rem,0.85fr)_auto]";
+const PROJECT_ROW_LAYOUT =
+  "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
+
 export function ProjectsListPage() {
   const orgsQ = useOrganizations();
   const projectsQ = useProjects();
@@ -98,7 +103,7 @@ export function ProjectsListPage() {
   const loading = orgsQ.isLoading || projectsQ.isLoading;
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 overflow-x-hidden space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
         <Button onClick={() => setCreating({})}>
@@ -134,11 +139,11 @@ export function ProjectsListPage() {
           No organizations found. Create an organization first.
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           {grouped.map(({ org, projects }) => {
             const isCollapsed = collapsed[org.id];
             return (
-              <Card key={org.id} className="overflow-hidden">
+              <Card key={org.id} className="min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2">
                   <Button
                     variant="ghost"
@@ -185,36 +190,38 @@ export function ProjectsListPage() {
                 </div>
 
                 {!isCollapsed && (
-                  <div className="overflow-x-auto">
+                  <div className="w-full max-w-full overflow-x-auto">
                     {projects.length === 0 ? (
                       <div className="px-4 py-6 text-center text-xs text-muted-foreground">
                         No projects in this organization.
                       </div>
                     ) : (
-                      <div className="min-w-[800px]">
-                        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(7rem,auto)_minmax(5.5rem,auto)_minmax(10rem,1fr)_minmax(0,1.2fr)_auto] items-center gap-x-6 gap-y-3 border-b bg-muted/20 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <div className={`grid w-full min-w-xl ${PROJECT_GRID_COLS}`}>
+                        <div
+                          className={`${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b bg-muted/20 py-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground`}
+                        >
                           <span>Project</span>
                           <span>YouTrack ID</span>
+                          <span aria-hidden />
                           <span>Status</span>
+                          <span aria-hidden />
                           <span>Priorities</span>
                           <span>Workflow states</span>
                           <span className="text-right">Actions</span>
                         </div>
-                        <div className="divide-y">
-                          {projects.map((project) => (
-                            <ProjectRow
-                              key={project.id}
-                              project={project}
-                              onEdit={() => setEditing(project)}
-                              onDelete={() => setConfirmDelete(project)}
-                              onSync={() => syncMut.mutate(project.id)}
-                              syncing={
-                                syncMut.isPending &&
-                                syncMut.variables === project.id
-                              }
-                            />
-                          ))}
-                        </div>
+                        {projects.map((project) => (
+                          <ProjectRow
+                            key={project.id}
+                            project={project}
+                            onEdit={() => setEditing(project)}
+                            onDelete={() => setConfirmDelete(project)}
+                            onSync={() => syncMut.mutate(project.id)}
+                            syncing={
+                              syncMut.isPending &&
+                              syncMut.variables === project.id
+                            }
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -288,29 +295,38 @@ function ProjectRow({
 }) {
   return (
     <div
-      className="group grid grid-cols-[minmax(0,1.4fr)_minmax(7rem,auto)_minmax(5.5rem,auto)_minmax(10rem,1fr)_minmax(0,1.2fr)_auto] items-center gap-x-6 gap-y-3 px-4 py-3 transition-colors hover:bg-accent/40 cursor-pointer"
+      className={`group ${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b py-2 transition-colors hover:bg-accent/40 cursor-pointer last:border-b-0`}
       onClick={onEdit}
     >
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         <EntityLogo
           name={project.name}
           shortCode={project.youTrackProjectId}
           seed={project.id}
-          size="md"
+          size="sm"
         />
-        <span className="min-w-0 truncate font-semibold">{project.name}</span>
+        <span className="min-w-0 truncate text-sm font-semibold">
+          {project.name}
+        </span>
       </div>
 
-      <Badge variant="outline" className="w-fit font-mono text-[10px]">
+      <Badge
+        variant="outline"
+        className="w-fit shrink-0 font-mono text-[10px]"
+      >
         {project.youTrackProjectId}
       </Badge>
 
+      <span aria-hidden />
+
       <Badge
         variant={project.isActive ? "default" : "secondary"}
-        className="w-fit font-normal"
+        className="w-fit shrink-0 font-normal"
       >
         {project.isActive ? "Active" : "Inactive"}
       </Badge>
+
+      <span aria-hidden />
 
       <ProjectOptionBadges
         items={project.priorityOptions}
@@ -323,28 +339,28 @@ function ProjectRow({
       />
 
       <div
-        className="flex shrink-0 items-center justify-end gap-1"
+        className="flex shrink-0 items-center justify-end gap-0.5"
         onClick={(e) => e.stopPropagation()}
       >
         <Button
           variant="default"
-          size="sm"
+          size="icon"
           onClick={onSync}
           disabled={syncing}
           title="Sync priorities and workflow states from YouTrack"
-          className="bg-green-600 font-medium text-white shadow-sm hover:bg-green-700"
+          aria-label={syncing ? "Syncing from YouTrack" : "Sync from YouTrack"}
+          className="h-7 w-7 bg-green-600 text-white shadow-sm hover:bg-green-700"
         >
           <RefreshCw
-            className={`mr-1.5 h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+            className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
           />
-          {syncing ? "Syncing…" : "Sync"}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -381,7 +397,7 @@ function ProjectOptionBadges({
   }
 
   return (
-    <div className="flex max-h-16 flex-wrap gap-1 overflow-hidden">
+    <div className="flex max-h-12 min-w-0 flex-wrap gap-0.5 overflow-hidden">
       {items.map((item) => (
         <Badge
           key={item}

@@ -62,7 +62,7 @@ export function IssueDetailPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {/* Top meta row */}
-      <div className="mb-4 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      {/* <div className="mb-4 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>
             Created by{" "}
@@ -96,7 +96,7 @@ export function IssueDetailPage() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main + sidebar */}
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -116,23 +116,14 @@ export function IssueDetailPage() {
                 <span>{data.spentTime}</span>
               </SidebarField>
             )}
-            <SidebarField
-              label="Client State"
-              badge={
-                data.clientState ? (
-                  <LetterBadge text={data.clientState} color="emerald" />
-                ) : null
-              }
-            >
-              <span>{data.clientState ?? "—"}</span>
-            </SidebarField>
+
             <SidebarField
               label="State"
               badge={
                 data.status ? <LetterBadge text={data.status} color="emerald" /> : null
               }
             >
-              <span>{data.status ?? "—"}</span>
+              <span>{data.clientState ?? "—"}</span>
             </SidebarField>
             <SidebarField
               label="Priority"
@@ -199,9 +190,9 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
     <div className="min-w-0 flex-1">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-2">
-          <button type="button" className="mt-1.5 shrink-0">
+          {/* <button type="button" className="mt-1.5 shrink-0">
             <Star className="h-4 w-4 text-muted-foreground hover:text-amber-400" />
-          </button>
+          </button> */}
           {editing ? (
             <Input
               value={title}

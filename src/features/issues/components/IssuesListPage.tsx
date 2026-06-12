@@ -166,7 +166,7 @@ export function IssuesListPage() {
               />
               <span className="hidden md:block">
                 <SortHead
-                  label="Client state"
+                  label="State"
                   field="ClientState"
                   sortBy={sortBy}
                   sortDescending={sortDescending}
@@ -367,7 +367,7 @@ function IssueRow({
             ? (CLIENT_STATE_STYLE[issue.clientState] ?? "text-foreground")
             : "text-muted-foreground italic",
         )}
-        title={issue.clientState || "No client state"}
+        title={issue.clientState || "No state"}
       >
         {issue.clientState || "—"}
       </div>

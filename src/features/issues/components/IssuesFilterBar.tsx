@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { endOfDay, parseISO, startOfDay } from "date-fns";
 import { Search, X } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,17 +37,21 @@ const PRIORITY_OPTIONS: { value: IssuePriority; label: string }[] = [
   { value: "Critical", label: "Critical" },
 ];
 
-function dateInputValue(iso?: string) {
-  if (!iso) return "";
-  return iso.slice(0, 10);
+function isoToDate(iso?: string) {
+  if (!iso) return undefined;
+  try {
+    return parseISO(iso);
+  } catch {
+    return undefined;
+  }
 }
 
-function toStartOfDay(date: string) {
-  return new Date(`${date}T00:00:00`).toISOString();
+function toStartOfDay(date: Date) {
+  return startOfDay(date).toISOString();
 }
 
-function toEndOfDay(date: string) {
-  return new Date(`${date}T23:59:59.999`).toISOString();
+function toEndOfDay(date: Date) {
+  return endOfDay(date).toISOString();
 }
 
 interface Props {
@@ -177,28 +183,30 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="From" className="w-full sm:w-[150px]">
-          <Input
-            type="date"
-            value={dateInputValue(search.from)}
-            onChange={(e) =>
+        <FilterField label="From" className="w-full sm:w-[170px]">
+          <DatePicker
+            value={isoToDate(search.from)}
+            onChange={(date) =>
               updateSearch({
-                from: e.target.value ? toStartOfDay(e.target.value) : undefined,
+                from: date ? toStartOfDay(date) : undefined,
               })
             }
+            placeholder="Start date"
+            toDate={isoToDate(search.to)}
             className="h-9 sm:h-8"
           />
         </FilterField>
 
-        <FilterField label="To" className="w-full sm:w-[150px]">
-          <Input
-            type="date"
-            value={dateInputValue(search.to)}
-            onChange={(e) =>
+        <FilterField label="To" className="w-full sm:w-[170px]">
+          <DatePicker
+            value={isoToDate(search.to)}
+            onChange={(date) =>
               updateSearch({
-                to: e.target.value ? toEndOfDay(e.target.value) : undefined,
+                to: date ? toEndOfDay(date) : undefined,
               })
             }
+            placeholder="End date"
+            fromDate={isoToDate(search.from)}
             className="h-9 sm:h-8"
           />
         </FilterField>

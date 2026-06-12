@@ -38,12 +38,14 @@ function toListParams(params: IssueListParams) {
 }
 
 export const issuesApi = {
-  list: (params: IssueListParams) =>
-    apiRequest<PaginatedResult<Issue>>({
+  list: async (params: IssueListParams): Promise<PaginatedResult<Issue>> => {
+    const result = await apiRequest<ApiPaginatedResult<Issue>>({
       method: "GET",
       url: "/issues",
       params: toListParams(params),
-    }),
+    });
+    return toPaginatedResult(result);
+  },
 
   get: (id: string) =>
     apiRequest<Issue>({ method: "GET", url: `/issues/${id}` }),
