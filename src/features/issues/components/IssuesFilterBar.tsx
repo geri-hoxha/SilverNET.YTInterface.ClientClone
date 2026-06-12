@@ -89,9 +89,9 @@ export function IssuesFilterBar({ search }: Props) {
   );
 
   return (
-    <div className="border-b bg-muted/20 px-4 py-3">
-      <div className="flex flex-wrap items-end gap-3">
-        <FilterField label="Search" className="min-w-[200px] flex-1">
+    <div className="border-b bg-muted/20 px-3 py-3 sm:px-4">
+      <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end">
+        <FilterField label="Search" className="w-full sm:min-w-[200px] sm:flex-1">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -103,12 +103,12 @@ export function IssuesFilterBar({ search }: Props) {
                 }
               }}
               placeholder="Search issues..."
-              className="h-8 pl-8"
+              className="h-9 pl-8 sm:h-8"
             />
           </div>
         </FilterField>
 
-        <FilterField label="Project" className="w-[180px]">
+        <FilterField label="Project" className="w-full sm:w-[180px]">
           <Select
             value={search.projectId ?? ALL}
             onValueChange={(value) =>
@@ -117,7 +117,7 @@ export function IssuesFilterBar({ search }: Props) {
               })
             }
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9 sm:h-8">
               <SelectValue placeholder="All projects" />
             </SelectTrigger>
             <SelectContent>
@@ -131,7 +131,7 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="Status" className="w-[140px]">
+        <FilterField label="Status" className="w-full sm:w-[140px]">
           <Select
             value={search.status ?? ALL}
             onValueChange={(value) =>
@@ -140,7 +140,7 @@ export function IssuesFilterBar({ search }: Props) {
               })
             }
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9 sm:h-8">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -154,7 +154,7 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="Priority" className="w-[140px]">
+        <FilterField label="Priority" className="w-full sm:w-[140px]">
           <Select
             value={search.priority ?? ALL}
             onValueChange={(value) =>
@@ -163,7 +163,7 @@ export function IssuesFilterBar({ search }: Props) {
               })
             }
           >
-            <SelectTrigger className="h-8">
+            <SelectTrigger className="h-9 sm:h-8">
               <SelectValue placeholder="All priorities" />
             </SelectTrigger>
             <SelectContent>
@@ -177,7 +177,7 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="From" className="w-[150px]">
+        <FilterField label="From" className="w-full sm:w-[150px]">
           <Input
             type="date"
             value={dateInputValue(search.from)}
@@ -186,11 +186,11 @@ export function IssuesFilterBar({ search }: Props) {
                 from: e.target.value ? toStartOfDay(e.target.value) : undefined,
               })
             }
-            className="h-8"
+            className="h-9 sm:h-8"
           />
         </FilterField>
 
-        <FilterField label="To" className="w-[150px]">
+        <FilterField label="To" className="w-full sm:w-[150px]">
           <Input
             type="date"
             value={dateInputValue(search.to)}
@@ -199,15 +199,15 @@ export function IssuesFilterBar({ search }: Props) {
                 to: e.target.value ? toEndOfDay(e.target.value) : undefined,
               })
             }
-            className="h-8"
+            className="h-9 sm:h-8"
           />
         </FilterField>
 
-        <div className="flex items-center gap-2 pb-0.5">
+        <div className="flex items-center gap-2 pb-0.5 w-full sm:w-auto">
           <Button
             size="sm"
             variant="secondary"
-            className="h-8"
+            className="h-9 flex-1 sm:h-8 sm:flex-none"
             onClick={() =>
               updateSearch({ search: searchDraft.trim() || undefined })
             }
@@ -218,7 +218,7 @@ export function IssuesFilterBar({ search }: Props) {
             <Button
               size="sm"
               variant="ghost"
-              className="h-8 text-muted-foreground"
+              className="h-9 flex-1 sm:h-8 sm:flex-none text-muted-foreground"
               onClick={clearFilters}
             >
               <X className="mr-1 h-3.5 w-3.5" />
