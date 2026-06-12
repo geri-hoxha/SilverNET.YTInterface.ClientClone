@@ -21,12 +21,25 @@ export interface Issue {
   starred?: boolean;
 }
 
+export type IssueSortField =
+  | "YouTrackReadableId"
+  | "Title"
+  | "ProjectName"
+  | "Priority"
+  | "ClientState"
+  | "CreatedAt";
+
 export interface IssueListParams {
   page: number;
   pageSize: number;
-  status?: IssueStatus;
   projectId?: string;
-  sort?: string;
+  status?: IssueStatus;
+  priority?: IssuePriority;
+  from?: string;
+  to?: string;
+  search?: string;
+  sortBy?: IssueSortField;
+  sortDescending?: boolean;
 }
 
 export interface PaginatedResult<T> {

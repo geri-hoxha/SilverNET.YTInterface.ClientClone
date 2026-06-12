@@ -12,35 +12,72 @@ import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
 import { issueReadableId } from "../utils";
 import { CreateIssueDialog } from "./CreateIssueDialog";
+import { IssuesFilterBar } from "./IssuesFilterBar";
 import { PriorityBadge } from "@/shared/components/StatusBadge";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { formatRelative, formatShortDate } from "@/shared/utils/format";
-import type { Issue } from "../types";
+import type { Issue, IssueSortField } from "../types";
 
 const ISSUE_GRID =
   "grid grid-cols-[36px_72px_minmax(0,1fr)_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_112px] items-center gap-2";
 
+type IssuesSearch = z.infer<typeof issuesSearchSchema>;
+
 export function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues" });
-  const { page, pageSize, status, projectId } = issuesRouteApi.useSearch();
+  const search = issuesRouteApi.useSearch();
+  const {
+    page,
+    pageSize,
+    status,
+    projectId,
+    priority,
+    from,
+    to,
+    search: searchText,
+    sortBy,
+    sortDescending,
+  } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
 
-  const query = useIssues({ page, pageSize, status, projectId });
+  const query = useIssues({
+    page,
+    pageSize,
+    status,
+    projectId,
+    priority,
+    from,
+    to,
+    search: searchText,
+    sortBy,
+    sortDescending,
+  });
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
 
   const setPage = (nextPage: number) =>
     navigate({
-      search: (p: z.infer<typeof issuesSearchSchema>) => ({ ...p, page: nextPage }),
+      search: (p: IssuesSearch) => ({ ...p, page: nextPage }),
     });
 
   const setPageSize = (nextPageSize: number) =>
     navigate({
-      search: (p: z.infer<typeof issuesSearchSchema>) => ({
+      search: (p: IssuesSearch) => ({
         ...p,
         page: 1,
         pageSize: nextPageSize,
+      }),
+    });
+
+  const setSort = (field: IssueSortField) =>
+    navigate({
+      search: (p: IssuesSearch) => ({
+        ...p,
+        page: 1,
+        sortBy: field,
+        sortDescending:
+          p.sortBy === field ? !p.sortDescending : false,
       }),
     });
 
@@ -83,6 +120,8 @@ export function IssuesListPage() {
         </div>
       </div>
 
+      <IssuesFilterBar search={search} />
+
       <main className="flex flex-1 flex-col overflow-hidden">
           <div className="min-w-full flex-1 overflow-auto">
             <div
@@ -95,12 +134,54 @@ export function IssuesListPage() {
                 checked={allChecked}
                 onCheckedChange={(v) => toggleAll(!!v)}
               />
-              <SortHead label="ID" />
-              <SortHead label="Summary" />
-              <span className="hidden md:block"><SortHead label="Project" /></span>
-              <SortHead label="Priority" />
-              <span className="hidden md:block"><SortHead label="Client state" /></span>
-              <span className="hidden md:block"><SortHead label="Created" /></span>
+              <SortHead
+                label="ID"
+                field="YouTrackReadableId"
+                sortBy={sortBy}
+                sortDescending={sortDescending}
+                onSort={setSort}
+              />
+              <SortHead
+                label="Summary"
+                field="Title"
+                sortBy={sortBy}
+                sortDescending={sortDescending}
+                onSort={setSort}
+              />
+              <span className="hidden md:block">
+                <SortHead
+                  label="Project"
+                  field="ProjectName"
+                  sortBy={sortBy}
+                  sortDescending={sortDescending}
+                  onSort={setSort}
+                />
+              </span>
+              <SortHead
+                label="Priority"
+                field="Priority"
+                sortBy={sortBy}
+                sortDescending={sortDescending}
+                onSort={setSort}
+              />
+              <span className="hidden md:block">
+                <SortHead
+                  label="Client state"
+                  field="ClientState"
+                  sortBy={sortBy}
+                  sortDescending={sortDescending}
+                  onSort={setSort}
+                />
+              </span>
+              <span className="hidden md:block">
+                <SortHead
+                  label="Created"
+                  field="CreatedAt"
+                  sortBy={sortBy}
+                  sortDescending={sortDescending}
+                  onSort={setSort}
+                />
+              </span>
             </div>
 
             {query.isLoading ? (
@@ -170,11 +251,33 @@ export function IssuesListPage() {
   );
 }
 
-function SortHead({ label }: { label: string }) {
+function SortHead({
+  label,
+  field,
+  sortBy,
+  sortDescending,
+  onSort,
+}: {
+  label: string;
+  field: IssueSortField;
+  sortBy?: IssueSortField;
+  sortDescending?: boolean;
+  onSort: (field: IssueSortField) => void;
+}) {
+  const active = sortBy === field;
   return (
-    <button className="flex items-center gap-1 text-left hover:text-foreground">
+    <button
+      type="button"
+      onClick={() => onSort(field)}
+      className={cn(
+        "flex items-center gap-1 text-left hover:text-foreground",
+        active && "text-foreground",
+      )}
+    >
       {label}
-      <span className="text-[10px] opacity-60">⇅</span>
+      <span className="text-[10px] opacity-60">
+        {active ? (sortDescending ? "↓" : "↑") : "⇅"}
+      </span>
     </button>
   );
 }

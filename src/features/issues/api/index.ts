@@ -19,12 +19,30 @@ function toPaginatedResult<T>(result: ApiPaginatedResult<T>): PaginatedResult<T>
   };
 }
 
+function toListParams(params: IssueListParams) {
+  const query: Record<string, string | number | boolean> = {
+    Page: params.page,
+    PageSize: params.pageSize,
+  };
+  if (params.projectId) query.ProjectId = params.projectId;
+  if (params.status) query.Status = params.status;
+  if (params.priority) query.Priority = params.priority;
+  if (params.from) query.From = params.from;
+  if (params.to) query.To = params.to;
+  if (params.search) query.Search = params.search;
+  if (params.sortBy) query.SortBy = params.sortBy;
+  if (params.sortDescending !== undefined) {
+    query.SortDescending = params.sortDescending;
+  }
+  return query;
+}
+
 export const issuesApi = {
   list: (params: IssueListParams) =>
     apiRequest<PaginatedResult<Issue>>({
       method: "GET",
       url: "/issues",
-      params,
+      params: toListParams(params),
     }),
 
   get: (id: string) =>

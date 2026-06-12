@@ -1,10 +1,27 @@
 import { z } from "zod";
 
+const issueStatusSchema = z.enum(["Open", "InProgress", "Done", "Blocked"]);
+const issuePrioritySchema = z.enum(["Low", "Normal", "Major", "Critical"]);
+const issueSortFieldSchema = z.enum([
+  "YouTrackReadableId",
+  "Title",
+  "ProjectName",
+  "Priority",
+  "ClientState",
+  "CreatedAt",
+]);
+
 export const issuesSearchSchema = z.object({
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(200).default(50),
-  status: z.enum(["Open", "InProgress", "Done", "Blocked"]).optional(),
   projectId: z.string().optional(),
+  status: issueStatusSchema.optional(),
+  priority: issuePrioritySchema.optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  search: z.string().optional(),
+  sortBy: issueSortFieldSchema.optional(),
+  sortDescending: z.boolean().optional(),
   saved: z.enum(["assigned", "commented", "reported", "star"]).optional(),
 });
 export type IssuesSearch = z.infer<typeof issuesSearchSchema>;
