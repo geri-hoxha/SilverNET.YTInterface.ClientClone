@@ -114,8 +114,8 @@ export function UsersListPage() {
         </Button>
       </div>
 
-      <Card>
-        <Table>
+      <Card className="overflow-x-auto">
+        <Table className="min-w-[480px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">

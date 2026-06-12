@@ -62,8 +62,8 @@ export function IssueDetailPage() {
   return (
     <div className="mx-auto max-w-6xl">
       {/* Top meta row */}
-      <div className="mb-4 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
+      <div className="mb-4 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>
             Created by{" "}
             <span className="text-sky-500 hover:underline cursor-pointer">
@@ -71,7 +71,7 @@ export function IssueDetailPage() {
             </span>{" "}
             {formatRelative(data.createdAt)}
           </span>
-          <span>·</span>
+          <span className="hidden sm:inline">·</span>
           <span>
             Updated by{" "}
             <span className="text-sky-500 hover:underline cursor-pointer">
@@ -83,7 +83,8 @@ export function IssueDetailPage() {
         <div className="flex items-center gap-4">
           <button className="flex items-center gap-1.5 hover:text-foreground">
             <Eye className="h-3.5 w-3.5" />
-            Visible to issue readers
+            <span className="hidden sm:inline">Visible to issue readers</span>
+            <span className="sm:hidden">Visible</span>
           </button>
           <div className="flex items-center gap-1">
             <button className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent">
@@ -98,12 +99,12 @@ export function IssueDetailPage() {
       </div>
 
       {/* Main + sidebar */}
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* Main content */}
         <IssueMainContent id={id} issue={data} />
 
         {/* Sidebar */}
-        <aside className="w-[200px] shrink-0">
+        <aside className="w-full shrink-0 lg:w-[200px] lg:order-last order-first">
           <div className="rounded-md border bg-card/40 p-3 space-y-3 text-sm">
             <SidebarField label="Project" badge={<ProjectBadge issue={data} />}>
               <span className="text-sky-500 hover:underline cursor-pointer">

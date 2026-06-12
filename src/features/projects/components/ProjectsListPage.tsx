@@ -185,13 +185,13 @@ export function ProjectsListPage() {
                 </div>
 
                 {!isCollapsed && (
-                  <div>
+                  <div className="overflow-x-auto">
                     {projects.length === 0 ? (
                       <div className="px-4 py-6 text-center text-xs text-muted-foreground">
                         No projects in this organization.
                       </div>
                     ) : (
-                      <>
+                      <div className="min-w-[800px]">
                         <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(7rem,auto)_minmax(5.5rem,auto)_minmax(10rem,1fr)_minmax(0,1.2fr)_auto] items-center gap-x-6 gap-y-3 border-b bg-muted/20 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                           <span>Project</span>
                           <span>YouTrack ID</span>
@@ -215,7 +215,7 @@ export function ProjectsListPage() {
                             />
                           ))}
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 )}
