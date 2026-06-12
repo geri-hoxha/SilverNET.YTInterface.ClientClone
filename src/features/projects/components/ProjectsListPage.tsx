@@ -196,15 +196,13 @@ export function ProjectsListPage() {
                         No projects in this organization.
                       </div>
                     ) : (
-                      <div className={`grid w-full min-w-xl ${PROJECT_GRID_COLS}`}>
+                      <div className={`grid w-full min-w-[640px] ${PROJECT_GRID_COLS}`}>
                         <div
                           className={`${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b bg-muted/20 py-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground`}
                         >
                           <span>Project</span>
                           <span>YouTrack ID</span>
-                          <span aria-hidden />
                           <span>Status</span>
-                          <span aria-hidden />
                           <span>Priorities</span>
                           <span>Workflow states</span>
                           <span className="text-right">Actions</span>
