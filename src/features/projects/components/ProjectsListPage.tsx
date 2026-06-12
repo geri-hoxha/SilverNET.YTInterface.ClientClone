@@ -78,7 +78,7 @@ import type { Project } from "../types";
 import type { Organization } from "@/features/organizations/types";
 
 const PROJECT_GRID_COLS =
-  "grid-cols-[minmax(7rem,1.2fr)_4.5rem_1.75rem_4rem_1.75rem_minmax(6rem,0.85fr)_minmax(5.5rem,0.85fr)_auto]";
+  "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
 const PROJECT_ROW_LAYOUT =
   "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
 
