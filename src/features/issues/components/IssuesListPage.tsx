@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useIssues } from "../hooks";
+import { useApproveEstimation, useIssues } from "../hooks";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
 import { issueReadableId } from "../utils";
+import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
 import { PriorityBadge } from "@/shared/components/StatusBadge";
@@ -19,7 +20,7 @@ import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue, IssueSortField } from "../types";
 
 const ISSUE_GRID =
-  "grid grid-cols-[36px_72px_minmax(0,1fr)_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_112px] items-center gap-2";
+  "grid grid-cols-[36px_72px_minmax(0,1fr)_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_88px_112px] items-center gap-2";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -40,6 +41,8 @@ export function IssuesListPage() {
   } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+
+  const approveEstimation = useApproveEstimation();
 
   const query = useIssues({
     page,
@@ -173,6 +176,7 @@ export function IssuesListPage() {
                   onSort={setSort}
                 />
               </span>
+              <span className="hidden md:block">Estimation</span>
               <span className="hidden md:block">
                 <SortHead
                   label="Created"
@@ -193,6 +197,7 @@ export function IssuesListPage() {
                   <Skeleton className="hidden md:block h-4 w-28" />
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="hidden md:block h-4 w-20" />
+                  <Skeleton className="hidden md:block h-4 w-16" />
                   <Skeleton className="hidden md:block h-4 w-20" />
                 </div>
               ))
@@ -225,6 +230,13 @@ export function IssuesListPage() {
                   }
                   onOpen={() =>
                     navigate({ to: "/issues/$id", params: { id: issue.id } })
+                  }
+                  onApproveEstimation={() =>
+                    approveEstimation.mutate(issue.id)
+                  }
+                  isApprovingEstimation={
+                    approveEstimation.isPending &&
+                    approveEstimation.variables === issue.id
                   }
                 />
               ))
@@ -319,11 +331,15 @@ function IssueRow({
   checked,
   onCheck,
   onOpen,
+  onApproveEstimation,
+  isApprovingEstimation,
 }: {
   issue: Issue;
   checked: boolean;
   onCheck: (v: boolean) => void;
   onOpen: () => void;
+  onApproveEstimation: () => void;
+  isApprovingEstimation: boolean;
 }) {
   const priorityLabel = issue.priorityLabel ?? issue.priority;
   const readableId = issueReadableId(issue);
@@ -353,6 +369,16 @@ function IssueRow({
       <div className="flex min-w-0 items-center gap-2">
         {projectBadge(issue)}
         <span className="truncate font-medium">{issue.title}</span>
+        <div onClick={(e) => e.stopPropagation()}>
+          <ApproveEstimationButton
+            variant="compact"
+            clientState={issue.clientState}
+            issueTitle={issue.title}
+            confirmBeforeApprove
+            onApprove={onApproveEstimation}
+            isPending={isApprovingEstimation}
+          />
+        </div>
       </div>
       <div className="min-w-0 truncate text-muted-foreground hidden md:block" title={issue.projectName}>
         {issue.projectName}
@@ -370,6 +396,12 @@ function IssueRow({
         title={issue.clientState || "No state"}
       >
         {issue.clientState || "—"}
+      </div>
+      <div
+        className="hidden md:block truncate text-muted-foreground"
+        title={issue.estimation || "No estimation"}
+      >
+        {issue.estimation || "—"}
       </div>
       <div
         className="hidden md:block truncate text-xs text-muted-foreground"

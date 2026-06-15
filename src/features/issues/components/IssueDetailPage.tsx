@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Pencil,
+  Download,
   FileText,
   Loader2,
   Paperclip,
@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import {
+  useApproveEstimation,
   useIssue,
   useIssueComments,
   useIssueAttachments,
@@ -26,10 +27,14 @@ import {
   useUpdateIssue,
   useUploadAttachment,
 } from "../hooks";
+import { ApproveEstimationButton } from "./ApproveEstimationButton";
+import { toast } from "sonner";
+import type { ApiError } from "@/shared/api/errors";
+import { issuesApi } from "../api";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
 import { fileTypeMeta, issueReadableId } from "../utils";
-import type { Issue } from "../types";
+import type { Issue, IssueAttachment } from "../types";
 
 export function IssueDetailPage() {
   const { id } = issueDetailRouteApi.useParams();
@@ -111,11 +116,9 @@ export function IssueDetailPage() {
                 {data.projectName}
               </span>
             </SidebarField>
-            {data.spentTime && (
-              <SidebarField label="Estimation">
-                <span>{data.spentTime}</span>
-              </SidebarField>
-            )}
+            <SidebarField label="Estimation">
+              <span>{data.estimation ?? "—"}</span>
+            </SidebarField>
 
             <SidebarField
               label="State"
@@ -157,6 +160,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   const [title, setTitle] = useState(issue.title);
   const [description, setDescription] = useState(issue.description ?? "");
   const update = useUpdateIssue(id);
+  const approveEstimation = useApproveEstimation();
 
   useEffect(() => {
     if (!editing) {
@@ -189,31 +193,37 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   return (
     <div className="min-w-0 flex-1">
       <div className="mb-4 flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-1 items-start gap-2">
-          {/* <button type="button" className="mt-1.5 shrink-0">
-            <Star className="h-4 w-4 text-muted-foreground hover:text-amber-400" />
-          </button> */}
-          {editing ? (
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-xl font-semibold"
-              autoFocus
-            />
-          ) : (
-            <h1 className="text-xl font-semibold leading-snug">{issue.title}</h1>
-          )}
-        </div>
+        {editing ? (
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="min-w-0 flex-1 text-xl font-semibold"
+            autoFocus
+          />
+        ) : (
+          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-snug">
+            {issue.title}
+          </h1>
+        )}
         {!editing && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
-            onClick={startEdit}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-2">
+            <ApproveEstimationButton
+              variant="text"
+              clientState={issue.clientState}
+              issueTitle={issue.title}
+              confirmBeforeApprove
+              onApprove={() => approveEstimation.mutate(id)}
+              isPending={approveEstimation.isPending}
+            />
+            <Button
+              type="button"
+              size="sm"
+              className="h-8 border border-blue-200/70 bg-blue-50 text-blue-600 shadow-sm hover:border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/70 dark:hover:text-blue-300"
+              onClick={startEdit}
+            >
+              Edit Issue
+            </Button>
+          </div>
         )}
       </div>
 
@@ -433,12 +443,32 @@ function AttachmentsArea({ id }: { id: string }) {
   const q = useIssueAttachments(id);
   const upload = useUploadAttachment(id);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const attachments = q.data?.items ?? [];
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) upload.mutate(file);
     e.target.value = "";
+  };
+
+  const handleDownload = async (attachment: IssueAttachment) => {
+    setDownloadingId(attachment.id);
+    try {
+      const blob = await issuesApi.downloadAttachment(id, attachment.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = attachment.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast.error((e as ApiError).message ?? "Failed to download file");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -499,6 +529,21 @@ function AttachmentsArea({ id }: { id: string }) {
                     {meta.typeLabel} · {formatBytes(a.fileSize)}
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                  disabled={downloadingId === a.id}
+                  onClick={() => handleDownload(a)}
+                  aria-label={`Download ${a.fileName}`}
+                >
+                  {downloadingId === a.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             );
           })}

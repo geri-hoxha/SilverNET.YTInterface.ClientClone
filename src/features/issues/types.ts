@@ -18,6 +18,7 @@ export interface Issue {
   priorityLabel?: string;
   assigneeName?: string;
   spentTime?: string;
+  estimation?: string;
   starred?: boolean;
 }
 

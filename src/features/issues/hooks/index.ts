@@ -100,3 +100,16 @@ export function useUploadAttachment(id: string) {
     onError: (e: ApiError) => toast.error(e.message),
   });
 }
+
+export function useApproveEstimation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => issuesApi.approveEstimation(id),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: issuesKeys.all });
+      qc.invalidateQueries({ queryKey: issuesKeys.detail(id) });
+      toast.success("Estimation approved");
+    },
+    onError: (e: ApiError) => toast.error(e.message),
+  });
+}

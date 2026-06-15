@@ -89,4 +89,17 @@ export const issuesApi = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  downloadAttachment: (issueId: string, attachmentId: string) =>
+    apiRequest<Blob>({
+      method: "GET",
+      url: `/issues/${issueId}/attachments/${attachmentId}/download`,
+      responseType: "blob",
+    }),
+
+  approveEstimation: (id: string) =>
+    apiRequest<Issue>({
+      method: "POST",
+      url: `/issues/${id}/estimation/approve`,
+    }),
 };
