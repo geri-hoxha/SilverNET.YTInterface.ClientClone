@@ -50,7 +50,7 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm max-w-none focus:outline-none",
+          "rte-content max-w-none focus:outline-none",
           "min-h-[var(--rte-min-h)] py-2",
         ),
         style: `--rte-min-h: ${minHeight}px`,

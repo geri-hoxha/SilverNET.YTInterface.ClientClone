@@ -14,7 +14,7 @@ import { issueReadableId } from "../utils";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
-import { PriorityBadge } from "@/shared/components/StatusBadge";
+import { clientStateTextColor, PriorityBadge } from "@/shared/components/StatusBadge";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue, IssueSortField } from "../types";
@@ -288,18 +288,6 @@ function SortHead({
   );
 }
 
-const CLIENT_STATE_STYLE: Record<string, string> = {
-  Done: "text-emerald-600",
-  "In Progress": "text-amber-600",
-  "In Review": "text-violet-600",
-  "Needs Clarification": "text-orange-600",
-  "Provided Clarification": "text-sky-600",
-  "Pending Estimation": "text-amber-600",
-  "Awaiting Est. Approval": "text-amber-700",
-  "Approved Estimation": "text-emerald-600",
-  "Refused Estimation": "text-red-600",
-};
-
 function projectBadge(issue: Issue) {
   const code =
     issue.youTrackReadableId?.split("-")[0] ??
@@ -384,7 +372,7 @@ function IssueRow({
         className={cn(
           "hidden md:block truncate",
           issue.clientState
-            ? (CLIENT_STATE_STYLE[issue.clientState] ?? "text-foreground")
+            ? clientStateTextColor(issue.clientState)
             : "text-muted-foreground italic",
         )}
         title={issue.clientState || "No state"}

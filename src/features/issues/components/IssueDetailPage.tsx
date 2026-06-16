@@ -263,7 +263,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
           </div>
         ) : issue.description ? (
           <div
-            className="prose prose-sm dark:prose-invert max-w-none"
+            className="rte-content max-w-none"
             dangerouslySetInnerHTML={{ __html: issue.description }}
           />
         ) : (

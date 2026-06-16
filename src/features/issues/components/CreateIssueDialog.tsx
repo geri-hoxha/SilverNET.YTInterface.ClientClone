@@ -39,22 +39,28 @@ import { issuesApi } from "../api";
 import { issuesKeys, useCreateIssue } from "../hooks";
 import { EntityLogo } from "@/shared/components/EntityLogo";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
-import type { IssuePriority } from "../types";
 import { createIssueSchema, type CreateIssueFormValues } from "../schemas";
 import { fileTypeMeta, formatBytes } from "../utils";
 import { cn } from "@/lib/utils";
 
-const PRIORITY_OPTIONS: {
-  value: IssuePriority;
-  label: string;
-  badge: string;
-  badgeBg: string;
-}[] = [
-  { value: "Low", label: "S4 - Low", badge: "S", badgeBg: "bg-emerald-500" },
-  { value: "Normal", label: "S3 - Normal", badge: "S", badgeBg: "bg-yellow-500" },
-  { value: "Major", label: "S2 - Major", badge: "S", badgeBg: "bg-orange-500" },
-  { value: "Critical", label: "S1 - Critical", badge: "S", badgeBg: "bg-red-500" },
-];
+// Maps a project's YouTrack priority name to a badge color. Falls back to a
+// neutral color for any custom/unknown priority value.
+function priorityBadgeBg(name: string): string {
+  const n = name.toLowerCase();
+  if (/(critical|show-?stopper|blocker|s1)/.test(n)) return "bg-red-500";
+  if (/(major|high|s2)/.test(n)) return "bg-orange-500";
+  if (/(normal|medium|s3)/.test(n)) return "bg-yellow-500";
+  if (/(minor|low|s4)/.test(n)) return "bg-emerald-500";
+  return "bg-slate-500";
+}
+
+// Picks a sensible default priority from a project's options, preferring a
+// "Normal"-like value when present, otherwise the first option.
+function pickDefaultPriority(options: string[]): string {
+  if (options.length === 0) return "";
+  const normal = options.find((o) => /normal|medium/i.test(o));
+  return normal ?? options[0];
+}
 
 type FormValues = CreateIssueFormValues;
 
@@ -96,7 +102,7 @@ export function CreateIssueDialog({
       projectId: defaultProjectId ?? "",
       title: "",
       description: "",
-      priority: "Normal",
+      priority: "",
     },
   });
 
@@ -106,13 +112,35 @@ export function CreateIssueDialog({
         projectId: defaultProjectId ?? "",
         title: "",
         description: "",
-        priority: "Normal",
+        priority: "",
       });
       setAttachments([]);
     }
   }, [open, defaultProjectId, form]);
 
   const projects = projectsQ.data ?? [];
+
+  const selectedProjectId = form.watch("projectId");
+  const selectedProject = projects.find((p) => p.id === selectedProjectId);
+  const priorityOptions = selectedProject?.priorityOptions ?? [];
+  const priorityKey = priorityOptions.join("|");
+
+  // Keep the selected priority valid for the chosen project: clear it when the
+  // project has no synced priorities, and default it when the current value is
+  // not part of the project's options.
+  useEffect(() => {
+    const current = form.getValues("priority");
+    if (priorityOptions.length === 0) {
+      if (current) form.setValue("priority", "");
+      return;
+    }
+    if (!priorityOptions.includes(current)) {
+      form.setValue("priority", pickDefaultPriority(priorityOptions), {
+        shouldValidate: form.formState.isSubmitted,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectId, priorityKey]);
 
   const createWithAttachments = async (values: FormValues) => {
     const issue = await createMut.mutateAsync(values);
@@ -368,21 +396,26 @@ export function CreateIssueDialog({
               <Field
                 label="Priority"
                 rightSlot={
-                  <TileBadge
-                    color={
-                      PRIORITY_OPTIONS.find(
-                        (p) => p.value === form.watch("priority"),
-                      )?.badgeBg ?? "bg-slate-500"
-                    }
-                  >
-                    S
-                  </TileBadge>
+                  form.watch("priority") ? (
+                    <TileBadge color={priorityBadgeBg(form.watch("priority"))}>
+                      S
+                    </TileBadge>
+                  ) : undefined
                 }
               >
                 <PriorityPicker
+                  options={priorityOptions}
                   value={form.watch("priority")}
-                  onChange={(v) => form.setValue("priority", v)}
+                  onChange={(v) =>
+                    form.setValue("priority", v, { shouldValidate: true })
+                  }
+                  hasProject={!!selectedProjectId}
                 />
+                {form.formState.errors.priority && (
+                  <p className="mt-1 text-xs text-destructive">
+                    {form.formState.errors.priority.message}
+                  </p>
+                )}
               </Field>
             </div>
           </aside>
@@ -510,22 +543,41 @@ function ProjectPicker({
 }
 
 function PriorityPicker({
+  options,
   value,
   onChange,
+  hasProject,
 }: {
-  value: IssuePriority;
-  onChange: (v: IssuePriority) => void;
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  hasProject: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const selected = PRIORITY_OPTIONS.find((p) => p.value === value);
+
+  const noPriorities = hasProject && options.length === 0;
+  const placeholder = noPriorities ? "No priorities synced" : "Select priority";
+
+  const handleOpenChange = (next: boolean) => {
+    if (next && !hasProject) {
+      toast.error("Please select a project first");
+      return;
+    }
+    if (next && noPriorities) {
+      toast.error("This project has no priorities synced from YouTrack");
+      return;
+    }
+    setOpen(next);
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
           type="button"
           className="flex w-full items-center gap-2 text-left text-sm text-primary hover:underline underline-offset-2"
         >
-          {selected?.label ?? value}
+          {value || placeholder}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-[260px] p-0" align="end">
@@ -534,25 +586,26 @@ function PriorityPicker({
           <CommandList>
             <CommandEmpty>No priority.</CommandEmpty>
             <CommandGroup>
-              {PRIORITY_OPTIONS.map((p) => (
+              {options.map((option) => (
                 <CommandItem
-                  key={p.value}
-                  value={p.label}
+                  key={option}
+                  value={option}
                   onSelect={() => {
-                    onChange(p.value);
+                    onChange(option);
                     setOpen(false);
                   }}
                   className="flex items-center gap-2"
                 >
-                  <span className="flex-1">{p.label}</span>
+                  <span className="flex-1">{option}</span>
                   <span
                     className={cn(
                       "inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white",
-                      p.badgeBg,
+                      priorityBadgeBg(option),
                     )}
                   >
-                    {p.badge}
+                    S
                   </span>
+                  {option === value && <Check className="h-4 w-4" />}
                 </CommandItem>
               ))}
             </CommandGroup>

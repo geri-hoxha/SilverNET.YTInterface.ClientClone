@@ -9,21 +9,29 @@ const STATUS_STYLES: Record<IssueStatus, string> = {
   Blocked: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
 };
 
-const PRIORITY_STYLES: Record<string, string> = {
-  "Show-stopper": "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-  Critical: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-  "S1 - Critical": "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-  Major: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
-  "S2 - Major": "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
-  Normal: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  "S3 - Normal": "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  Minor: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
-  Low: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25",
-  "S4 - Low": "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25",
-};
+// Color families mirror the create-issue priority picker (priorityBadgeBg):
+// critical -> red, major -> orange, normal -> yellow, low/minor -> emerald.
+const PRIORITY_STYLE_BY_TIER = {
+  critical: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
+  major:
+    "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+  normal:
+    "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
+  low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+} as const;
 
 const DEFAULT_PRIORITY_STYLE =
-  "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30";
+  "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
+
+function priorityStyle(priority: string): string {
+  const n = priority.toLowerCase();
+  if (/(critical|show-?stopper|blocker|s1)/.test(n))
+    return PRIORITY_STYLE_BY_TIER.critical;
+  if (/(major|high|s2)/.test(n)) return PRIORITY_STYLE_BY_TIER.major;
+  if (/(normal|medium|s3)/.test(n)) return PRIORITY_STYLE_BY_TIER.normal;
+  if (/(minor|low|s4)/.test(n)) return PRIORITY_STYLE_BY_TIER.low;
+  return DEFAULT_PRIORITY_STYLE;
+}
 
 export function StatusBadge({ status }: { status: IssueStatus }) {
   return (
@@ -37,12 +45,35 @@ export function PriorityBadge({ priority }: { priority: IssuePriority | string }
   return (
     <Badge
       variant="outline"
-      className={cn(
-        "font-medium",
-        PRIORITY_STYLES[priority] ?? DEFAULT_PRIORITY_STYLE,
-      )}
+      className={cn("font-medium", priorityStyle(priority))}
     >
       {priority}
     </Badge>
   );
+}
+
+// Client/workflow states are free-form YouTrack values, so map them by meaning
+// to a consistent set of text colors.
+const CLIENT_STATE_TEXT_BY_TIER = {
+  positive: "text-emerald-600 dark:text-emerald-400",
+  inProgress: "text-amber-600 dark:text-amber-400",
+  info: "text-sky-600 dark:text-sky-400",
+  attention: "text-orange-600 dark:text-orange-400",
+  negative: "text-red-600 dark:text-red-400",
+  neutral: "text-foreground",
+} as const;
+
+export function clientStateTextColor(state: string): string {
+  const n = state.toLowerCase();
+  if (/(refus|reject|declin|block|cancel|won'?t fix|wontfix|fail)/.test(n))
+    return CLIENT_STATE_TEXT_BY_TIER.negative;
+  if (/(done|approv|resolv|fixed|complete|verified|closed)/.test(n))
+    return CLIENT_STATE_TEXT_BY_TIER.positive;
+  if (/(progress|pending|awaiting|review|estimat)/.test(n))
+    return CLIENT_STATE_TEXT_BY_TIER.inProgress;
+  if (/(needs|on hold|hold|waiting)/.test(n))
+    return CLIENT_STATE_TEXT_BY_TIER.attention;
+  if (/(provided|open|new|to do|todo|reopen)/.test(n))
+    return CLIENT_STATE_TEXT_BY_TIER.info;
+  return CLIENT_STATE_TEXT_BY_TIER.neutral;
 }

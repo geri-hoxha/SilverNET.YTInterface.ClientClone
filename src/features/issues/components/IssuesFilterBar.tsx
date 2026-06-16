@@ -17,25 +17,10 @@ import {
 } from "@/components/ui/select";
 import { useProjects } from "@/features/projects/hooks";
 import { issuesSearchSchema } from "../schemas";
-import type { IssuePriority, IssueStatus } from "../types";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 const ALL = "__all__";
-
-const STATUS_OPTIONS: { value: IssueStatus; label: string }[] = [
-  { value: "Open", label: "Open" },
-  { value: "InProgress", label: "In Progress" },
-  { value: "Done", label: "Done" },
-  { value: "Blocked", label: "Blocked" },
-];
-
-const PRIORITY_OPTIONS: { value: IssuePriority; label: string }[] = [
-  { value: "Low", label: "Low" },
-  { value: "Normal", label: "Normal" },
-  { value: "Major", label: "Major" },
-  { value: "Critical", label: "Critical" },
-];
 
 function isoToDate(iso?: string) {
   if (!iso) return undefined;
@@ -62,10 +47,20 @@ export function IssuesFilterBar({ search }: Props) {
   const navigate = useNavigate({ from: "/issues" });
   const projectsQ = useProjects();
   const [searchDraft, setSearchDraft] = useState(search.search ?? "");
+  const [statusDraft, setStatusDraft] = useState(search.status ?? "");
+  const [priorityDraft, setPriorityDraft] = useState(search.priority ?? "");
 
   useEffect(() => {
     setSearchDraft(search.search ?? "");
   }, [search.search]);
+
+  useEffect(() => {
+    setStatusDraft(search.status ?? "");
+  }, [search.status]);
+
+  useEffect(() => {
+    setPriorityDraft(search.priority ?? "");
+  }, [search.priority]);
 
   const updateSearch = (next: Partial<IssuesSearch>) =>
     navigate({
@@ -74,6 +69,13 @@ export function IssuesFilterBar({ search }: Props) {
         ...next,
         page: next.page ?? 1,
       }),
+    });
+
+  const commitDrafts = () =>
+    updateSearch({
+      search: searchDraft.trim() || undefined,
+      status: statusDraft.trim() || undefined,
+      priority: priorityDraft.trim() || undefined,
     });
 
   const clearFilters = () =>
@@ -104,9 +106,7 @@ export function IssuesFilterBar({ search }: Props) {
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  updateSearch({ search: searchDraft.trim() || undefined });
-                }
+                if (e.key === "Enter") commitDrafts();
               }}
               placeholder="Search issues..."
               className="h-9 pl-8 sm:h-8"
@@ -137,50 +137,34 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="Status" className="w-full sm:w-[140px]">
-          <Select
-            value={search.status ?? ALL}
-            onValueChange={(value) =>
-              updateSearch({
-                status: value === ALL ? undefined : (value as IssueStatus),
-              })
+        <FilterField label="Priority" className="w-full sm:w-[140px]">
+          <Input
+            value={priorityDraft}
+            onChange={(e) => setPriorityDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitDrafts();
+            }}
+            onBlur={() =>
+              updateSearch({ priority: priorityDraft.trim() || undefined })
             }
-          >
-            <SelectTrigger className="h-9 sm:h-8">
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All statuses</SelectItem>
-              {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Any priority"
+            className="h-9 sm:h-8"
+          />
         </FilterField>
 
-        <FilterField label="Priority" className="w-full sm:w-[140px]">
-          <Select
-            value={search.priority ?? ALL}
-            onValueChange={(value) =>
-              updateSearch({
-                priority: value === ALL ? undefined : (value as IssuePriority),
-              })
+        <FilterField label="Status" className="w-full sm:w-[140px]">
+          <Input
+            value={statusDraft}
+            onChange={(e) => setStatusDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitDrafts();
+            }}
+            onBlur={() =>
+              updateSearch({ status: statusDraft.trim() || undefined })
             }
-          >
-            <SelectTrigger className="h-9 sm:h-8">
-              <SelectValue placeholder="All priorities" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All priorities</SelectItem>
-              {PRIORITY_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Any status"
+            className="h-9 sm:h-8"
+          />
         </FilterField>
 
         <FilterField label="From" className="w-full sm:w-[170px]">
@@ -216,9 +200,7 @@ export function IssuesFilterBar({ search }: Props) {
             size="sm"
             variant="secondary"
             className="h-9 flex-1 sm:h-8 sm:flex-none"
-            onClick={() =>
-              updateSearch({ search: searchDraft.trim() || undefined })
-            }
+            onClick={commitDrafts}
           >
             Apply
           </Button>

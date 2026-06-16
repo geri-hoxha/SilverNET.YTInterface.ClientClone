@@ -34,8 +34,8 @@ export interface IssueListParams {
   page: number;
   pageSize: number;
   projectId?: string;
-  status?: IssueStatus;
-  priority?: IssuePriority;
+  status?: string;
+  priority?: string;
   from?: string;
   to?: string;
   search?: string;
@@ -80,7 +80,7 @@ export interface CreateIssueDto {
   projectId: string;
   title: string;
   description?: string;
-  priority: IssuePriority;
+  priority: string;
 }
 
 export interface UpdateIssueDto {

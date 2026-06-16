@@ -142,3 +142,140 @@
     color: var(--color-foreground);
   }
 }
+
+/*
+ * Rich text content styling (shared by the TipTap editor and rendered HTML).
+ *
+ * Tailwind's preflight resets heading sizes and list markers, and the
+ * typography plugin is not in use, so block formatting (headings, ordered /
+ * bullet lists, quotes, code) is styled explicitly here. The .rte-content class
+ * is applied to both the editor's editable area and any element that renders
+ * saved description HTML, so the two stay visually consistent.
+ */
+.rte-content {
+  outline: none;
+}
+
+.rte-content > * + * {
+  margin-top: 0.5rem;
+}
+
+.rte-content h1 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.rte-content h2 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  margin-top: 0.875rem;
+}
+
+.rte-content h3 {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+
+.rte-content p {
+  line-height: 1.6;
+}
+
+.rte-content ul,
+.rte-content ol {
+  padding-left: 1.5rem;
+}
+
+.rte-content ul {
+  list-style: disc;
+}
+
+.rte-content ol {
+  list-style: decimal;
+}
+
+.rte-content ul ul {
+  list-style: circle;
+}
+
+.rte-content ul ul ul {
+  list-style: square;
+}
+
+.rte-content li {
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
+}
+
+.rte-content li > p {
+  margin: 0;
+}
+
+.rte-content li > ul,
+.rte-content li > ol {
+  margin-top: 0.125rem;
+}
+
+.rte-content blockquote {
+  border-left: 3px solid var(--color-border);
+  padding-left: 1rem;
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+
+.rte-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.rte-content code {
+  background-color: var(--color-muted);
+  border-radius: var(--radius-sm);
+  padding: 0.125rem 0.3rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.rte-content pre {
+  background-color: var(--color-muted);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+}
+
+.rte-content pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.rte-content hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1rem 0;
+}
+
+.rte-content strong {
+  font-weight: 700;
+}
+
+.rte-content em {
+  font-style: italic;
+}
+
+/* Placeholder shown when the editor (or first node) is empty. */
+.rte-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

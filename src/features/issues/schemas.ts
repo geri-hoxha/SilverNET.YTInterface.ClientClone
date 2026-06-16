@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-const issueStatusSchema = z.enum(["Open", "InProgress", "Done", "Blocked"]);
-const issuePrioritySchema = z.enum(["Low", "Normal", "Major", "Critical"]);
 const issueSortFieldSchema = z.enum([
   "YouTrackReadableId",
   "Title",
@@ -15,8 +13,8 @@ export const issuesSearchSchema = z.object({
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(200).default(50),
   projectId: z.string().optional(),
-  status: issueStatusSchema.optional(),
-  priority: issuePrioritySchema.optional(),
+  status: z.string().optional(),
+  priority: z.string().optional(),
   from: z.string().optional(),
   to: z.string().optional(),
   search: z.string().optional(),
@@ -30,7 +28,7 @@ export const createIssueSchema = z.object({
   projectId: z.string().min(1, "Select a project"),
   title: z.string().min(3, "Summary must be at least 3 characters").max(200),
   description: z.string().max(10_000).optional(),
-  priority: z.enum(["Low", "Normal", "Major", "Critical"]),
+  priority: z.string().min(1, "Select a priority"),
 });
 export type CreateIssueFormValues = z.infer<typeof createIssueSchema>;
 
