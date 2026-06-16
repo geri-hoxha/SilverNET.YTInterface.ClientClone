@@ -76,7 +76,7 @@ export function IssueDetailPage() {
             <span className="text-sky-500 hover:underline cursor-pointer">
               {data.assigneeName ?? "Unknown"}
             </span>{" "}
-            {formatRelative(data.createdAt)}
+            {formatRelative(data.createdOnUtc)}
           </span>
           <span className="hidden sm:inline">·</span>
           <span>
@@ -84,7 +84,7 @@ export function IssueDetailPage() {
             <span className="text-sky-500 hover:underline cursor-pointer">
               {data.assigneeName ?? "Unknown"}
             </span>{" "}
-            {formatRelative(data.createdAt)}
+            {formatRelative(data.createdOnUtc)}
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -145,7 +145,7 @@ export function IssueDetailPage() {
               <span>{data.assigneeName ?? "Unassigned"}</span>
             </SidebarField> */}
             <SidebarField label="Created">
-              <span>{formatDate(data.createdAt)}</span>
+              <span>{formatDate(data.createdOnUtc)}</span>
             </SidebarField>
             <SidebarField label="ID">
               <span className="font-mono text-xs">{readable}</span>
@@ -397,7 +397,7 @@ function CommentsArea({ id }: { id: string }) {
                   </span>
                   <span className="text-muted-foreground">•</span>
                   <span className="text-muted-foreground">
-                    Commented {formatRelative(c.createdAt)}
+                    Commented {formatRelative(c.createdOnUtc)}
                   </span>
                 </div>
                 <p className="mt-1 text-sm whitespace-pre-wrap break-words">
@@ -411,7 +411,7 @@ function CommentsArea({ id }: { id: string }) {
       ) : null}
 
       <div className="flex gap-3">
-        <UserAvatar name={user?.name} seed={user?.id} className="h-8 w-8" />
+        <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
         <div className="flex-1 space-y-2">
           <Textarea
             placeholder="Write a comment, @mention people"

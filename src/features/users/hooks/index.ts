@@ -1,59 +1,26 @@
-import { useEffect, useState } from "react";
 import {
   keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
-  type QueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { usersApi } from "../api";
-import type {
-  CreateUserDto,
-  PaginatedResult,
-  PortalUser,
-  UpdateUserDto,
-  UserListParams,
-} from "../types";
+import type { CreateUserDto, UpdateUserDto, UserListParams } from "../types";
 import type { ApiError } from "@/shared/api/errors";
 
 export const usersKeys = {
   all: ["users"] as const,
   list: (p: UserListParams) => [...usersKeys.all, "list", p] as const,
+  detail: (id: string) => [...usersKeys.all, "detail", id] as const,
 };
 
-function findUserInCache(
-  qc: QueryClient,
-  id: string,
-): PortalUser | undefined {
-  const entries = qc.getQueriesData<PaginatedResult<PortalUser>>({
-    queryKey: usersKeys.all,
+export function useUser(id: string) {
+  return useQuery({
+    queryKey: usersKeys.detail(id),
+    queryFn: () => usersApi.get(id),
+    enabled: !!id,
   });
-  for (const [, data] of entries) {
-    const user = data?.items.find((u) => u.id === id);
-    if (user) return user;
-  }
-  return undefined;
-}
-
-export function useUserFromCache(id: string) {
-  const qc = useQueryClient();
-  const [user, setUser] = useState<PortalUser | undefined>(() =>
-    findUserInCache(qc, id),
-  );
-
-  useEffect(() => {
-    setUser(findUserInCache(qc, id));
-    return qc.getQueryCache().subscribe(() => {
-      setUser(findUserInCache(qc, id));
-    });
-  }, [qc, id]);
-
-  return {
-    data: user,
-    isLoading: false,
-    isError: !user && !!id,
-  };
 }
 
 export function useUsers(params: UserListParams) {
@@ -82,6 +49,7 @@ export function useUpdateUser(id: string) {
     mutationFn: (data: UpdateUserDto) => usersApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: usersKeys.all });
+      qc.invalidateQueries({ queryKey: usersKeys.detail(id) });
       toast.success("User updated");
     },
     onError: (e: ApiError) => toast.error(e.message),

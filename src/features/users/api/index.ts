@@ -30,6 +30,9 @@ export const usersApi = {
     };
   },
 
+  get: (id: string) =>
+    apiRequest<PortalUser>({ method: "GET", url: `/users/${id}` }),
+
   create: (data: CreateUserDto) =>
     apiRequest<PortalUser>({ method: "POST", url: "/users", data }),
 

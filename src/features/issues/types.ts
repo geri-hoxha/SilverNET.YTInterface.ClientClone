@@ -11,7 +11,7 @@ export interface Issue {
   clientState?: string;
   youTrackReadableId: string;
   priority: string;
-  createdAt: string;
+  createdOnUtc: string;
   key?: string;
   projectShortCode?: string;
   status?: IssueStatus;
@@ -28,7 +28,7 @@ export type IssueSortField =
   | "ProjectName"
   | "Priority"
   | "ClientState"
-  | "CreatedAt";
+  | "CreatedOnUtc";
 
 export interface IssueListParams {
   page: number;
@@ -62,7 +62,7 @@ export interface IssueComment {
   id: string;
   issueId: string;
   body: string;
-  createdAt: string;
+  createdOnUtc: string;
   createdByUserId: string;
   createdByName: string;
 }
@@ -73,7 +73,7 @@ export interface IssueAttachment {
   fileName: string;
   contentType: string;
   fileSize: number;
-  createdAt: string;
+  createdOnUtc: string;
 }
 
 export interface CreateIssueDto {

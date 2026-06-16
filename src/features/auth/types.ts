@@ -5,7 +5,7 @@ export type PortalRole =
 
 export interface AuthUser {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
   role: PortalRole;
   organizationId?: string;
@@ -16,5 +16,7 @@ export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
   expiresAt: string;
+  fullName: string;
+  email: string;
   user?: AuthUser;
 }

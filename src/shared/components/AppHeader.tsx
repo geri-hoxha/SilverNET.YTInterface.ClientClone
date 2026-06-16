@@ -36,10 +36,10 @@ export function AppHeader() {
       </nav>
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <div className="flex items-center gap-2 px-1">
-          <UserAvatar name={user?.name} seed={user?.id} className="h-7 w-7" />
+          <UserAvatar name={user?.fullName} seed={user?.id} className="h-7 w-7" />
           <div className="hidden min-w-0 text-left sm:block">
             <div className="truncate text-sm font-medium leading-none">
-              {user?.name}
+              {user?.fullName}
             </div>
             <div className="truncate text-xs text-muted-foreground">
               {user?.email}

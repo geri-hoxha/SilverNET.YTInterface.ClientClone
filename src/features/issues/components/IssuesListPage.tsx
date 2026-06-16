@@ -174,7 +174,7 @@ export function IssuesListPage() {
               <span className="hidden md:block">
                 <SortHead
                   label="Created"
-                  field="CreatedAt"
+                  field="CreatedOnUtc"
                   sortBy={sortBy}
                   sortDescending={sortDescending}
                   onSort={setSort}
@@ -399,9 +399,9 @@ function IssueRow({
       </div>
       <div
         className="hidden md:block truncate text-xs text-muted-foreground"
-        title={formatShortDate(issue.createdAt)}
+        title={formatShortDate(issue.createdOnUtc)}
       >
-        {formatRelative(issue.createdAt)}
+        {formatRelative(issue.createdOnUtc)}
       </div>
     </div>
   );

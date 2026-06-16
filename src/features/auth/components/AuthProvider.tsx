@@ -47,14 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const res = await authApi.login(email, password);
     tokenStore.set(res);
-    // Backend may or may not return user payload; synthesize a minimum.
-    const u: AuthUser =
-      res.user ?? {
-        id: "me",
-        email,
-        name: email.split("@")[0],
-        role: "OrganizationUser",
-      };
+    const u: AuthUser = {
+      id: res.user?.id ?? "me",
+      fullName: res.fullName,
+      email: res.email,
+      role: res.user?.role ?? "OrganizationUser",
+      organizationId: res.user?.organizationId,
+      organizationName: res.user?.organizationName,
+    };
     tokenStore.setUser(u);
     setUser(u);
   }, []);

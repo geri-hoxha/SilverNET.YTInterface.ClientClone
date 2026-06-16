@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -19,12 +20,12 @@ import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
 import { UserAvatar } from "@/shared/components/UserAvatar";
-import { useUserFromCache, useUpdateUser } from "../hooks";
+import { useUser, useUpdateUser } from "../hooks";
 import { userDetailRouteApi } from "../route";
 
 export function UserDetailPage() {
   const { id } = userDetailRouteApi.useParams();
-  const query = useUserFromCache(id);
+  const query = useUser(id);
   const orgsQ = useOrganizations();
   const rolesQ = useRoles();
   const updateMut = useUpdateUser(id);
@@ -41,13 +42,29 @@ export function UserDetailPage() {
     }
   }, [query.data, editing]);
 
+  if (query.isLoading) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9" />
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        </div>
+        <Skeleton className="h-64 w-full max-w-3xl" />
+      </div>
+    );
+  }
+
   if (query.isError || !query.data) {
     return (
       <Card className="p-8 text-center space-y-3">
         <p className="text-sm font-medium">User not found</p>
         <p className="text-xs text-muted-foreground">
-          Open this profile from the users list, or the user may be on another
-          page of results.
+          {(query.error as Error)?.message ??
+            "This user may have been removed or you may not have access."}
         </p>
         <Button asChild variant="outline" size="sm">
           <Link to="/users">Back to users</Link>

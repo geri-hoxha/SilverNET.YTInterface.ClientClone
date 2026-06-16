@@ -8,7 +8,7 @@ const issueSortFieldSchema = z.enum([
   "ProjectName",
   "Priority",
   "ClientState",
-  "CreatedAt",
+  "CreatedOnUtc",
 ]);
 
 export const issuesSearchSchema = z.object({
