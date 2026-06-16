@@ -1,34 +1,45 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { useOrganizations } from "@/features/organizations/hooks";
+import { useRoles } from "@/features/roles/hooks";
+import { formatRoleLabel } from "@/features/roles/utils";
 import { UserAvatar } from "@/shared/components/UserAvatar";
-import { useUserFromCache, useDeleteUser } from "../hooks";
+import { useUserFromCache, useUpdateUser } from "../hooks";
 import { userDetailRouteApi } from "../route";
-
-const TABS = [
-  { value: "general", label: "General" },
-  { value: "workspace", label: "Workspace" },
-  { value: "ai", label: "AI Features" },
-  { value: "tags", label: "Tags and Saved Searches" },
-  { value: "notifications", label: "Notifications" },
-  { value: "groups", label: "Groups" },
-  { value: "security", label: "Account Security" },
-];
 
 export function UserDetailPage() {
   const { id } = userDetailRouteApi.useParams();
-  const navigate = useNavigate();
   const query = useUserFromCache(id);
   const orgsQ = useOrganizations();
-  const delMut = useDeleteUser();
-  const [tab, setTab] = useState("general");
+  const rolesQ = useRoles();
+  const updateMut = useUpdateUser(id);
+  const [editing, setEditing] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    if (query.data && !editing) {
+      setFullName(query.data.fullName);
+      setIsActive(query.data.isActive);
+      setRole(query.data.role ?? "");
+    }
+  }, [query.data, editing]);
 
   if (query.isError || !query.data) {
     return (
@@ -73,38 +84,74 @@ export function UserDetailPage() {
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={() => {
-            delMut.mutate(user.id, {
-              onSuccess: () => navigate({ to: "/users" }),
-            });
-          }}
-          disabled={delMut.isPending}
-        >
-          <Trash2 className="mr-2 h-4 w-4" /> Delete user
-        </Button>
+        {!editing && (
+          <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+            <Pencil className="mr-2 h-4 w-4" /> Edit user
+          </Button>
+        )}
       </div>
 
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value="general">
         <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 gap-1">
-          {TABS.map((t) => (
-            <TabsTrigger
-              key={t.value}
-              value={t.value}
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground rounded-none px-3 py-2 -mb-px text-muted-foreground"
-            >
-              {t.label}
-            </TabsTrigger>
-          ))}
+          <TabsTrigger
+            value="general"
+            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground rounded-none px-3 py-2 -mb-px text-muted-foreground"
+          >
+            General
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="pt-6">
           <div className="space-y-6 max-w-3xl">
-            <ReadonlyField label="Full name" value={user.fullName} />
-            <ReadonlyField label="Email" value={user.email} />
+            {editing ? (
+              <>
+                <FieldRow label="Full name">
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    autoFocus
+                  />
+                </FieldRow>
+                <ReadonlyField label="Email" value={user.email} />
+                <FieldRow label="Role">
+                  <Select value={role} onValueChange={setRole}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(rolesQ.data ?? []).map((r) => (
+                        <SelectItem key={r.name} value={r.name}>
+                          {formatRoleLabel(r.name)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
+                <FieldRow label="Status">
+                  <Select
+                    value={isActive ? "active" : "inactive"}
+                    onValueChange={(v) => setIsActive(v === "active")}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
+              </>
+            ) : (
+              <>
+                <ReadonlyField label="Full name" value={user.fullName} />
+                <ReadonlyField label="Email" value={user.email} />
+                <ReadonlyField
+                  label="Role"
+                  value={user.role ? formatRoleLabel(user.role) : "—"}
+                />
+              </>
+            )}
             <FieldRow label="Avatar">
               <UserAvatar
                 name={user.fullName}
@@ -114,22 +161,57 @@ export function UserDetailPage() {
             </FieldRow>
             <ReadonlyField
               label="Organization"
-              value={organization?.name ?? user.organizationId}
+              value={
+                user.organizationName ??
+                organization?.name ??
+                user.organizationId
+              }
             />
-            <ReadonlyField
-              label="Status"
-              value={user.isActive ? "Active" : "Inactive"}
-            />
+            {!editing && (
+              <ReadonlyField
+                label="Status"
+                value={user.isActive ? "Active" : "Inactive"}
+              />
+            )}
+            {editing && (
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFullName(user.fullName);
+                    setIsActive(user.isActive);
+                    setRole(user.role ?? "");
+                    setEditing(false);
+                  }}
+                  disabled={updateMut.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={
+                    updateMut.isPending || !fullName.trim() || !role
+                  }
+                  onClick={() => {
+                    updateMut.mutate(
+                      {
+                        fullName: fullName.trim(),
+                        isActive,
+                        role,
+                      },
+                      { onSuccess: () => setEditing(false) },
+                    );
+                  }}
+                >
+                  {updateMut.isPending ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            )}
           </div>
         </TabsContent>
-
-        {TABS.filter((t) => t.value !== "general").map((t) => (
-          <TabsContent key={t.value} value={t.value} className="pt-6">
-            <Card className="p-12 text-center text-sm text-muted-foreground">
-              {t.label} settings coming soon.
-            </Card>
-          </TabsContent>
-        ))}
       </Tabs>
     </div>
   );

@@ -1,5 +1,3 @@
-import type { PortalRole } from "@/features/auth/types";
-
 export type UserType = "Standard" | "Reporter" | "Guest";
 
 export interface PortalUser {
@@ -7,7 +5,13 @@ export interface PortalUser {
   email: string;
   fullName: string;
   organizationId: string;
+  organizationName?: string;
+  role: string;
   isActive: boolean;
+  createdOnUtc?: string;
+  createdByUserId?: string | null;
+  updatedOnUtc?: string | null;
+  updatedByUserId?: string | null;
 }
 
 export interface UserListParams {
@@ -39,17 +43,7 @@ export interface CreateUserDto {
 }
 
 export interface UpdateUserDto {
-  fullName?: string;
-  username?: string;
-  email?: string;
-  userType?: UserType;
-  role?: PortalRole;
-  vcsUsernames?: string[];
-  timeZoneRegion?: string;
-  timeZoneCity?: string;
-  language?: string;
-  dateFormat?: string;
-  periodFormat?: string;
-  firstDayOfWeek?: "Sunday" | "Monday";
-  defaultSorting?: "Relevance" | "Updated";
+  fullName: string;
+  isActive: boolean;
+  role: string;
 }

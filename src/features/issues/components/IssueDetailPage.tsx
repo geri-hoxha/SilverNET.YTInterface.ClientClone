@@ -31,6 +31,8 @@ import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { toast } from "sonner";
 import type { ApiError } from "@/shared/api/errors";
 import { issuesApi } from "../api";
+import { useAuth } from "@/features/auth";
+import { UserAvatar } from "@/shared/components/UserAvatar";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
 import { fileTypeMeta, issueReadableId } from "../utils";
@@ -139,9 +141,9 @@ export function IssueDetailPage() {
             >
               <span>{data.priorityLabel ?? data.priority}</span>
             </SidebarField>
-            <SidebarField label="Assignee" badge={<AssigneeAvatar name={data.assigneeName} />}>
+            {/* <SidebarField label="Assignee" badge={<AssigneeAvatar name={data.assigneeName} />}>
               <span>{data.assigneeName ?? "Unassigned"}</span>
-            </SidebarField>
+            </SidebarField> */}
             <SidebarField label="Created">
               <span>{formatDate(data.createdAt)}</span>
             </SidebarField>
@@ -361,6 +363,7 @@ function AssigneeAvatar({ name }: { name?: string }) {
 }
 
 function CommentsArea({ id }: { id: string }) {
+  const { user } = useAuth();
   const q = useIssueComments(id);
   const add = useAddComment(id);
   const [text, setText] = useState("");
@@ -379,7 +382,7 @@ function CommentsArea({ id }: { id: string }) {
       ) : comments.length ? (
         <ul className="space-y-6">
           {comments.map((c) => {
-            const author = c.authorName ?? "User";
+            const author = c.createdByName || "User";
             return (
             <li key={c.id} className="flex gap-3">
               <Avatar className="h-8 w-8">
@@ -408,11 +411,7 @@ function CommentsArea({ id }: { id: string }) {
       ) : null}
 
       <div className="flex gap-3">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-fuchsia-500 text-xs text-white">
-            GH
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar name={user?.name} seed={user?.id} className="h-8 w-8" />
         <div className="flex-1 space-y-2">
           <Textarea
             placeholder="Write a comment, @mention people"

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { MoreHorizontal, Pencil, Trash2, UserPlus } from "lucide-react";
+import { MoreHorizontal, Pencil, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,19 +29,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +52,7 @@ import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
 import { usersRouteApi } from "../route";
-import { useUsers, useCreateUser, useDeleteUser } from "../hooks";
+import { useUsers, useCreateUser } from "../hooks";
 import {
   usersSearchSchema,
   createUserSchema,
@@ -71,16 +60,15 @@ import {
 } from "../schemas";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
+import { formatShortDate } from "@/shared/utils/format";
 
 export function UsersListPage() {
   const navigate = useNavigate({ from: "/users" });
   const { page, pageSize } = usersRouteApi.useSearch();
   const [selection, setSelection] = useState<Record<string, boolean>>({});
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
   const query = useUsers({ page, pageSize });
-  const delMut = useDeleteUser();
 
   const items = query.data?.items ?? [];
   const allSelected = items.length > 0 && items.every((u) => selection[u.id]);
@@ -115,7 +103,7 @@ export function UsersListPage() {
       </div>
 
       <Card className="overflow-x-auto">
-        <Table className="min-w-[480px]">
+        <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
@@ -130,7 +118,10 @@ export function UsersListPage() {
                 />
               </TableHead>
               <TableHead>Name</TableHead>
-              <TableHead className="w-48">Status</TableHead>
+              <TableHead>Organization</TableHead>
+              <TableHead className="w-40">Role</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-32">Created</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -138,14 +129,14 @@ export function UsersListPage() {
             {query.isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={4}>
+                  <TableCell colSpan={7}>
                     <Skeleton className="h-10 w-full" />
                   </TableCell>
                 </TableRow>
               ))
             ) : query.isError ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={7} className="text-center py-12">
                   <p className="text-sm font-medium text-destructive">
                     Failed to load users
                   </p>
@@ -165,7 +156,7 @@ export function UsersListPage() {
             ) : !items.length ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={7}
                   className="text-center py-12 text-sm text-muted-foreground"
                 >
                   No users found.
@@ -204,8 +195,25 @@ export function UsersListPage() {
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell className="text-sm truncate max-w-[220px]">
+                    {user.organizationName ?? "—"}
+                  </TableCell>
                   <TableCell className="text-sm">
-                    {user.isActive ? "Active" : "Inactive"}
+                    {formatRoleLabel(user.role)}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <span
+                      className={
+                        user.isActive
+                          ? "text-emerald-600"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {user.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                    {formatShortDate(user.createdOnUtc)}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -224,14 +232,6 @@ export function UsersListPage() {
                             <Pencil className="mr-2 h-4 w-4" />
                             Edit user profile
                           </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => setConfirmDelete(user.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete user
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -261,33 +261,6 @@ export function UsersListPage() {
       </Card>
 
       <UserFormDialog open={creating} onOpenChange={setCreating} />
-
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this user?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove the user from the portal. This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (confirmDelete) delMut.mutate(confirmDelete);
-                setConfirmDelete(null);
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

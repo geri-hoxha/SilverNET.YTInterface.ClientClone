@@ -63,7 +63,8 @@ export interface IssueComment {
   issueId: string;
   body: string;
   createdAt: string;
-  authorName?: string;
+  createdByUserId: string;
+  createdByName: string;
 }
 
 export interface IssueAttachment {
