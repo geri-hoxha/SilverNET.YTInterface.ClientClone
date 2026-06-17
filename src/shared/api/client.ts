@@ -6,9 +6,9 @@ import axios, {
 import { tokenStore } from "./tokens";
 import { normalizeError } from "./errors";
 
-// Call the backend API directly. Set VITE_API_BASE_URL to the full API origin.
+// Dev uses the Vite proxy (/api); production sets VITE_API_BASE_URL to the full API origin.
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "https://odsilvernet-001-site1.itempurl.com/api";
+  import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
