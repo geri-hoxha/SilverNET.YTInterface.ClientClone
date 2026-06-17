@@ -6,9 +6,9 @@ import axios, {
 import { tokenStore } from "./tokens";
 import { normalizeError } from "./errors";
 
-// In dev, use the Vite proxy (/api) to avoid CORS — the backend does not handle OPTIONS.
+// Call the backend API directly. Set VITE_API_BASE_URL to the full API origin.
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "/api";
+  import.meta.env.VITE_API_BASE_URL ?? "https://odsilvernet-001-site1.itempurl.com/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

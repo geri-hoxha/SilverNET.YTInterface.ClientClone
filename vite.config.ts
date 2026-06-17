@@ -6,23 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const API_PROXY_TARGET =
-  process.env.VITE_API_PROXY_TARGET ?? "https://odsilvernet-001-site1.itempurl.com";
-
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-  },
-  vite: {
-    server: {
-      proxy: {
-        "/api": {
-          target: API_PROXY_TARGET,
-          changeOrigin: true,
-        },
-      },
-    },
   },
 });
