@@ -96,9 +96,9 @@ function LoginPage() {
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign in
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
+            {/* <p className="text-xs text-center text-muted-foreground">
               Backend: <code className="font-mono">{import.meta.env.VITE_API_BASE_URL ?? "/api"}</code>
-            </p>
+            </p> */}
           </form>
         </CardContent>
       </Card>
