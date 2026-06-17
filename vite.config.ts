@@ -7,7 +7,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const API_PROXY_TARGET =
-  process.env.VITE_API_PROXY_TARGET ?? "https://1c58-185-187-0-79.ngrok-free.app";
+  process.env.VITE_API_PROXY_TARGET ?? "https://odsilvernet-001-site1.itempurl.com";
 
 export default defineConfig({
   tanstackStart: {
