@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -63,6 +63,11 @@ export function RichTextEditor({
   // True while we programmatically apply preview URLs, so the resulting
   // transaction doesn't bubble up as a user edit.
   const applyingPreviewsRef = useRef(false);
+  // Holds the latest file-insertion handler so the (statically configured)
+  // paste/drop handlers can route files through the upload flow.
+  const insertFilesRef = useRef<
+    ((files: File[], at?: number) => void) | null
+  >(null);
 
   const editor = useEditor({
     extensions: [
@@ -81,12 +86,60 @@ export function RichTextEditor({
         ),
         style: `--rte-min-h: ${minHeight}px`,
       },
+      // Pasting/dropping files (e.g. a pasted screenshot) goes through the same
+      // upload path as the toolbar so we store a reference instead of inlining
+      // base64 bytes into the description.
+      handlePaste: (_view, event) => {
+        const files = filesFromTransfer(event.clipboardData);
+        if (!files.length || !insertFilesRef.current) return false;
+        event.preventDefault();
+        insertFilesRef.current(files);
+        return true;
+      },
+      handleDrop: (view, event) => {
+        const files = filesFromTransfer(event.dataTransfer);
+        if (!files.length || !insertFilesRef.current) return false;
+        event.preventDefault();
+        const at = view.posAtCoords({
+          left: event.clientX,
+          top: event.clientY,
+        })?.pos;
+        insertFilesRef.current(files, at);
+        return true;
+      },
     },
     onUpdate: ({ editor }) => {
       if (applyingPreviewsRef.current) return;
       onChange(editor.getHTML());
     },
   });
+
+  const insertFiles = useCallback(
+    async (files: File[], at?: number) => {
+      if (!editor) return;
+      let position = at;
+      for (const file of files) {
+        if (onUploadFile) {
+          await insertViaUpload(
+            editor,
+            file,
+            onUploadFile,
+            previewUrlsRef,
+            position,
+          );
+        } else {
+          await insertViaBase64(editor, file, position);
+        }
+        // Subsequent files follow the cursor left by the previous insertion.
+        position = undefined;
+      }
+    },
+    [editor, onUploadFile],
+  );
+
+  useEffect(() => {
+    insertFilesRef.current = insertFiles;
+  }, [insertFiles]);
 
   // Keep editor in sync if parent resets value (e.g. dialog reopen).
   useEffect(() => {
@@ -135,11 +188,7 @@ export function RichTextEditor({
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <Toolbar
-        editor={editor}
-        onUploadFile={onUploadFile}
-        previewUrlsRef={previewUrlsRef}
-      />
+      <Toolbar editor={editor} insertFiles={insertFiles} />
       <div className="px-5 py-2">
         <EditorContent editor={editor} />
       </div>
@@ -160,73 +209,83 @@ function readAsDataUrl(file: File): Promise<string> {
   });
 }
 
+// Collects File objects from a paste/drop DataTransfer, falling back to its
+// items list for sources that don't populate `.files` (some browsers/apps).
+function filesFromTransfer(dt: DataTransfer | null): File[] {
+  if (!dt) return [];
+  if (dt.files?.length) return Array.from(dt.files);
+  if (!dt.items?.length) return [];
+  return Array.from(dt.items)
+    .filter((item) => item.kind === "file")
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+}
+
+// Uploads a file and inserts a reference node (image or file card) pointing at
+// the stored attachment, with a transient object URL for live preview.
+async function insertViaUpload(
+  editor: Editor,
+  file: File,
+  onUploadFile: (file: File) => Promise<string>,
+  previewUrlsRef: React.RefObject<string[]>,
+  at?: number,
+) {
+  const isImage = file.type.startsWith("image/");
+  const previewSrc = URL.createObjectURL(file);
+  previewUrlsRef.current.push(previewSrc);
+  try {
+    const fileName = await onUploadFile(file);
+    if (isImage) {
+      editor
+        .chain()
+        .focus(at)
+        .setAttachmentImage({ fileName, previewSrc, alt: file.name })
+        .run();
+    } else {
+      editor
+        .chain()
+        .focus(at)
+        .setFileAttachment({ fileName, fileSize: file.size, previewSrc })
+        .run();
+    }
+  } catch {
+    URL.revokeObjectURL(previewSrc);
+    previewUrlsRef.current = previewUrlsRef.current.filter(
+      (u) => u !== previewSrc,
+    );
+    toast.error(`Could not upload "${file.name}".`);
+  }
+}
+
+// Legacy fallback used only when no upload handler is supplied: inlines an
+// image as a base64 data URL.
+async function insertViaBase64(editor: Editor, file: File, at?: number) {
+  if (file.size > MAX_FILE_BYTES) {
+    toast.error(
+      `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
+    );
+    return;
+  }
+  if (!file.type.startsWith("image/")) {
+    toast.error(`"${file.name}" can only be attached to a saved issue.`);
+    return;
+  }
+  try {
+    const src = await readAsDataUrl(file);
+    editor.chain().focus(at).setImage({ src, alt: file.name }).run();
+  } catch {
+    toast.error(`Could not read "${file.name}".`);
+  }
+}
+
 function Toolbar({
   editor,
-  onUploadFile,
-  previewUrlsRef,
+  insertFiles,
 }: {
   editor: Editor | null;
-  onUploadFile?: (file: File) => Promise<string>;
-  previewUrlsRef: React.RefObject<string[]>;
+  insertFiles: (files: File[], at?: number) => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const insertViaUpload = async (file: File) => {
-    if (!editor || !onUploadFile) return;
-    const isImage = file.type.startsWith("image/");
-    const previewSrc = URL.createObjectURL(file);
-    previewUrlsRef.current.push(previewSrc);
-    try {
-      const fileName = await onUploadFile(file);
-      if (isImage) {
-        editor
-          .chain()
-          .focus()
-          .setAttachmentImage({ fileName, previewSrc, alt: file.name })
-          .run();
-      } else {
-        editor
-          .chain()
-          .focus()
-          .setFileAttachment({ fileName, fileSize: file.size, previewSrc })
-          .run();
-      }
-    } catch {
-      URL.revokeObjectURL(previewSrc);
-      previewUrlsRef.current = previewUrlsRef.current.filter(
-        (u) => u !== previewSrc,
-      );
-      toast.error(`Could not upload "${file.name}".`);
-    }
-  };
-
-  const insertViaBase64 = async (file: File) => {
-    if (!editor) return;
-    if (file.size > MAX_FILE_BYTES) {
-      toast.error(
-        `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
-      );
-      return;
-    }
-    if (!file.type.startsWith("image/")) {
-      toast.error(`"${file.name}" can only be attached to a saved issue.`);
-      return;
-    }
-    try {
-      const src = await readAsDataUrl(file);
-      editor.chain().focus().setImage({ src, alt: file.name }).run();
-    } catch {
-      toast.error(`Could not read "${file.name}".`);
-    }
-  };
-
-  const insertFiles = async (fileList: FileList | null) => {
-    if (!editor || !fileList) return;
-    for (const file of Array.from(fileList)) {
-      if (onUploadFile) await insertViaUpload(file);
-      else await insertViaBase64(file);
-    }
-  };
 
   const blockValue = !editor
     ? "p"
@@ -348,7 +407,7 @@ function Toolbar({
         multiple
         className="hidden"
         onChange={(e) => {
-          void insertFiles(e.target.files);
+          if (e.target.files?.length) insertFiles(Array.from(e.target.files));
           e.target.value = "";
         }}
       />
