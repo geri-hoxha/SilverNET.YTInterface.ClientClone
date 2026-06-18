@@ -27,9 +27,9 @@ export type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 export const createIssueSchema = z.object({
   projectId: z.string().min(1, "Select a project"),
   title: z.string().min(3, "Summary must be at least 3 characters").max(200),
-  // Large because the rich text editor can embed images/files inline as base64
-  // data URLs directly inside the description HTML.
-  description: z.string().max(20_000_000).optional(),
+  // Inline images/files are stored as lightweight attachment references (not
+  // base64), so the description HTML stays small.
+  description: z.string().max(1_000_000).optional(),
   priority: z.string().min(1, "Select a priority"),
 });
 export type CreateIssueFormValues = z.infer<typeof createIssueSchema>;

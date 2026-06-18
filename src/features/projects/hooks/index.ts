@@ -9,6 +9,8 @@ export const projectsKeys = {
   list: (p?: { organizationId?: string; page?: number; pageSize?: number }) =>
     [...projectsKeys.all, "list", p ?? {}] as const,
   detail: (id: string) => [...projectsKeys.all, "detail", id] as const,
+  clientStates: () => [...projectsKeys.all, "client-states"] as const,
+  priorities: () => [...projectsKeys.all, "priorities"] as const,
 };
 
 export function useProjects(params?: {
@@ -22,6 +24,22 @@ export function useProjects(params?: {
       const result = await projectsApi.list(params);
       return result.items;
     },
+  });
+}
+
+export function useClientStates() {
+  return useQuery({
+    queryKey: projectsKeys.clientStates(),
+    queryFn: () => projectsApi.clientStates(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function usePriorities() {
+  return useQuery({
+    queryKey: projectsKeys.priorities(),
+    queryFn: () => projectsApi.priorities(),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

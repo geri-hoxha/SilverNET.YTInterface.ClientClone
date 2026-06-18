@@ -3,7 +3,6 @@ import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
 import { toast } from "sonner";
 import {
   Bold,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { FileAttachment } from "./rich-text/fileAttachment";
+import { AttachmentImage } from "./rich-text/attachmentImage";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -35,6 +35,17 @@ interface Props {
   placeholder?: string;
   className?: string;
   minHeight?: number;
+  /**
+   * Uploads (or stages) a file dropped/selected inside the editor and resolves
+   * to the attachment file name to reference. When provided, inline files are
+   * stored as lightweight references instead of base64 data URLs.
+   */
+  onUploadFile?: (file: File) => Promise<string>;
+  /**
+   * Map of attachment file name -> object URL used to preview already-referenced
+   * files (e.g. when editing an existing description).
+   */
+  attachmentUrls?: Record<string, string>;
 }
 
 export function RichTextEditor({
@@ -43,13 +54,22 @@ export function RichTextEditor({
   placeholder = "Type or paste a description here",
   className,
   minHeight = 280,
+  onUploadFile,
+  attachmentUrls,
 }: Props) {
+  // Object URLs created for live previews of just-inserted files; revoked on
+  // unmount so we don't leak blobs.
+  const previewUrlsRef = useRef<string[]>([]);
+  // True while we programmatically apply preview URLs, so the resulting
+  // transaction doesn't bubble up as a user edit.
+  const applyingPreviewsRef = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       Link.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({ placeholder }),
-      Image.configure({ inline: false, allowBase64: true }),
+      AttachmentImage.configure({ inline: false, allowBase64: true }),
       FileAttachment,
     ],
     content: value || "",
@@ -62,7 +82,10 @@ export function RichTextEditor({
         style: `--rte-min-h: ${minHeight}px`,
       },
     },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      if (applyingPreviewsRef.current) return;
+      onChange(editor.getHTML());
+    },
   });
 
   // Keep editor in sync if parent resets value (e.g. dialog reopen).
@@ -75,9 +98,48 @@ export function RichTextEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editor]);
 
+  // Resolve references to preview URLs (for existing descriptions being edited).
+  useEffect(() => {
+    if (!editor || !attachmentUrls) return;
+    const { state } = editor;
+    const tr = state.tr;
+    let changed = false;
+    state.doc.descendants((node, pos) => {
+      const ref =
+        node.type.name === "image"
+          ? (node.attrs.attachmentRef as string | null)
+          : node.type.name === "fileAttachment"
+            ? (node.attrs.fileName as string | null)
+            : null;
+      if (!ref) return;
+      const url = attachmentUrls[ref];
+      if (url && node.attrs.previewSrc !== url) {
+        tr.setNodeAttribute(pos, "previewSrc", url);
+        changed = true;
+      }
+    });
+    if (changed) {
+      applyingPreviewsRef.current = true;
+      tr.setMeta("addToHistory", false);
+      editor.view.dispatch(tr);
+      applyingPreviewsRef.current = false;
+    }
+  }, [editor, attachmentUrls, value]);
+
+  useEffect(() => {
+    const urls = previewUrlsRef.current;
+    return () => {
+      for (const url of urls) URL.revokeObjectURL(url);
+    };
+  }, []);
+
   return (
     <div className={cn("flex flex-col", className)}>
-      <Toolbar editor={editor} />
+      <Toolbar
+        editor={editor}
+        onUploadFile={onUploadFile}
+        previewUrlsRef={previewUrlsRef}
+      />
       <div className="px-5 py-2">
         <EditorContent editor={editor} />
       </div>
@@ -85,9 +147,8 @@ export function RichTextEditor({
   );
 }
 
-// Files are embedded directly into the description HTML as base64 data URLs so
-// the content is self-contained. Keep this conservative to avoid bloating the
-// saved HTML.
+// Fallback size limit for the legacy base64 path (used only when no upload
+// handler is supplied). Uploaded references have no such limit.
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 function readAsDataUrl(file: File): Promise<string> {
@@ -99,32 +160,71 @@ function readAsDataUrl(file: File): Promise<string> {
   });
 }
 
-function Toolbar({ editor }: { editor: Editor | null }) {
+function Toolbar({
+  editor,
+  onUploadFile,
+  previewUrlsRef,
+}: {
+  editor: Editor | null;
+  onUploadFile?: (file: File) => Promise<string>;
+  previewUrlsRef: React.RefObject<string[]>;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const insertViaUpload = async (file: File) => {
+    if (!editor || !onUploadFile) return;
+    const isImage = file.type.startsWith("image/");
+    const previewSrc = URL.createObjectURL(file);
+    previewUrlsRef.current.push(previewSrc);
+    try {
+      const fileName = await onUploadFile(file);
+      if (isImage) {
+        editor
+          .chain()
+          .focus()
+          .setAttachmentImage({ fileName, previewSrc, alt: file.name })
+          .run();
+      } else {
+        editor
+          .chain()
+          .focus()
+          .setFileAttachment({ fileName, fileSize: file.size, previewSrc })
+          .run();
+      }
+    } catch {
+      URL.revokeObjectURL(previewSrc);
+      previewUrlsRef.current = previewUrlsRef.current.filter(
+        (u) => u !== previewSrc,
+      );
+      toast.error(`Could not upload "${file.name}".`);
+    }
+  };
+
+  const insertViaBase64 = async (file: File) => {
+    if (!editor) return;
+    if (file.size > MAX_FILE_BYTES) {
+      toast.error(
+        `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
+      );
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error(`"${file.name}" can only be attached to a saved issue.`);
+      return;
+    }
+    try {
+      const src = await readAsDataUrl(file);
+      editor.chain().focus().setImage({ src, alt: file.name }).run();
+    } catch {
+      toast.error(`Could not read "${file.name}".`);
+    }
+  };
 
   const insertFiles = async (fileList: FileList | null) => {
     if (!editor || !fileList) return;
     for (const file of Array.from(fileList)) {
-      if (file.size > MAX_FILE_BYTES) {
-        toast.error(
-          `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
-        );
-        continue;
-      }
-      try {
-        const src = await readAsDataUrl(file);
-        if (file.type.startsWith("image/")) {
-          editor.chain().focus().setImage({ src, alt: file.name }).run();
-        } else {
-          editor
-            .chain()
-            .focus()
-            .setFileAttachment({ src, fileName: file.name, fileSize: file.size })
-            .run();
-        }
-      } catch {
-        toast.error(`Could not read "${file.name}".`);
-      }
+      if (onUploadFile) await insertViaUpload(file);
+      else await insertViaBase64(file);
     }
   };
 

@@ -46,4 +46,8 @@ export const projectsApi = {
       method: "POST",
       url: `/projects/${id}/priorities/sync`,
     }),
+  clientStates: () =>
+    apiRequest<string[]>({ method: "GET", url: "/projects/client-states" }),
+  priorities: () =>
+    apiRequest<string[]>({ method: "GET", url: "/projects/priorities" }),
 };

@@ -30,37 +30,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useProjects } from "@/features/projects/hooks";
+import {
+  useClientStates,
+  usePriorities,
+  useProjects,
+} from "@/features/projects/hooks";
 import { issuesSearchSchema } from "../schemas";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 const ALL = "__all__";
-
-const PRIORITY_OPTIONS = [
-  "S5 - Discussion",
-  "S4 - Low",
-  "S3 - Minor",
-  "S2 - Major",
-  "S1 - Critical",
-  "Show-stopper",
-  "Critical",
-  "Major",
-  "Normal",
-  "Minor",
-] as const;
-
-const WORKFLOW_STATE_OPTIONS = [
-  "Pending Estimation",
-  "Done",
-  "Needs Clarification",
-  "Provided Clarification",
-  "Awaiting Est. Approval",
-  "Approved Estimation",
-  "Refused Estimation",
-  "In Progress",
-  "In Review",
-] as const;
 
 function isoToDate(iso?: string) {
   if (!iso) return undefined;
@@ -86,6 +65,8 @@ interface Props {
 export function IssuesFilterBar({ search }: Props) {
   const navigate = useNavigate({ from: "/issues" });
   const projectsQ = useProjects();
+  const prioritiesQ = usePriorities();
+  const clientStatesQ = useClientStates();
   const [searchDraft, setSearchDraft] = useState(search.search ?? "");
 
   useEffect(() => {
@@ -167,7 +148,7 @@ export function IssuesFilterBar({ search }: Props) {
 
         <FilterField label="Priority" className="w-full sm:w-[180px]">
           <MultiSelectFilter
-            options={PRIORITY_OPTIONS}
+            options={prioritiesQ.data ?? []}
             selected={search.priority ?? []}
             onChange={(next) =>
               updateSearch({ priority: next.length ? next : undefined })
@@ -178,7 +159,7 @@ export function IssuesFilterBar({ search }: Props) {
 
         <FilterField label="Status" className="w-full sm:w-[200px]">
           <MultiSelectFilter
-            options={WORKFLOW_STATE_OPTIONS}
+            options={clientStatesQ.data ?? []}
             selected={search.status ?? []}
             onChange={(next) =>
               updateSearch({ status: next.length ? next : undefined })
@@ -262,6 +243,17 @@ function MultiSelectFilter({
     }
   };
 
+  const allSelected =
+    options.length > 0 && options.every((o) => selected.includes(o));
+
+  const toggleAll = () => {
+    if (allSelected) {
+      onChange([]);
+    } else {
+      onChange([...options]);
+    }
+  };
+
   const label =
     selected.length === 0
       ? placeholder
@@ -298,6 +290,20 @@ function MultiSelectFilter({
           <CommandList>
             <CommandEmpty>No results.</CommandEmpty>
             <CommandGroup>
+              {options.length > 0 && (
+                <CommandItem
+                  value={ALL}
+                  onSelect={toggleAll}
+                  className="mb-1 flex items-center gap-2 border-b font-medium text-primary data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary"
+                >
+                  <Checkbox
+                    checked={allSelected}
+                    className="pointer-events-none border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                  />
+                  <span className="flex-1">Select All</span>
+                  {allSelected && <Check className="h-4 w-4" />}
+                </CommandItem>
+              )}
               {options.map((option) => {
                 const checked = selected.includes(option);
                 return (

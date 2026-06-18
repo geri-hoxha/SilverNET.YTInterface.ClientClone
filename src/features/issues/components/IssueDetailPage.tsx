@@ -13,19 +13,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
+import { RichTextContent } from "@/shared/components/RichTextContent";
+import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
+import { htmlToMarkdown, markdownToHtml } from "@/shared/components/rich-text/markdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useApproveEstimation,
   useIssue,
   useIssueComments,
   useIssueAttachments,
+  useIssueAttachmentUrls,
   useAddComment,
   useUpdateIssue,
   useUploadAttachment,
+  issuesKeys,
 } from "../hooks";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { toast } from "sonner";
@@ -158,28 +163,47 @@ export function IssueDetailPage() {
 }
 
 function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
+  const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(issue.title);
-  const [description, setDescription] = useState(issue.description ?? "");
+  // Editor works in HTML; the issue stores Markdown, so convert at the boundary.
+  const [description, setDescription] = useState(() =>
+    markdownToHtml(issue.description),
+  );
   const update = useUpdateIssue(id);
   const approveEstimation = useApproveEstimation();
+  const { urls: attachmentUrls, ensure } = useIssueAttachmentUrls(id);
 
   useEffect(() => {
     if (!editing) {
       setTitle(issue.title);
-      setDescription(issue.description ?? "");
+      setDescription(markdownToHtml(issue.description));
     }
   }, [issue.title, issue.description, editing]);
 
+  // Resolve inline references in whatever description is currently shown so both
+  // the read view and the editor preview can display them.
+  useEffect(() => {
+    ensure(extractAttachmentRefs(description));
+  }, [description, ensure]);
+
+  // Upload a file dropped into the editor straight away and reference it by the
+  // name the backend assigns.
+  const uploadInlineFile = async (file: File) => {
+    const attachment = await issuesApi.uploadAttachment(id, file);
+    await qc.invalidateQueries({ queryKey: issuesKeys.attachments(id) });
+    return attachment.fileName;
+  };
+
   const startEdit = () => {
     setTitle(issue.title);
-    setDescription(issue.description ?? "");
+    setDescription(markdownToHtml(issue.description));
     setEditing(true);
   };
 
   const cancelEdit = () => {
     setTitle(issue.title);
-    setDescription(issue.description ?? "");
+    setDescription(markdownToHtml(issue.description));
     setEditing(false);
   };
 
@@ -187,7 +211,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
     if (title.trim().length < 3) return;
     await update.mutateAsync({
       title: title.trim(),
-      description,
+      description: htmlToMarkdown(description),
     });
     setEditing(false);
   };
@@ -237,6 +261,8 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
               onChange={setDescription}
               placeholder="Type or paste a description of the issue here"
               minHeight={200}
+              onUploadFile={uploadInlineFile}
+              attachmentUrls={attachmentUrls}
             />
             <div className="flex justify-end gap-2">
               <Button
@@ -262,9 +288,10 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
             </div>
           </div>
         ) : issue.description ? (
-          <div
-            className="rte-content max-w-none"
-            dangerouslySetInnerHTML={{ __html: issue.description }}
+          <RichTextContent
+            markdown={issue.description}
+            attachmentUrls={attachmentUrls}
+            onReferences={ensure}
           />
         ) : (
           <p className="italic text-muted-foreground">No description</p>
@@ -353,13 +380,7 @@ function ProjectBadge({ issue }: { issue: Issue }) {
 }
 
 function AssigneeAvatar({ name }: { name?: string }) {
-  return (
-    <Avatar className="h-5 w-5">
-      <AvatarFallback className="bg-violet-500 text-[10px] text-white">
-        {name?.[0]?.toUpperCase() ?? "?"}
-      </AvatarFallback>
-    </Avatar>
-  );
+  return <UserAvatar name={name} className="h-5 w-5 text-[10px]" />;
 }
 
 function CommentsArea({ id }: { id: string }) {
@@ -385,11 +406,7 @@ function CommentsArea({ id }: { id: string }) {
             const author = c.createdByName || "User";
             return (
             <li key={c.id} className="flex gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-violet-500 text-xs text-white">
-                  {author[0]?.toUpperCase() ?? "?"}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar name={author} className="h-8 w-8" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="font-semibold text-sky-500 hover:underline cursor-pointer">

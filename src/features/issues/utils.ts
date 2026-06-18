@@ -13,6 +13,25 @@ export function stripHtmlToText(html?: string) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Returns a file name that doesn't clash with any in `used`, appending a
+ * " (n)" suffix before the extension when needed (e.g. "img (1).png"). Used to
+ * keep inline attachment references unique within one issue.
+ */
+export function uniqueFileName(name: string, used: Set<string>): string {
+  if (!used.has(name)) return name;
+  const dot = name.lastIndexOf(".");
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const ext = dot > 0 ? name.slice(dot) : "";
+  let i = 1;
+  let candidate = `${base} (${i})${ext}`;
+  while (used.has(candidate)) {
+    i += 1;
+    candidate = `${base} (${i})${ext}`;
+  }
+  return candidate;
+}
+
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;

@@ -31,7 +31,8 @@ import { issuesKeys, useCreateIssue } from "../hooks";
 import { EntityLogo } from "@/shared/components/EntityLogo";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { createIssueSchema, type CreateIssueFormValues } from "../schemas";
-import { fileTypeMeta, formatBytes } from "../utils";
+import { fileTypeMeta, formatBytes, uniqueFileName } from "../utils";
+import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
 import { cn } from "@/lib/utils";
 
 // Maps a project's YouTrack priority name to a badge color. Falls back to a
@@ -68,9 +69,27 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
   const createMut = useCreateIssue();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
+  // Files inserted inline in the description (by file name). The issue doesn't
+  // exist yet, so they're staged here and uploaded once it's created; the
+  // description only stores references to them.
+  const inlineFilesRef = useRef<Map<string, File>>(new Map());
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const isBusy = createMut.isPending || uploading;
+
+  // Stage an inline file under a unique name and return the reference to store
+  // in the description HTML.
+  const stageInlineFile = (file: File): string => {
+    const used = new Set<string>([
+      ...attachments.map((f) => f.name),
+      ...inlineFilesRef.current.keys(),
+    ]);
+    const fileName = uniqueFileName(file.name, used);
+    const staged =
+      fileName === file.name ? file : new File([file], fileName, { type: file.type });
+    inlineFilesRef.current.set(fileName, staged);
+    return fileName;
+  };
 
   const addFiles = (files: FileList | File[] | null) => {
     if (!files) return;
@@ -99,6 +118,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
         priority: "",
       });
       setAttachments([]);
+      inlineFilesRef.current = new Map();
     }
   }, [open, defaultProjectId, form]);
 
@@ -127,8 +147,11 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
   }, [selectedProjectId, priorityKey]);
 
   const createWithAttachments = async (values: FormValues) => {
-    const issue = await createMut.mutateAsync(values);
-    const files = attachments;
+    // The editor produces HTML; YouTrack stores Markdown.
+    const markdown = htmlToMarkdown(values.description ?? "");
+    const issue = await createMut.mutateAsync({ ...values, description: markdown });
+    const inlineEntries = [...inlineFilesRef.current.entries()];
+    const files = [...attachments, ...inlineEntries.map(([, file]) => file)];
     if (files.length > 0) {
       setUploading(true);
       try {
@@ -143,6 +166,27 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
               : `Issue created, but ${failed} of ${files.length} attachment(s) failed to upload`,
           );
         }
+
+        // Reconcile inline references: if the backend stored an inline file
+        // under a different name, rewrite the Markdown so the reference still
+        // resolves. (Inline results are the tail of `files`/`results`.)
+        const offset = attachments.length;
+        const renames: Array<[string, string]> = [];
+        inlineEntries.forEach(([stagedName], i) => {
+          const r = results[offset + i];
+          if (r.status === "fulfilled" && r.value.fileName !== stagedName) {
+            renames.push([stagedName, r.value.fileName]);
+          }
+        });
+        if (renames.length > 0 && markdown) {
+          let description = markdown;
+          for (const [from, to] of renames) {
+            description = description.split(`](${from})`).join(`](${to})`);
+          }
+          await issuesApi.update(issue.id, { title: values.title, description });
+          await qc.invalidateQueries({ queryKey: issuesKeys.detail(issue.id) });
+        }
+
         await qc.invalidateQueries({
           queryKey: issuesKeys.attachments(issue.id),
         });
@@ -193,6 +237,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
                 value={form.watch("description") ?? ""}
                 onChange={(html) => form.setValue("description", html, { shouldDirty: true })}
                 placeholder="Type or paste a description of the issue here"
+                onUploadFile={async (file) => stageInlineFile(file)}
               />
             </div>
 
