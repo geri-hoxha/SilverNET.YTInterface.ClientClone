@@ -1,16 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Check,
-  ChevronsUpDown,
-  
-  Eye,
-  FileText,
-  Loader2,
-  Paperclip,
-  X,
-} from "lucide-react";
+import { Check, ChevronsUpDown, Eye, FileText, Loader2, Paperclip, X } from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -71,12 +62,7 @@ interface Props {
   onCreated?: (issueId: string) => void;
 }
 
-export function CreateIssueDialog({
-  open,
-  onOpenChange,
-  defaultProjectId,
-  onCreated,
-}: Props) {
+export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCreated }: Props) {
   const qc = useQueryClient();
   const projectsQ = useProjects();
   const createMut = useCreateIssue();
@@ -92,9 +78,7 @@ export function CreateIssueDialog({
     if (!arr.length) return;
     setAttachments((prev) => [...prev, ...arr]);
   };
-  const removeFile = (idx: number) =>
-    setAttachments((prev) => prev.filter((_, i) => i !== idx));
-  
+  const removeFile = (idx: number) => setAttachments((prev) => prev.filter((_, i) => i !== idx));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createIssueSchema),
@@ -177,9 +161,7 @@ export function CreateIssueDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[calc(100vw-1rem)] max-w-[1080px] p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden"
-      >
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-[1080px] p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[90vh] md:max-h-[85vh]"
@@ -194,11 +176,7 @@ export function CreateIssueDialog({
                 {...form.register("title")}
               />
               <div className="flex items-center gap-1 text-muted-foreground">
-                <IconBtn
-                  title="Close"
-                  onClick={() => onOpenChange(false)}
-                  type="button"
-                >
+                <IconBtn title="Close" onClick={() => onOpenChange(false)} type="button">
                   <X className="h-4 w-4" />
                 </IconBtn>
               </div>
@@ -213,9 +191,7 @@ export function CreateIssueDialog({
             <div className="flex-1">
               <RichTextEditor
                 value={form.watch("description") ?? ""}
-                onChange={(html) =>
-                  form.setValue("description", html, { shouldDirty: true })
-                }
+                onChange={(html) => form.setValue("description", html, { shouldDirty: true })}
                 placeholder="Type or paste a description of the issue here"
               />
             </div>
@@ -284,11 +260,7 @@ export function CreateIssueDialog({
                               meta.badge,
                             )}
                           >
-                            {meta.label ? (
-                              meta.label
-                            ) : (
-                              <FileText className="h-4 w-4" />
-                            )}
+                            {meta.label ? meta.label : <FileText className="h-4 w-4" />}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-medium text-foreground">
@@ -315,21 +287,18 @@ export function CreateIssueDialog({
               })()}
             </div>
 
-
             {/* footer */}
-            <div className="flex items-center gap-2 border-t bg-muted/20 px-5 py-3">
+            <div className="sticky bottom-0 z-10 mt-auto flex items-center gap-2 border-t bg-background px-5 py-3">
               <div className="flex">
                 <Button
+                  className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
                   type="submit"
                   disabled={isBusy}
-                  className="rounded-r-none"
                 >
-                  {isBusy && (
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  )}
+                  {isBusy && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                   Create
                 </Button>
-                <DropdownMenu>
+                {/* <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       type="button"
@@ -355,23 +324,11 @@ export function CreateIssueDialog({
                       Create and open
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <button
-                type="button"
-                className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <Eye className="h-3.5 w-3.5" />
-                Visible to issue readers
-                <span>▾</span>
-              </button>
             </div>
           </div>
 
@@ -382,9 +339,7 @@ export function CreateIssueDialog({
                 <ProjectPicker
                   projects={projects}
                   value={form.watch("projectId")}
-                  onChange={(id) =>
-                    form.setValue("projectId", id, { shouldValidate: true })
-                  }
+                  onChange={(id) => form.setValue("projectId", id, { shouldValidate: true })}
                 />
                 {form.formState.errors.projectId && (
                   <p className="mt-1 text-xs text-destructive">
@@ -397,18 +352,14 @@ export function CreateIssueDialog({
                 label="Priority"
                 rightSlot={
                   form.watch("priority") ? (
-                    <TileBadge color={priorityBadgeBg(form.watch("priority"))}>
-                      S
-                    </TileBadge>
+                    <TileBadge color={priorityBadgeBg(form.watch("priority"))}>S</TileBadge>
                   ) : undefined
                 }
               >
                 <PriorityPicker
                   options={priorityOptions}
                   value={form.watch("priority")}
-                  onChange={(v) =>
-                    form.setValue("priority", v, { shouldValidate: true })
-                  }
+                  onChange={(v) => form.setValue("priority", v, { shouldValidate: true })}
                   hasProject={!!selectedProjectId}
                 />
                 {form.formState.errors.priority && (
@@ -447,13 +398,7 @@ function Field({
   );
 }
 
-function TileBadge({
-  children,
-  color,
-}: {
-  children: React.ReactNode;
-  color: string;
-}) {
+function TileBadge({ children, color }: { children: React.ReactNode; color: string }) {
   return (
     <span
       className={cn(
@@ -486,9 +431,7 @@ function ProjectPicker({
         >
           {selected ? (
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="truncate font-medium text-foreground">
-                {selected.name}
-              </span>
+              <span className="truncate font-medium text-foreground">{selected.name}</span>
               <EntityLogo
                 name={selected.name}
                 shortCode={selected.youTrackProjectId}
@@ -519,12 +462,7 @@ function ProjectPicker({
                   }}
                   className="gap-2"
                 >
-                  <EntityLogo
-                    name={p.name}
-                    shortCode={p.youTrackProjectId}
-                    seed={p.id}
-                    size="sm"
-                  />
+                  <EntityLogo name={p.name} shortCode={p.youTrackProjectId} seed={p.id} size="sm" />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">{p.name}</span>
                     <span className="font-mono text-[10px] text-muted-foreground">
@@ -616,10 +554,7 @@ function PriorityPicker({
   );
 }
 
-function IconBtn({
-  children,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function IconBtn({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       type="button"
@@ -633,4 +568,3 @@ function IconBtn({
     </button>
   );
 }
-

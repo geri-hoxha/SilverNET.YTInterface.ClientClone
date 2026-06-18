@@ -34,8 +34,8 @@ export interface IssueListParams {
   page: number;
   pageSize: number;
   projectId?: string;
-  status?: string;
-  priority?: string;
+  status?: string[];
+  priority?: string[];
   from?: string;
   to?: string;
   search?: string;

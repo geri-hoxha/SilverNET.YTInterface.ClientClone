@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { endOfDay, parseISO, startOfDay } from "date-fns";
-import { Search, X } from "lucide-react";
+import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,12 +29,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useProjects } from "@/features/projects/hooks";
 import { issuesSearchSchema } from "../schemas";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 const ALL = "__all__";
+
+const PRIORITY_OPTIONS = [
+  "S5 - Discussion",
+  "S4 - Low",
+  "S3 - Minor",
+  "S2 - Major",
+  "S1 - Critical",
+  "Show-stopper",
+  "Critical",
+  "Major",
+  "Normal",
+  "Minor",
+] as const;
+
+const WORKFLOW_STATE_OPTIONS = [
+  "Pending Estimation",
+  "Done",
+  "Needs Clarification",
+  "Provided Clarification",
+  "Awaiting Est. Approval",
+  "Approved Estimation",
+  "Refused Estimation",
+  "In Progress",
+  "In Review",
+] as const;
 
 function isoToDate(iso?: string) {
   if (!iso) return undefined;
@@ -47,20 +87,10 @@ export function IssuesFilterBar({ search }: Props) {
   const navigate = useNavigate({ from: "/issues" });
   const projectsQ = useProjects();
   const [searchDraft, setSearchDraft] = useState(search.search ?? "");
-  const [statusDraft, setStatusDraft] = useState(search.status ?? "");
-  const [priorityDraft, setPriorityDraft] = useState(search.priority ?? "");
 
   useEffect(() => {
     setSearchDraft(search.search ?? "");
   }, [search.search]);
-
-  useEffect(() => {
-    setStatusDraft(search.status ?? "");
-  }, [search.status]);
-
-  useEffect(() => {
-    setPriorityDraft(search.priority ?? "");
-  }, [search.priority]);
 
   const updateSearch = (next: Partial<IssuesSearch>) =>
     navigate({
@@ -74,8 +104,6 @@ export function IssuesFilterBar({ search }: Props) {
   const commitDrafts = () =>
     updateSearch({
       search: searchDraft.trim() || undefined,
-      status: statusDraft.trim() || undefined,
-      priority: priorityDraft.trim() || undefined,
     });
 
   const clearFilters = () =>
@@ -88,8 +116,8 @@ export function IssuesFilterBar({ search }: Props) {
 
   const hasActiveFilters = Boolean(
     search.projectId ||
-      search.status ||
-      search.priority ||
+      search.status?.length ||
+      search.priority?.length ||
       search.from ||
       search.to ||
       search.search ||
@@ -137,33 +165,25 @@ export function IssuesFilterBar({ search }: Props) {
           </Select>
         </FilterField>
 
-        <FilterField label="Priority" className="w-full sm:w-[140px]">
-          <Input
-            value={priorityDraft}
-            onChange={(e) => setPriorityDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitDrafts();
-            }}
-            onBlur={() =>
-              updateSearch({ priority: priorityDraft.trim() || undefined })
+        <FilterField label="Priority" className="w-full sm:w-[180px]">
+          <MultiSelectFilter
+            options={PRIORITY_OPTIONS}
+            selected={search.priority ?? []}
+            onChange={(next) =>
+              updateSearch({ priority: next.length ? next : undefined })
             }
             placeholder="Any priority"
-            className="h-9 sm:h-8"
           />
         </FilterField>
 
-        <FilterField label="Status" className="w-full sm:w-[140px]">
-          <Input
-            value={statusDraft}
-            onChange={(e) => setStatusDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitDrafts();
-            }}
-            onBlur={() =>
-              updateSearch({ status: statusDraft.trim() || undefined })
+        <FilterField label="Status" className="w-full sm:w-[200px]">
+          <MultiSelectFilter
+            options={WORKFLOW_STATE_OPTIONS}
+            selected={search.status ?? []}
+            onChange={(next) =>
+              updateSearch({ status: next.length ? next : undefined })
             }
             placeholder="Any status"
-            className="h-9 sm:h-8"
           />
         </FilterField>
 
@@ -218,6 +238,98 @@ export function IssuesFilterBar({ search }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+function MultiSelectFilter({
+  options,
+  selected,
+  onChange,
+  placeholder,
+}: {
+  options: readonly string[];
+  selected: string[];
+  onChange: (next: string[]) => void;
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = (option: string) => {
+    if (selected.includes(option)) {
+      onChange(selected.filter((o) => o !== option));
+    } else {
+      onChange([...selected, option]);
+    }
+  };
+
+  const label =
+    selected.length === 0
+      ? placeholder
+      : selected.length === 1
+        ? selected[0]
+        : `${selected.length} selected`;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="h-9 w-full justify-between font-normal sm:h-8"
+        >
+          <span
+            className={cn(
+              "truncate",
+              selected.length === 0 && "text-muted-foreground",
+            )}
+          >
+            {label}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) min-w-[180px] p-0"
+        align="start"
+      >
+        <Command>
+          <CommandInput placeholder="Filter..." />
+          <CommandList>
+            <CommandEmpty>No results.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => {
+                const checked = selected.includes(option);
+                return (
+                  <CommandItem
+                    key={option}
+                    value={option}
+                    onSelect={() => toggle(option)}
+                    className="flex items-center gap-2"
+                  >
+                    <Checkbox checked={checked} className="pointer-events-none" />
+                    <span className="flex-1">{option}</span>
+                    {checked && <Check className="h-4 w-4" />}
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+          {selected.length > 0 && (
+            <div className="border-t p-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-center text-xs text-muted-foreground"
+                onClick={() => onChange([])}
+              >
+                Clear selection
+              </Button>
+            </div>
+          )}
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 

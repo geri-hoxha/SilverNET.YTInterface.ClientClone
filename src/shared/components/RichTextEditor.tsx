@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Image from "@tiptap/extension-image";
+import { toast } from "sonner";
 import {
   Bold,
   Code2,
@@ -10,11 +12,13 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
+  Paperclip,
   Quote,
   Strikethrough,
   Type as TypeIcon,
 } from "lucide-react";
 
+import { FileAttachment } from "./rich-text/fileAttachment";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -45,6 +49,8 @@ export function RichTextEditor({
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       Link.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({ placeholder }),
+      Image.configure({ inline: false, allowBase64: true }),
+      FileAttachment,
     ],
     content: value || "",
     editorProps: {
@@ -79,7 +85,49 @@ export function RichTextEditor({
   );
 }
 
+// Files are embedded directly into the description HTML as base64 data URLs so
+// the content is self-contained. Keep this conservative to avoid bloating the
+// saved HTML.
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+function readAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 function Toolbar({ editor }: { editor: Editor | null }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const insertFiles = async (fileList: FileList | null) => {
+    if (!editor || !fileList) return;
+    for (const file of Array.from(fileList)) {
+      if (file.size > MAX_FILE_BYTES) {
+        toast.error(
+          `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
+        );
+        continue;
+      }
+      try {
+        const src = await readAsDataUrl(file);
+        if (file.type.startsWith("image/")) {
+          editor.chain().focus().setImage({ src, alt: file.name }).run();
+        } else {
+          editor
+            .chain()
+            .focus()
+            .setFileAttachment({ src, fileName: file.name, fileSize: file.size })
+            .run();
+        }
+      } catch {
+        toast.error(`Could not read "${file.name}".`);
+      }
+    }
+  };
+
   const blockValue = !editor
     ? "p"
     : editor.isActive("heading", { level: 1 })
@@ -187,6 +235,23 @@ function Toolbar({ editor }: { editor: Editor | null }) {
       >
         <ListOrdered className="h-3.5 w-3.5" />
       </TBtn>
+      <Separator orientation="vertical" className="mx-1 h-5" />
+      <TBtn
+        label="Attach file or image"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <Paperclip className="h-3.5 w-3.5" />
+      </TBtn>
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          void insertFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
     </div>
   );
 }

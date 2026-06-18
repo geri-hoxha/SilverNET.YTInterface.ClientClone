@@ -271,6 +271,80 @@
   font-style: italic;
 }
 
+.rte-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+/* Selected image inside the editor. */
+.rte-content img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Downloadable (non-image) file card. Styled identically in the editor and in
+ * read-only rendered description HTML. */
+.rte-content a.rte-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-muted);
+  text-decoration: none;
+  color: var(--color-foreground);
+  transition: border-color 0.15s ease;
+}
+
+.rte-content a.rte-file:hover {
+  border-color: var(--color-primary);
+}
+
+.rte-content a.rte-file .rte-file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
+
+.rte-content a.rte-file .rte-file-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rte-content a.rte-file .rte-file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rte-content a.rte-file .rte-file-meta {
+  font-size: 0.75rem;
+  color: var(--color-muted-foreground);
+}
+
+.rte-content a.rte-file .rte-file-download {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
 /* Placeholder shown when the editor (or first node) is empty. */
 .rte-content p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);

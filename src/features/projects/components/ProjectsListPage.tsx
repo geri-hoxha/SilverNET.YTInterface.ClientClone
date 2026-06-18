@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -231,6 +231,11 @@ export function ProjectsListPage() {
       )}
 
       <ProjectFormDialog
+        key={
+          creating
+            ? `create-${creating.organizationId ?? "none"}`
+            : "create-closed"
+        }
         open={!!creating}
         onOpenChange={(o) => !o && setCreating(null)}
         mode="create"
@@ -433,6 +438,19 @@ function ProjectFormDialog({
       isActive: project?.isActive ?? true,
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        organizationId:
+          project?.organizationId ?? defaultOrganizationId ?? "",
+        name: project?.name ?? "",
+        youTrackProjectId: project?.youTrackProjectId ?? "",
+        isActive: project?.isActive ?? true,
+      });
+    }
+  }, [open, project, defaultOrganizationId, form]);
+
   const pending = createMut.isPending || updateMut.isPending;
 
   const onSubmit = (values: FormValues) => {
@@ -480,7 +498,7 @@ function ProjectFormDialog({
                 <FormItem>
                   <FormLabel>Organization</FormLabel>
                   <Select
-                    value={field.value}
+                    value={field.value || undefined}
                     onValueChange={field.onChange}
                     disabled={mode === "edit"}
                   >

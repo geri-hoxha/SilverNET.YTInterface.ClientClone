@@ -20,13 +20,13 @@ function toPaginatedResult<T>(result: ApiPaginatedResult<T>): PaginatedResult<T>
 }
 
 function toListParams(params: IssueListParams) {
-  const query: Record<string, string | number | boolean> = {
+  const query: Record<string, string | number | boolean | string[]> = {
     Page: params.page,
     PageSize: params.pageSize,
   };
   if (params.projectId) query.ProjectId = params.projectId;
-  if (params.status) query.Status = params.status;
-  if (params.priority) query.Priority = params.priority;
+  if (params.status?.length) query.Status = params.status;
+  if (params.priority?.length) query.Priority = params.priority;
   if (params.from) query.From = params.from;
   if (params.to) query.To = params.to;
   if (params.search) query.Search = params.search;
@@ -43,6 +43,9 @@ export const issuesApi = {
       method: "GET",
       url: "/issues",
       params: toListParams(params),
+      // Serialize array params as repeated keys without brackets
+      // (e.g. Status=Done&Status=In Progress) for backend list binding.
+      paramsSerializer: { indexes: null },
     });
     return toPaginatedResult(result);
   },

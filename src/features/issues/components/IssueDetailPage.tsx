@@ -414,7 +414,7 @@ function CommentsArea({ id }: { id: string }) {
         <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
         <div className="flex-1 space-y-2">
           <Textarea
-            placeholder="Write a comment, @mention people"
+            placeholder="Write a comment"
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={2}
