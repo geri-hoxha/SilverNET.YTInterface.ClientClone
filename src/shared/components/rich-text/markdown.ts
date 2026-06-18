@@ -79,6 +79,93 @@ function fileCardHtml(text: string, target: string): string {
   );
 }
 
+// Finds the index of `ch` starting at `from`, bailing at a line break (URLs and
+// labels never span lines).
+function indexOfOnLine(s: string, ch: string, from: number): number {
+  for (let i = from; i < s.length; i++) {
+    if (s[i] === "\n") return -1;
+    if (s[i] === ch) return i;
+  }
+  return -1;
+}
+
+// Given the index of an opening `(`, returns the index of the matching `)`,
+// honouring nested parentheses so attachment names like
+// `invoice (1).pdf` / `WhatsApp Image … PM (1).jpeg` aren't truncated at the
+// first inner `)`. Returns -1 if unbalanced or the URL spills onto a new line.
+function matchingParen(s: string, openIdx: number): number {
+  let depth = 0;
+  for (let i = openIdx; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\n") return -1;
+    if (c === "(") depth++;
+    else if (c === ")" && --depth === 0) return i;
+  }
+  return -1;
+}
+
+/**
+ * Walks the Markdown and rewrites inline images (`![alt](target){attrs}`) and
+ * attachment file links (`[text](target)`) into editor/preview HTML.
+ *
+ * Unlike a single regex, this scans with balanced-parenthesis matching so
+ * targets that themselves contain spaces and parentheses (common for YouTrack
+ * attachment names) are captured in full. Non-attachment links are left
+ * untouched so `marked` can render them normally.
+ */
+function transformAttachments(text: string): string {
+  let out = "";
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    const isImage = ch === "!" && text[i + 1] === "[";
+    const isLink = ch === "[";
+
+    if (isImage || isLink) {
+      const labelOpen = isImage ? i + 1 : i;
+      const labelClose = indexOfOnLine(text, "]", labelOpen + 1);
+      if (labelClose !== -1 && text[labelClose + 1] === "(") {
+        const parenOpen = labelClose + 1;
+        const parenClose = matchingParen(text, parenOpen);
+        if (parenClose !== -1) {
+          const label = text.slice(labelOpen + 1, labelClose);
+          const target = text.slice(parenOpen + 1, parenClose).trim();
+
+          if (isImage) {
+            let end = parenClose + 1;
+            let attrs: string | undefined;
+            if (text[end] === "{") {
+              const braceClose = indexOfOnLine(text, "}", end + 1);
+              if (braceClose !== -1) {
+                attrs = text.slice(end + 1, braceClose);
+                end = braceClose + 1;
+              }
+            }
+            out += imageHtml(label, target, attrs);
+            i = end;
+            continue;
+          }
+
+          if (isAttachmentTarget(target) && FILE_LIKE.test(target)) {
+            out += fileCardHtml(label, target);
+            i = parenClose + 1;
+            continue;
+          }
+
+          // Regular link: leave the original markdown for `marked` to handle.
+          out += text.slice(i, parenClose + 1);
+          i = parenClose + 1;
+          continue;
+        }
+      }
+    }
+
+    out += ch;
+    i++;
+  }
+  return out;
+}
+
 // Replaces fenced/inline code with placeholders so attachment syntax inside code
 // isn't transformed, then restores them afterwards.
 function protectCode(md: string): { text: string; restore: (s: string) => string } {
@@ -100,23 +187,7 @@ export function markdownToHtml(markdown: string | null | undefined): string {
   if (!markdown) return "";
   const { text, restore } = protectCode(markdown);
 
-  let out = text.replace(
-    /!\[([^\]]*)\]\(\s*([^)]*?)\s*\)(?:\{([^}]*)\})?/g,
-    (_full, alt: string, target: string, attrs: string | undefined) =>
-      imageHtml(alt, target, attrs),
-  );
-
-  out = out.replace(
-    /(^|[^!])\[([^\]]*)\]\(\s*([^)]*?)\s*\)/g,
-    (full, prefix: string, textPart: string, target: string) => {
-      if (isAttachmentTarget(target) && FILE_LIKE.test(target)) {
-        return `${prefix}${fileCardHtml(textPart, target)}`;
-      }
-      return full;
-    },
-  );
-
-  out = restore(out);
+  const out = restore(transformAttachments(text));
   return marked.parse(out, { async: false }) as string;
 }
 
