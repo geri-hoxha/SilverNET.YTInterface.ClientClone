@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { extractAttachmentRefs } from "./rich-text/attachmentRefs";
 import { markdownToHtml } from "./rich-text/markdown";
@@ -19,41 +19,47 @@ interface Props {
 }
 
 /**
+ * Rewrites the resolved attachment URLs directly into the markup so the rendered
+ * `src`/`href` are part of React's declarative output.
+ *
+ * Doing this here (rather than imperatively patching the DOM after render) keeps
+ * the resolved URLs from being wiped whenever React re-applies the HTML — e.g.
+ * after an edit+save re-fetches the description and recreates the nodes.
+ */
+function resolveAttachments(html: string, attachmentUrls: Record<string, string>): string {
+  if (!html || typeof window === "undefined") return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll<HTMLElement>("[data-attachment-ref]").forEach((el) => {
+    const ref = el.getAttribute("data-attachment-ref");
+    if (!ref) return;
+    const url = attachmentUrls[ref];
+    if (el.tagName === "IMG") {
+      el.setAttribute("src", url ?? PLACEHOLDER_SRC);
+    } else if (el.tagName === "A" && url) {
+      el.setAttribute("href", url);
+    }
+  });
+  return doc.body.innerHTML;
+}
+
+/**
  * Renders a Markdown description read-only, swapping inline attachment
  * references for resolved object URLs as they become available.
  */
-export function RichTextContent({
-  markdown,
-  attachmentUrls,
-  onReferences,
-  className,
-}: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const html = useMemo(() => markdownToHtml(markdown), [markdown]);
+export function RichTextContent({ markdown, attachmentUrls, onReferences, className }: Props) {
+  const baseHtml = useMemo(() => markdownToHtml(markdown), [markdown]);
 
   useEffect(() => {
-    onReferences?.(extractAttachmentRefs(html));
-  }, [html, onReferences]);
+    onReferences?.(extractAttachmentRefs(baseHtml));
+  }, [baseHtml, onReferences]);
 
-  useEffect(() => {
-    const root = containerRef.current;
-    if (!root) return;
-    const nodes = root.querySelectorAll<HTMLElement>("[data-attachment-ref]");
-    nodes.forEach((el) => {
-      const ref = el.getAttribute("data-attachment-ref");
-      if (!ref) return;
-      const url = attachmentUrls[ref];
-      if (el.tagName === "IMG") {
-        el.setAttribute("src", url ?? PLACEHOLDER_SRC);
-      } else if (el.tagName === "A" && url) {
-        el.setAttribute("href", url);
-      }
-    });
-  }, [html, attachmentUrls]);
+  const html = useMemo(
+    () => resolveAttachments(baseHtml, attachmentUrls),
+    [baseHtml, attachmentUrls],
+  );
 
   return (
     <div
-      ref={containerRef}
       className={cn("rte-content max-w-none", className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
