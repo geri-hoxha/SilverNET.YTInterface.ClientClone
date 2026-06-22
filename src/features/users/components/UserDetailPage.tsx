@@ -19,12 +19,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { useUser, useUpdateUser } from "../hooks";
 import { userDetailRouteApi } from "../route";
 
 export function UserDetailPage() {
   const { id } = userDetailRouteApi.useParams();
+  const { hasPermission } = useAuth();
+  const canUpdate = hasPermission(PERMISSIONS.usersUpdate);
   const query = useUser(id);
   const orgsQ = useOrganizations();
   const rolesQ = useRoles();
@@ -101,7 +104,7 @@ export function UserDetailPage() {
             </p>
           </div>
         </div>
-        {!editing && (
+        {!editing && canUpdate && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
             <Pencil className="mr-2 h-4 w-4" /> Edit user
           </Button>

@@ -51,6 +51,7 @@ import {
 import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { usersRouteApi } from "../route";
 import { useUsers, useCreateUser } from "../hooks";
 import {
@@ -64,6 +65,8 @@ import { formatShortDate } from "@/shared/utils/format";
 
 export function UsersListPage() {
   const navigate = useNavigate({ from: "/users" });
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(PERMISSIONS.usersCreate);
   const { page, pageSize } = usersRouteApi.useSearch();
   const [selection, setSelection] = useState<Record<string, boolean>>({});
   const [creating, setCreating] = useState(false);
@@ -97,9 +100,11 @@ export function UsersListPage() {
             Manage portal users, roles and access.
           </p>
         </div>
-        <Button onClick={() => setCreating(true)}>
-          <UserPlus className="mr-2 h-4 w-4" /> New user
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setCreating(true)}>
+            <UserPlus className="mr-2 h-4 w-4" /> New user
+          </Button>
+        )}
       </div>
 
       <Card className="overflow-x-auto">

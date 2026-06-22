@@ -36,7 +36,7 @@ import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { toast } from "sonner";
 import type { ApiError } from "@/shared/api/errors";
 import { issuesApi } from "../api";
-import { useAuth } from "@/features/auth";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
@@ -164,6 +164,9 @@ export function IssueDetailPage() {
 
 function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   const qc = useQueryClient();
+  const { hasPermission } = useAuth();
+  const canUpdate = hasPermission(PERMISSIONS.issuesUpdate);
+  const canApproveEstimation = hasPermission(PERMISSIONS.issuesEstimationApprove);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(issue.title);
   // Editor works in HTML; the issue stores Markdown, so convert at the boundary.
@@ -233,22 +236,26 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
         )}
         {!editing && (
           <div className="flex shrink-0 items-center gap-2">
-            <ApproveEstimationButton
-              variant="text"
-              clientState={issue.clientState}
-              issueTitle={issue.title}
-              confirmBeforeApprove
-              onApprove={() => approveEstimation.mutate(id)}
-              isPending={approveEstimation.isPending}
-            />
-            <Button
-              type="button"
-              size="sm"
-              className="h-8 border border-blue-200/70 bg-blue-50 text-blue-600 shadow-sm hover:border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/70 dark:hover:text-blue-300"
-              onClick={startEdit}
-            >
-              Edit Issue
-            </Button>
+            {canApproveEstimation && (
+              <ApproveEstimationButton
+                variant="text"
+                clientState={issue.clientState}
+                issueTitle={issue.title}
+                confirmBeforeApprove
+                onApprove={() => approveEstimation.mutate(id)}
+                isPending={approveEstimation.isPending}
+              />
+            )}
+            {canUpdate && (
+              <Button
+                type="button"
+                size="sm"
+                className="h-8 border border-blue-200/70 bg-blue-50 text-blue-600 shadow-sm hover:border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/70 dark:hover:text-blue-300"
+                onClick={startEdit}
+              >
+                Edit Issue
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -384,7 +391,8 @@ function AssigneeAvatar({ name }: { name?: string }) {
 }
 
 function CommentsArea({ id }: { id: string }) {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
+  const canComment = hasPermission(PERMISSIONS.issuesCommentsCreate);
   const q = useIssueComments(id);
   const add = useAddComment(id);
   const [text, setText] = useState("");
@@ -427,35 +435,39 @@ function CommentsArea({ id }: { id: string }) {
         </ul>
       ) : null}
 
-      <div className="flex gap-3">
-        <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
-        <div className="flex-1 space-y-2">
-          <Textarea
-            placeholder="Write a comment"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={2}
-            className="resize-none bg-muted/30"
-          />
-          {text.trim() && (
-            <div className="flex justify-end">
-              <Button
-                onClick={submit}
-                disabled={add.isPending}
-                size="sm"
-              >
-                {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Post
-              </Button>
-            </div>
-          )}
+      {canComment && (
+        <div className="flex gap-3">
+          <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
+          <div className="flex-1 space-y-2">
+            <Textarea
+              placeholder="Write a comment"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={2}
+              className="resize-none bg-muted/30"
+            />
+            {text.trim() && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={submit}
+                  disabled={add.isPending}
+                  size="sm"
+                >
+                  {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Post
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 function AttachmentsArea({ id }: { id: string }) {
+  const { hasPermission } = useAuth();
+  const canAttach = hasPermission(PERMISSIONS.issuesAttachmentsCreate);
   const q = useIssueAttachments(id);
   const upload = useUploadAttachment(id);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -493,21 +505,23 @@ function AttachmentsArea({ id }: { id: string }) {
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Attachments
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs"
-          disabled={upload.isPending}
-          onClick={() => fileInput.current?.click()}
-        >
-          {upload.isPending ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-          )}
-          Attach file
-        </Button>
+        {canAttach && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            disabled={upload.isPending}
+            onClick={() => fileInput.current?.click()}
+          >
+            {upload.isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Paperclip className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Attach file
+          </Button>
+        )}
       </div>
 
       {q.isLoading ? (
@@ -564,7 +578,7 @@ function AttachmentsArea({ id }: { id: string }) {
             );
           })}
         </div>
-      ) : (
+      ) : canAttach ? (
         <button
           type="button"
           onClick={() => fileInput.current?.click()}
@@ -574,14 +588,20 @@ function AttachmentsArea({ id }: { id: string }) {
           <Paperclip className="mr-2 h-4 w-4" />
           Click to attach a file
         </button>
+      ) : (
+        <p className="py-4 text-sm italic text-muted-foreground">
+          No attachments
+        </p>
       )}
 
-      <input
-        ref={fileInput}
-        type="file"
-        className="hidden"
-        onChange={handleFileSelect}
-      />
+      {canAttach && (
+        <input
+          ref={fileInput}
+          type="file"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+      )}
     </div>
   );
 }

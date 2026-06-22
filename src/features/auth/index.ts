@@ -3,5 +3,8 @@ export * from "./schemas";
 export * from "./utils";
 export * from "./guards";
 export * from "./api";
+export * from "./permissions";
+export { decodeJwtClaims } from "./jwt";
 export { AuthProvider } from "./components/AuthProvider";
+export { Can } from "./components/Can";
 export { useAuth } from "./hooks";

@@ -74,6 +74,8 @@ import {
 } from "../schemas";
 import { groupProjectsByOrganization } from "../utils";
 import { EntityLogo } from "@/shared/components/EntityLogo";
+import { cn } from "@/lib/utils";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Project } from "../types";
 import type { Organization } from "@/features/organizations/types";
 
@@ -83,6 +85,11 @@ const PROJECT_ROW_LAYOUT =
   "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
 
 export function ProjectsListPage() {
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(PERMISSIONS.projectsCreate);
+  const canUpdate = hasPermission(PERMISSIONS.projectsUpdate);
+  const canSync = hasPermission(PERMISSIONS.projectsPrioritiesSync);
+
   const orgsQ = useOrganizations();
   const projectsQ = useProjects();
   const syncMut = useSyncPriorities();
@@ -106,9 +113,11 @@ export function ProjectsListPage() {
     <div className="min-w-0 overflow-x-hidden space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
-        <Button onClick={() => setCreating({})}>
-          <Plus className="mr-2 h-4 w-4" /> New project
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setCreating({})}>
+            <Plus className="mr-2 h-4 w-4" /> New project
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -168,13 +177,15 @@ export function ProjectsListPage() {
                     {projects.length === 1 ? "project" : "projects"}
                   </span>
                   <div className="ml-auto flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCreating({ organizationId: org.id })}
-                    >
-                      <Plus className="mr-1 h-3.5 w-3.5" /> Add project
-                    </Button>
+                    {canCreate && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCreating({ organizationId: org.id })}
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Add project
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -218,6 +229,8 @@ export function ProjectsListPage() {
                               syncMut.isPending &&
                               syncMut.variables === project.id
                             }
+                            canUpdate={canUpdate}
+                            canSync={canSync}
                           />
                         ))}
                       </div>
@@ -289,17 +302,25 @@ function ProjectRow({
   onDelete,
   onSync,
   syncing,
+  canUpdate,
+  canSync,
 }: {
   project: Project;
   onEdit: () => void;
   onDelete: () => void;
   onSync: () => void;
   syncing: boolean;
+  canUpdate: boolean;
+  canSync: boolean;
 }) {
+  const showMenu = canUpdate;
   return (
     <div
-      className={`group ${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b py-2 transition-colors hover:bg-accent/40 cursor-pointer last:border-b-0`}
-      onClick={onEdit}
+      className={cn(
+        `group ${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b py-2 transition-colors last:border-b-0`,
+        canUpdate ? "cursor-pointer hover:bg-accent/40" : "cursor-default",
+      )}
+      onClick={canUpdate ? onEdit : undefined}
     >
       <div className="flex min-w-0 items-center gap-2">
         <EntityLogo
@@ -341,42 +362,46 @@ function ProjectRow({
         className="flex shrink-0 items-center justify-end gap-0.5"
         onClick={(e) => e.stopPropagation()}
       >
-        <Button
-          variant="default"
-          size="icon"
-          onClick={onSync}
-          disabled={syncing}
-          title="Sync priorities and workflow states from YouTrack"
-          aria-label={syncing ? "Syncing from YouTrack" : "Sync from YouTrack"}
-          className="h-7 w-7 bg-green-600 text-white shadow-sm hover:bg-green-700"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
-          />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem onClick={onEdit}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={onDelete}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {canSync && (
+          <Button
+            variant="default"
+            size="icon"
+            onClick={onSync}
+            disabled={syncing}
+            title="Sync priorities and workflow states from YouTrack"
+            aria-label={syncing ? "Syncing from YouTrack" : "Sync from YouTrack"}
+            className="h-7 w-7 bg-green-600 text-white shadow-sm hover:bg-green-700"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
+            />
+          </Button>
+        )}
+        {showMenu && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={onDelete}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );

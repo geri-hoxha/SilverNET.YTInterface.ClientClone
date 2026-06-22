@@ -56,9 +56,14 @@ import {
   type EditOrganizationFormValues as EditFormValues,
 } from "../schemas";
 import { EntityLogo } from "@/shared/components/EntityLogo";
+import { cn } from "@/lib/utils";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Organization } from "../types";
 
 export function OrganizationsListPage() {
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(PERMISSIONS.organizationsCreate);
+  const canUpdate = hasPermission(PERMISSIONS.organizationsUpdate);
   const orgsQ = useOrganizations();
   const [editing, setEditing] = useState<Organization | null>(null);
   const [creating, setCreating] = useState(false);
@@ -74,9 +79,11 @@ export function OrganizationsListPage() {
           </h1>
           <HelpCircle className="h-4 w-4 text-primary" />
         </div>
-        <Button onClick={() => setCreating(true)}>
-          <Plus className="mr-2 h-4 w-4" /> New organization
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setCreating(true)}>
+            <Plus className="mr-2 h-4 w-4" /> New organization
+          </Button>
+        )}
       </div>
 
       <Card className="overflow-hidden">
@@ -119,8 +126,13 @@ export function OrganizationsListPage() {
             {orgsQ.data.map((org) => (
                 <div
                   key={org.id}
-                  className="group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors hover:bg-accent/40 cursor-pointer"
-                  onClick={() => setEditing(org)}
+                  className={cn(
+                    "group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors",
+                    canUpdate
+                      ? "cursor-pointer hover:bg-accent/40"
+                      : "cursor-default",
+                  )}
+                  onClick={canUpdate ? () => setEditing(org) : undefined}
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <EntityLogo name={org.name} seed={org.id} size="sm" />
@@ -141,29 +153,31 @@ export function OrganizationsListPage() {
                     className="text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => setEditing(org)}>
-                          <Pencil className="mr-2 h-4 w-4" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => setConfirmDelete(org)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {canUpdate && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => setEditing(org)}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setConfirmDelete(org)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
             ))}

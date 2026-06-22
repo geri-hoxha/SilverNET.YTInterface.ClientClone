@@ -16,23 +16,32 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { PortalRole } from "@/features/auth/types";
+import { PERMISSIONS, useAuth } from "@/features/auth";
+import type { Permission } from "@/features/auth";
 
 interface NavItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
+  permission: Permission;
 }
 
 const NAV: NavItem[] = [
-  { title: "Issues", url: "/issues", icon: ListChecks },
-  { title: "Projects", url: "/projects", icon: FolderKanban },
-  { title: "Organizations", url: "/organizations", icon: Building2 },
-  { title: "Users", url: "/users", icon: Users },
+  { title: "Issues", url: "/issues", icon: ListChecks, permission: PERMISSIONS.issuesRead },
+  { title: "Projects", url: "/projects", icon: FolderKanban, permission: PERMISSIONS.projectsRead },
+  {
+    title: "Organizations",
+    url: "/organizations",
+    icon: Building2,
+    permission: PERMISSIONS.organizationsRead,
+  },
+  { title: "Users", url: "/users", icon: Users, permission: PERMISSIONS.usersRead },
 ];
 
 export function AppSidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { hasPermission } = useAuth();
+  const navItems = NAV.filter((item) => hasPermission(item.permission));
 
   return (
     <Sidebar collapsible="icon">
@@ -52,7 +61,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map((item) => {
+              {navItems.map((item) => {
                 const active =
                   path === item.url || path.startsWith(item.url + "/");
                 return (

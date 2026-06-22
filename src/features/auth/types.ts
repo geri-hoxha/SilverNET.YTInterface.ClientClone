@@ -10,6 +10,7 @@ export interface AuthUser {
   role: PortalRole;
   organizationId?: string;
   organizationName?: string;
+  permissions: string[];
 }
 
 export interface LoginResponse {
@@ -18,5 +19,13 @@ export interface LoginResponse {
   expiresAt: string;
   fullName: string;
   email: string;
+  permissions?: string[];
   user?: AuthUser;
+}
+
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  permissions?: string[];
 }

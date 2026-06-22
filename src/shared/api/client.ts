@@ -5,6 +5,8 @@ import axios, {
 } from "axios";
 import { tokenStore } from "./tokens";
 import { normalizeError } from "./errors";
+import { decodeJwtClaims } from "@/features/auth/jwt";
+import type { AuthUser, RefreshResponse } from "@/features/auth/types";
 
 // Dev uses the Vite proxy (/api); production sets VITE_API_BASE_URL to the full API origin.
 export const API_BASE_URL =
@@ -38,12 +40,23 @@ async function performRefresh(): Promise<string | null> {
   const refreshToken = tokenStore.getRefreshToken();
   if (!refreshToken) return null;
   try {
-    const { data } = await axios.post<{
-      accessToken: string;
-      refreshToken: string;
-      expiresAt: string;
-    }>(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+    const { data } = await axios.post<RefreshResponse>(
+      `${API_BASE_URL}/auth/refresh`,
+      { refreshToken },
+    );
     tokenStore.set(data);
+
+    // Permissions may change between sessions; keep the stored user in sync from
+    // the refresh response (or the new token's claims as a fallback).
+    const permissions =
+      data.permissions ?? decodeJwtClaims(data.accessToken)?.permissions;
+    if (permissions) {
+      const storedUser = tokenStore.getUser<AuthUser>();
+      if (storedUser) {
+        tokenStore.setUser({ ...storedUser, permissions });
+      }
+    }
+
     return data.accessToken;
   } catch {
     return null;

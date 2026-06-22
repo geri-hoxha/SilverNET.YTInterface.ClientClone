@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useApproveEstimation, useIssues } from "../hooks";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
@@ -41,6 +42,10 @@ export function IssuesListPage() {
   } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+
+  const { hasPermission } = useAuth();
+  const canCreate = hasPermission(PERMISSIONS.issuesCreate);
+  const canApproveEstimation = hasPermission(PERMISSIONS.issuesEstimationApprove);
 
   const approveEstimation = useApproveEstimation();
 
@@ -106,14 +111,15 @@ export function IssuesListPage() {
           <span className="text-xs text-muted-foreground">{total}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => setCreateOpen(true)}
-          >
-            New Issue
-          </Button>
-
+          {canCreate && (
+            <Button
+              size="sm"
+              className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => setCreateOpen(true)}
+            >
+              New Issue
+            </Button>
+          )}
         </div>
       </div>
 
@@ -232,6 +238,7 @@ export function IssuesListPage() {
                     approveEstimation.isPending &&
                     approveEstimation.variables === issue.id
                   }
+                  canApproveEstimation={canApproveEstimation}
                 />
               ))
             )}
@@ -315,6 +322,7 @@ function IssueRow({
   onOpen,
   onApproveEstimation,
   isApprovingEstimation,
+  canApproveEstimation,
 }: {
   issue: Issue;
   checked: boolean;
@@ -322,6 +330,7 @@ function IssueRow({
   onOpen: () => void;
   onApproveEstimation: () => void;
   isApprovingEstimation: boolean;
+  canApproveEstimation: boolean;
 }) {
   const priorityLabel = issue.priorityLabel ?? issue.priority;
   const readableId = issueReadableId(issue);
@@ -351,16 +360,18 @@ function IssueRow({
       <div className="flex min-w-0 items-center gap-2">
         {projectBadge(issue)}
         <span className="truncate font-medium">{issue.title}</span>
-        <div onClick={(e) => e.stopPropagation()}>
-          <ApproveEstimationButton
-            variant="compact"
-            clientState={issue.clientState}
-            issueTitle={issue.title}
-            confirmBeforeApprove
-            onApprove={onApproveEstimation}
-            isPending={isApprovingEstimation}
-          />
-        </div>
+        {canApproveEstimation && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ApproveEstimationButton
+              variant="compact"
+              clientState={issue.clientState}
+              issueTitle={issue.title}
+              confirmBeforeApprove
+              onApprove={onApproveEstimation}
+              isPending={isApprovingEstimation}
+            />
+          </div>
+        )}
       </div>
       <div className="min-w-0 truncate text-muted-foreground hidden md:block" title={issue.projectName}>
         {issue.projectName}
