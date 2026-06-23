@@ -11,6 +11,7 @@ export interface Issue {
   clientState?: string;
   youTrackReadableId: string;
   priority: string;
+  issueType?: string;
   createdOnUtc: string;
   key?: string;
   projectShortCode?: string;

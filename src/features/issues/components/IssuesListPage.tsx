@@ -15,13 +15,17 @@ import { issueReadableId } from "../utils";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
-import { clientStateTextColor, PriorityBadge } from "@/shared/components/StatusBadge";
+import {
+  clientStateTextColor,
+  IssueTypeBadge,
+  PriorityBadge,
+} from "@/shared/components/StatusBadge";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue, IssueSortField } from "../types";
 
 const ISSUE_GRID =
-  "grid grid-cols-[36px_72px_minmax(0,1fr)_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_minmax(130px,0.85fr)_88px_112px] items-center gap-2";
+  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px] items-center gap-2";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -167,6 +171,7 @@ export function IssuesListPage() {
                 sortDescending={sortDescending}
                 onSort={setSort}
               />
+              <span>Type</span>
               <span className="hidden md:block">
                 <SortHead
                   label="State"
@@ -196,6 +201,7 @@ export function IssuesListPage() {
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="hidden md:block h-4 w-28" />
                   <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-14" />
                   <Skeleton className="hidden md:block h-4 w-20" />
                   <Skeleton className="hidden md:block h-4 w-16" />
                   <Skeleton className="hidden md:block h-4 w-20" />
@@ -376,9 +382,16 @@ function IssueRow({
       <div className="min-w-0 truncate text-muted-foreground hidden md:block" title={issue.projectName}>
         {issue.projectName}
       </div>
-    <div className="w-max">
+      <div className="w-max">
         <PriorityBadge priority={priorityLabel} />
-    </div>
+      </div>
+      <div className="w-max">
+        {issue.issueType ? (
+          <IssueTypeBadge issueType={issue.issueType} />
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </div>
       <div
         className={cn(
           "hidden md:block truncate",

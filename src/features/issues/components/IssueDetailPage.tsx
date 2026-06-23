@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Download,
-  FileText,
-  Loader2,
-  Paperclip,
-  Star,
-  Eye,
-  ThumbsUp,
-} from "lucide-react";
+import { Download, FileText, Loader2, Paperclip, Star, Eye, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +32,7 @@ import { PERMISSIONS, useAuth } from "@/features/auth";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { formatBytes, formatDate, formatRelative } from "@/shared/utils/format";
 import { issueDetailRouteApi } from "../route";
+import { IssueTypeBadge } from "@/shared/components/StatusBadge";
 import { fileTypeMeta, issueReadableId } from "../utils";
 import type { Issue, IssueAttachment } from "../types";
 
@@ -129,9 +122,7 @@ export function IssueDetailPage() {
 
             <SidebarField
               label="State"
-              badge={
-                data.status ? <LetterBadge text={data.status} color="emerald" /> : null
-              }
+              badge={data.status ? <LetterBadge text={data.status} color="emerald" /> : null}
             >
               <span>{data.clientState ?? "—"}</span>
             </SidebarField>
@@ -145,6 +136,12 @@ export function IssueDetailPage() {
               }
             >
               <span>{data.priorityLabel ?? data.priority}</span>
+            </SidebarField>
+            <SidebarField label="Type">
+              <span>
+                {" "}
+                <IssueTypeBadge issueType={data.issueType || ""} />
+              </span>
             </SidebarField>
             {/* <SidebarField label="Assignee" badge={<AssigneeAvatar name={data.assigneeName} />}>
               <span>{data.assigneeName ?? "Unassigned"}</span>
@@ -170,9 +167,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(issue.title);
   // Editor works in HTML; the issue stores Markdown, so convert at the boundary.
-  const [description, setDescription] = useState(() =>
-    markdownToHtml(issue.description),
-  );
+  const [description, setDescription] = useState(() => markdownToHtml(issue.description));
   const update = useUpdateIssue(id);
   const approveEstimation = useApproveEstimation();
   const { urls: attachmentUrls, ensure } = useIssueAttachmentUrls(id);
@@ -230,9 +225,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
             autoFocus
           />
         ) : (
-          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-snug">
-            {issue.title}
-          </h1>
+          <h1 className="min-w-0 flex-1 text-xl font-semibold leading-snug">{issue.title}</h1>
         )}
         {!editing && (
           <div className="flex shrink-0 items-center gap-2">
@@ -287,9 +280,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
                 onClick={save}
                 disabled={update.isPending || title.trim().length < 3}
               >
-                {update.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save
               </Button>
             </div>
@@ -363,9 +354,7 @@ function LetterBadge({
   );
 }
 
-function priorityColor(
-  p: string,
-): "rose" | "orange" | "emerald" | "slate" | "violet" {
+function priorityColor(p: string): "rose" | "orange" | "emerald" | "slate" | "violet" {
   if (/critical|show-stopper|s1/i.test(p)) return "rose";
   if (/major|s2/i.test(p)) return "orange";
   if (/normal|s3/i.test(p)) return "emerald";
@@ -413,23 +402,21 @@ function CommentsArea({ id }: { id: string }) {
           {comments.map((c) => {
             const author = c.createdByName || "User";
             return (
-            <li key={c.id} className="flex gap-3">
-              <UserAvatar name={author} className="h-8 w-8" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="font-semibold text-sky-500 hover:underline cursor-pointer">
-                    {author}
-                  </span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">
-                    Commented {formatRelative(c.createdOnUtc)}
-                  </span>
+              <li key={c.id} className="flex gap-3">
+                <UserAvatar name={author} className="h-8 w-8" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-semibold text-sky-500 hover:underline cursor-pointer">
+                      {author}
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">
+                      Commented {formatRelative(c.createdOnUtc)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm whitespace-pre-wrap break-words">{c.body}</p>
                 </div>
-                <p className="mt-1 text-sm whitespace-pre-wrap break-words">
-                  {c.body}
-                </p>
-              </div>
-            </li>
+              </li>
             );
           })}
         </ul>
@@ -448,11 +435,7 @@ function CommentsArea({ id }: { id: string }) {
             />
             {text.trim() && (
               <div className="flex justify-end">
-                <Button
-                  onClick={submit}
-                  disabled={add.isPending}
-                  size="sm"
-                >
+                <Button onClick={submit} disabled={add.isPending} size="sm">
                   {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Post
                 </Button>
@@ -545,16 +528,10 @@ function AttachmentsArea({ id }: { id: string }) {
                     meta.badge,
                   )}
                 >
-                  {meta.label ? (
-                    meta.label
-                  ) : (
-                    <FileText className="h-4 w-4" />
-                  )}
+                  {meta.label ? meta.label : <FileText className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-foreground">
-                    {a.fileName}
-                  </div>
+                  <div className="truncate text-sm font-medium text-foreground">{a.fileName}</div>
                   <div className="text-xs text-muted-foreground">
                     {meta.typeLabel} · {formatBytes(a.fileSize)}
                   </div>
@@ -589,18 +566,11 @@ function AttachmentsArea({ id }: { id: string }) {
           Click to attach a file
         </button>
       ) : (
-        <p className="py-4 text-sm italic text-muted-foreground">
-          No attachments
-        </p>
+        <p className="py-4 text-sm italic text-muted-foreground">No attachments</p>
       )}
 
       {canAttach && (
-        <input
-          ref={fileInput}
-          type="file"
-          className="hidden"
-          onChange={handleFileSelect}
-        />
+        <input ref={fileInput} type="file" className="hidden" onChange={handleFileSelect} />
       )}
     </div>
   );

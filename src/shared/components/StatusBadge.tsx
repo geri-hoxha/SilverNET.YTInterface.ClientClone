@@ -52,6 +52,41 @@ export function PriorityBadge({ priority }: { priority: IssuePriority | string }
   );
 }
 
+const ISSUE_TYPE_STYLE_BY_KIND = {
+  bug: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+  task: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  feature:
+    "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
+  epic: "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30",
+  story:
+    "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+} as const;
+
+const DEFAULT_ISSUE_TYPE_STYLE =
+  "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
+
+function issueTypeStyle(issueType: string): string {
+  const n = issueType.toLowerCase();
+  if (/(bug|defect|incident)/.test(n)) return ISSUE_TYPE_STYLE_BY_KIND.bug;
+  if (/(task|chore|sub-?task)/.test(n)) return ISSUE_TYPE_STYLE_BY_KIND.task;
+  if (/(feature|enhancement|improvement)/.test(n))
+    return ISSUE_TYPE_STYLE_BY_KIND.feature;
+  if (/(epic)/.test(n)) return ISSUE_TYPE_STYLE_BY_KIND.epic;
+  if (/(story|user story)/.test(n)) return ISSUE_TYPE_STYLE_BY_KIND.story;
+  return DEFAULT_ISSUE_TYPE_STYLE;
+}
+
+export function IssueTypeBadge({ issueType }: { issueType: string }) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn("font-medium", issueTypeStyle(issueType))}
+    >
+      {issueType}
+    </Badge>
+  );
+}
+
 // Client/workflow states are free-form YouTrack values, so map them by meaning
 // to a consistent set of text colors.
 const CLIENT_STATE_TEXT_BY_TIER = {
