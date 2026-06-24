@@ -3,6 +3,7 @@ import { LogOut } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth";
+import { NotificationBell } from "@/features/notifications";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 
 function useBreadcrumbs() {
@@ -35,6 +36,7 @@ export function AppHeader() {
         ))}
       </nav>
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <NotificationBell />
         <div className="flex items-center gap-2 px-1">
           <UserAvatar name={user?.fullName} seed={user?.id} className="h-7 w-7" />
           <div className="hidden min-w-0 text-left sm:block">
