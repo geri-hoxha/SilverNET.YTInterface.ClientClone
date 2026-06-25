@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/shared/components/AppSidebar";
 import { AppHeader } from "@/shared/components/AppHeader";
 import { requireAuth } from "@/features/auth";
-import { NotificationsProvider } from "@/features/notifications";
+import { NotificationsProvider } from "@/features/notifications/components/NotificationsProvider";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: requireAuth,

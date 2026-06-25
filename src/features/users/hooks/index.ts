@@ -31,6 +31,25 @@ export function useUsers(params: UserListParams) {
   });
 }
 
+/** Loads all portal users for @mention autocomplete. */
+export function useMentionableUsers() {
+  return useQuery({
+    queryKey: [...usersKeys.all, "mentionable"] as const,
+    queryFn: async () => {
+      const pageSize = 100;
+      const first = await usersApi.list({ page: 1, pageSize });
+      const users = [...first.items];
+      const totalPages = Math.ceil(first.total / pageSize);
+      for (let page = 2; page <= totalPages; page++) {
+        const next = await usersApi.list({ page, pageSize });
+        users.push(...next.items);
+      }
+      return users.filter((user) => user.isActive);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useCreateUser() {
   const qc = useQueryClient();
   return useMutation({

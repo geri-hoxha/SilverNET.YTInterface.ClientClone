@@ -3,7 +3,7 @@ import { API_BASE_URL } from "@/shared/api/client";
 import { tokenStore } from "@/shared/api/tokens";
 import type { UserNotification } from "@/features/notifications/types";
 
-const HUB_URL = `${API_BASE_URL.replace('/api', '')}/hubs/notifications`;
+const HUB_URL = `${API_BASE_URL}/hubs/notifications`;
 
 let connection: signalR.HubConnection | null = null;
 let onNotification: ((notification: UserNotification) => void) | null = null;

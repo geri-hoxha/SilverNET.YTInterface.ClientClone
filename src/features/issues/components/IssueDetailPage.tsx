@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Download, FileText, Loader2, Paperclip, Star, Eye, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { RichTextContent } from "@/shared/components/RichTextContent";
 import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
@@ -35,6 +35,9 @@ import { issueDetailRouteApi } from "../route";
 import { IssueTypeBadge } from "@/shared/components/StatusBadge";
 import { fileTypeMeta, issueReadableId } from "../utils";
 import type { Issue, IssueAttachment } from "../types";
+import { useMentionableUsers } from "@/features/users/hooks";
+import { MentionTextarea } from "./MentionTextarea";
+import { CommentBody } from "./CommentBody";
 
 export function IssueDetailPage() {
   const { id } = issueDetailRouteApi.useParams();
@@ -148,6 +151,17 @@ export function IssueDetailPage() {
             </SidebarField> */}
             <SidebarField label="Created">
               <span>{formatDate(data.createdOnUtc)}</span>
+            </SidebarField>
+            <SidebarField label="Created by">
+              { data.createdByUserFullName ? (
+                <div
+                  className=" "
+                >
+                  {data.createdByUserFullName}
+                </div>
+              ) : (
+                <span>—</span>
+              )}
             </SidebarField>
             <SidebarField label="ID">
               <span className="font-mono text-xs">{readable}</span>
@@ -383,9 +397,11 @@ function CommentsArea({ id }: { id: string }) {
   const { user, hasPermission } = useAuth();
   const canComment = hasPermission(PERMISSIONS.issuesCommentsCreate);
   const q = useIssueComments(id);
+  const usersQ = useMentionableUsers();
   const add = useAddComment(id);
   const [text, setText] = useState("");
   const comments = q.data?.items ?? [];
+  const mentionableUsers = usersQ.data ?? [];
 
   const submit = async () => {
     if (!text.trim()) return;
@@ -414,7 +430,11 @@ function CommentsArea({ id }: { id: string }) {
                       Commented {formatRelative(c.createdOnUtc)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm whitespace-pre-wrap break-words">{c.body}</p>
+                  <CommentBody
+                    body={c.body}
+                    users={mentionableUsers}
+                    className="mt-1 text-sm"
+                  />
                 </div>
               </li>
             );
@@ -426,12 +446,12 @@ function CommentsArea({ id }: { id: string }) {
         <div className="flex gap-3">
           <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
           <div className="flex-1 space-y-2">
-            <Textarea
+            <MentionTextarea
               placeholder="Write a comment"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={setText}
+              users={mentionableUsers}
               rows={2}
-              className="resize-none bg-muted/30"
             />
             {text.trim() && (
               <div className="flex justify-end">

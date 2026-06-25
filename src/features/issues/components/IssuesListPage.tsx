@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckSquare, ChevronDown, Star } from "lucide-react";
 import { z } from "zod";
@@ -25,7 +25,7 @@ import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue, IssueSortField } from "../types";
 
 const ISSUE_GRID =
-  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px] items-center gap-2";
+  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px_minmax(120px,0.75fr)] items-center gap-2";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -191,6 +191,7 @@ export function IssuesListPage() {
                   onSort={setSort}
                 />
               </span>
+              <span className="hidden md:block">Created by</span>
             </div>
 
             {query.isLoading ? (
@@ -205,6 +206,7 @@ export function IssuesListPage() {
                   <Skeleton className="hidden md:block h-4 w-20" />
                   <Skeleton className="hidden md:block h-4 w-16" />
                   <Skeleton className="hidden md:block h-4 w-20" />
+                  <Skeleton className="hidden md:block h-4 w-24" />
                 </div>
               ))
             ) : query.isError ? (
@@ -414,6 +416,20 @@ function IssueRow({
         title={formatShortDate(issue.createdOnUtc)}
       >
         {formatRelative(issue.createdOnUtc)}
+      </div>
+      <div
+        className="hidden md:block min-w-0 truncate"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {issue.createdByUserFullName ? (
+          <div
+            className=" "
+          >
+            {issue.createdByUserFullName}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
       </div>
     </div>
   );

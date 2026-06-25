@@ -40,6 +40,8 @@ import { issuesSearchSchema } from "../schemas";
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 const ALL = "__all__";
+const EMPTY_CLIENT_STATE_VALUE = "-";
+const EMPTY_CLIENT_STATE_LABEL = "No state";
 
 function isoToDate(iso?: string) {
   if (!iso) return undefined;
@@ -159,7 +161,15 @@ export function IssuesFilterBar({ search }: Props) {
 
         <FilterField label="Status" className="w-full sm:w-[200px]">
           <MultiSelectFilter
-            options={clientStatesQ.data ?? []}
+            options={[
+              EMPTY_CLIENT_STATE_VALUE,
+              ...(clientStatesQ.data ?? []).filter(
+                (state) => state !== EMPTY_CLIENT_STATE_VALUE,
+              ),
+            ]}
+            optionLabels={{
+              [EMPTY_CLIENT_STATE_VALUE]: EMPTY_CLIENT_STATE_LABEL,
+            }}
             selected={search.status ?? []}
             onChange={(next) =>
               updateSearch({ status: next.length ? next : undefined })
@@ -224,15 +234,18 @@ export function IssuesFilterBar({ search }: Props) {
 
 function MultiSelectFilter({
   options,
+  optionLabels,
   selected,
   onChange,
   placeholder,
 }: {
   options: readonly string[];
+  optionLabels?: Record<string, string>;
   selected: string[];
   onChange: (next: string[]) => void;
   placeholder: string;
 }) {
+  const labelFor = (option: string) => optionLabels?.[option] ?? option;
   const [open, setOpen] = useState(false);
 
   const toggle = (option: string) => {
@@ -258,7 +271,7 @@ function MultiSelectFilter({
     selected.length === 0
       ? placeholder
       : selected.length === 1
-        ? selected[0]
+        ? labelFor(selected[0])
         : `${selected.length} selected`;
 
   return (
@@ -309,12 +322,12 @@ function MultiSelectFilter({
                 return (
                   <CommandItem
                     key={option}
-                    value={option}
+                    value={`${option} ${labelFor(option)}`}
                     onSelect={() => toggle(option)}
                     className="flex items-center gap-2"
                   >
                     <Checkbox checked={checked} className="pointer-events-none" />
-                    <span className="flex-1">{option}</span>
+                    <span className="flex-1">{labelFor(option)}</span>
                     {checked && <Check className="h-4 w-4" />}
                   </CommandItem>
                 );

@@ -13,6 +13,8 @@ export interface Issue {
   priority: string;
   issueType?: string;
   createdOnUtc: string;
+  createdByUserId?: string;
+  createdByUserFullName?: string;
   key?: string;
   projectShortCode?: string;
   status?: IssueStatus;

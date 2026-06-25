@@ -62,7 +62,7 @@ export const issuesApi = {
   comments: async (id: string): Promise<PaginatedResult<IssueComment>> => {
     const result = await apiRequest<ApiPaginatedResult<IssueComment>>({
       method: "GET",
-      url: `/issues/${id}/comments`,
+      url: `/issues/${id}/comments?page=1&pageSize=100`,
     });
     return toPaginatedResult(result);
   },

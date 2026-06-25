@@ -4,6 +4,8 @@ export interface PortalUser {
   id: string;
   email: string;
   fullName: string;
+  /** Hub login used in YouTrack `@login` mentions. Falls back to the email local part. */
+  youTrackLogin?: string | null;
   organizationId: string;
   organizationName?: string;
   role: string;

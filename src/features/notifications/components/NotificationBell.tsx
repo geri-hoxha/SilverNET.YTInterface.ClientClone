@@ -39,7 +39,7 @@ function NotificationItem({
           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
         )}
       </div>
-      <p className="line-clamp-2 text-xs text-muted-foreground">{notification.body}</p>
+      <p className=" text-xs text-muted-foreground">{notification.body}</p>
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         <span>{getNotificationTypeLabel(notification.type)}</span>
         <span>·</span>
@@ -58,7 +58,8 @@ export function NotificationBell() {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
 
-  const unreadCount = unread?.count ?? 0;
+  const unreadCount: any = unread?.count ?? unread ?? 0;
+
   const items = list?.items ?? [];
 
   const handleOpen = (notification: UserNotification) => {
@@ -79,7 +80,7 @@ export function NotificationBell() {
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-700 px-1 text-[10px] font-medium text-primary-foreground">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
