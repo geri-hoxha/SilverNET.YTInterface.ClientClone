@@ -1,38 +1,38 @@
 import { useMemo } from "react";
 
-import type { PortalUser } from "@/features/users/types";
-import {
-  getYouTrackLogin,
-  parseCommentBodyParts,
-} from "@/shared/utils/youtrackMentions";
+import type { MentionableUser } from "@/features/users/types";
+import { parseCommentBodyParts } from "@/shared/utils/youtrackMentions";
 
 type CommentBodyProps = {
   body: string;
-  users: PortalUser[];
+  users: MentionableUser[];
   className?: string;
 };
 
 export function CommentBody({ body, users, className }: CommentBodyProps) {
-  const loginToName = useMemo(() => {
+  const handleToName = useMemo(() => {
     const map = new Map<string, string>();
     for (const user of users) {
-      map.set(getYouTrackLogin(user).toLowerCase(), user.fullName);
+      map.set(user.mentionHandle.toLowerCase(), user.fullName);
     }
     return map;
   }, [users]);
 
-  const parts = useMemo(() => parseCommentBodyParts(body), [body]);
-  console.log(parts)
+  const parts = useMemo(
+    () => parseCommentBodyParts(body, users.map((u) => u.mentionHandle)),
+    [body, users],
+  );
+
   return (
     <p className={className}>
       {parts.map((part, index) =>
         part.type === "mention" ? (
           <span
             key={index}
-            className="font-medium text-sky-500 dark:text-blue-400"
-            title={`@${part.login}`}
+            className="font-medium text-blue-600 dark:text-blue-400"
+            title={`@${part.handle}`}
           >
-            @{loginToName.get(part.login.toLowerCase()) ?? part.login}
+            {handleToName.get(part.handle.toLowerCase()) ?? part.handle}
           </span>
         ) : (
           <span key={index} className="whitespace-pre-wrap break-words">

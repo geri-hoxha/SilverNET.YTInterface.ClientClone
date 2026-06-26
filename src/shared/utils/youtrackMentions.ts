@@ -1,33 +1,46 @@
-/** Hub / YouTrack login used in `@login` mention markup. */
-export function getYouTrackLogin(user: {
-  email: string;
-  youTrackLogin?: string | null;
-}): string {
-  if (user.youTrackLogin?.trim()) return user.youTrackLogin.trim();
-  return user.email.split("@")[0] ?? "";
-}
-
-/** YouTrack comment payload format: `@login` (see YouTrack REST API samples). */
-export function formatYouTrackMention(login: string): string {
-  return `@${login}`;
+/** YouTrack comment mention format: `@mentionHandle`. */
+export function formatMention(handle: string): string {
+  return `@${handle}`;
 }
 
 const MENTION_PATTERN = /@([a-zA-Z0-9._-]+)/g;
 
 export type CommentBodyPart =
   | { type: "text"; value: string }
-  | { type: "mention"; login: string };
+  | { type: "mention"; handle: string };
 
-export function parseCommentBodyParts(body: string): CommentBodyPart[] {
+export function parseCommentBodyParts(body: string, handles: string[]): CommentBodyPart[] {
+  if (!body) return [];
+  if (!handles.length) {
+    const parts: CommentBodyPart[] = [];
+    let lastIndex = 0;
+    for (const match of body.matchAll(MENTION_PATTERN)) {
+      const index = match.index ?? 0;
+      if (index > lastIndex) {
+        parts.push({ type: "text", value: body.slice(lastIndex, index) });
+      }
+      parts.push({ type: "mention", handle: match[1] });
+      lastIndex = index + match[0].length;
+    }
+    if (lastIndex < body.length) {
+      parts.push({ type: "text", value: body.slice(lastIndex) });
+    }
+    return parts.length ? parts : [{ type: "text", value: body }];
+  }
+
+  const sorted = [...handles].sort((a, b) => b.length - a.length);
+  const escaped = sorted.map((h) => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const pattern = new RegExp(`@(${escaped.join("|")})`, "g");
+
   const parts: CommentBodyPart[] = [];
   let lastIndex = 0;
 
-  for (const match of body.matchAll(MENTION_PATTERN)) {
+  for (const match of body.matchAll(pattern)) {
     const index = match.index ?? 0;
     if (index > lastIndex) {
       parts.push({ type: "text", value: body.slice(lastIndex, index) });
     }
-    parts.push({ type: "mention", login: match[1] });
+    parts.push({ type: "mention", handle: match[1] });
     lastIndex = index + match[0].length;
   }
 
@@ -35,7 +48,7 @@ export function parseCommentBodyParts(body: string): CommentBodyPart[] {
     parts.push({ type: "text", value: body.slice(lastIndex) });
   }
 
-  return parts;
+  return parts.length ? parts : [{ type: "text", value: body }];
 }
 
 /** Active `@query` at the caret, if any. */

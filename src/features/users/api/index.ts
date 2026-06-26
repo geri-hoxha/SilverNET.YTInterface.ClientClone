@@ -2,6 +2,7 @@ import { apiRequest } from "@/shared/api/client";
 import type {
   ApiPaginatedResult,
   CreateUserDto,
+  MentionableUser,
   PaginatedResult,
   PortalUser,
   UpdateUserDto,
@@ -32,6 +33,9 @@ export const usersApi = {
 
   get: (id: string) =>
     apiRequest<PortalUser>({ method: "GET", url: `/users/${id}` }),
+
+  mentionable: () =>
+    apiRequest<MentionableUser[]>({ method: "GET", url: "/users/mentionable" }),
 
   create: (data: CreateUserDto) =>
     apiRequest<PortalUser>({ method: "POST", url: "/users", data }),

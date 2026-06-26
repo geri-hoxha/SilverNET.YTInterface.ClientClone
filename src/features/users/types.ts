@@ -1,11 +1,15 @@
 export type UserType = "Standard" | "Reporter" | "Guest";
 
+export interface MentionableUser {
+  id: string;
+  fullName: string;
+  mentionHandle: string;
+}
+
 export interface PortalUser {
   id: string;
   email: string;
   fullName: string;
-  /** Hub login used in YouTrack `@login` mentions. Falls back to the email local part. */
-  youTrackLogin?: string | null;
   organizationId: string;
   organizationName?: string;
   role: string;

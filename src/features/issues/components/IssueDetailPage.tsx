@@ -405,7 +405,7 @@ function CommentsArea({ id }: { id: string }) {
 
   const submit = async () => {
     if (!text.trim()) return;
-    await add.mutateAsync(text);
+    await add.mutateAsync(text.trim());
     setText("");
   };
 
