@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { endOfDay, parseISO, startOfDay } from "date-fns";
-import { Check, ChevronsUpDown, Search, X } from "lucide-react";
+import { Check, ChevronsUpDown, ListFilter, Search, X } from "lucide-react";
 import { z } from "zod";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -29,6 +29,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import {
   useClientStates,
@@ -36,12 +45,21 @@ import {
   useProjects,
 } from "@/features/projects/hooks";
 import { issuesSearchSchema } from "../schemas";
+import { issuesRouteApi } from "../route";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 const ALL = "__all__";
 const EMPTY_CLIENT_STATE_VALUE = "-";
 const EMPTY_CLIENT_STATE_LABEL = "No state";
+
+type FilterDraft = {
+  projectId?: string;
+  priority: string[];
+  status: string[];
+  from?: string;
+  to?: string;
+};
 
 function isoToDate(iso?: string) {
   if (!iso) return undefined;
@@ -60,16 +78,55 @@ function toEndOfDay(date: Date) {
   return endOfDay(date).toISOString();
 }
 
+function countActiveFilters(search: IssuesSearch) {
+  return countSheetFilters(search) + (search.search ? 1 : 0);
+}
+
+function countSheetFilters(search: IssuesSearch) {
+  let count = 0;
+  if (search.projectId) count++;
+  if (search.priority?.length) count++;
+  if (search.status?.length) count++;
+  if (search.from) count++;
+  if (search.to) count++;
+  return count;
+}
+
+function emptyFilterDraft(): FilterDraft {
+  return {
+    projectId: undefined,
+    priority: [],
+    status: [],
+    from: undefined,
+    to: undefined,
+  };
+}
+
+function filterDraftFromSearch(search: IssuesSearch): FilterDraft {
+  return {
+    projectId: search.projectId,
+    priority: search.priority ?? [],
+    status: search.status ?? [],
+    from: search.from,
+    to: search.to,
+  };
+}
+
 interface Props {
   search: IssuesSearch;
 }
 
 export function IssuesFilterBar({ search }: Props) {
-  const navigate = useNavigate({ from: "/issues" });
+  const isMobile = useIsMobile();
+  const navigate = issuesRouteApi.useNavigate();
   const projectsQ = useProjects();
   const prioritiesQ = usePriorities();
   const clientStatesQ = useClientStates();
   const [searchDraft, setSearchDraft] = useState(search.search ?? "");
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [mobileDraft, setMobileDraft] = useState<FilterDraft>(() =>
+    filterDraftFromSearch(search),
+  );
 
   useEffect(() => {
     setSearchDraft(search.search ?? "");
@@ -84,7 +141,7 @@ export function IssuesFilterBar({ search }: Props) {
       }),
     });
 
-  const commitDrafts = () =>
+  const commitSearchDraft = () =>
     updateSearch({
       search: searchDraft.trim() || undefined,
     });
@@ -97,129 +154,200 @@ export function IssuesFilterBar({ search }: Props) {
       },
     });
 
-  const hasActiveFilters = Boolean(
-    search.projectId ||
-      search.status?.length ||
-      search.priority?.length ||
-      search.from ||
-      search.to ||
-      search.search ||
-      search.sortBy,
-  );
+  const hasActiveFilters = countActiveFilters(search) > 0 || Boolean(search.sortBy);
+  const sheetFilterCount = countSheetFilters(search);
+  const projects = projectsQ.data ?? [];
+  const priorities = prioritiesQ.data ?? [];
+  const clientStates = clientStatesQ.data ?? [];
+
+  const handleFilterSheetOpenChange = (open: boolean) => {
+    if (open) {
+      setMobileDraft(filterDraftFromSearch(search));
+    }
+    setFilterSheetOpen(open);
+  };
+
+  const applyMobileFilters = () => {
+    updateSearch({
+      projectId: mobileDraft.projectId,
+      priority: mobileDraft.priority.length ? mobileDraft.priority : undefined,
+      status: mobileDraft.status.length ? mobileDraft.status : undefined,
+      from: mobileDraft.from,
+      to: mobileDraft.to,
+    });
+    handleFilterSheetOpenChange(false);
+  };
+
+  const resetMobileFilters = () => {
+    const cleared = emptyFilterDraft();
+    setMobileDraft(cleared);
+    updateSearch({
+      projectId: undefined,
+      priority: undefined,
+      status: undefined,
+      from: undefined,
+      to: undefined,
+    });
+    handleFilterSheetOpenChange(false);
+  };
+
+  const searchDraftDirty =
+    searchDraft.trim() !== (search.search ?? "").trim();
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="border-b bg-muted/20 px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") commitSearchDraft();
+                }}
+                placeholder="Search issues..."
+                className={cn("h-9 pl-8", searchDraft ? "pr-16" : "pr-9")}
+              />
+              {searchDraft && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchDraft("");
+                    if (search.search) updateSearch({ search: undefined });
+                  }}
+                  className="absolute right-9 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <Button
+                type="button"
+                size="icon"
+                variant={searchDraftDirty ? "default" : "ghost"}
+                className="absolute right-0.5 top-1/2 h-8 w-8 -translate-y-1/2"
+                onClick={commitSearchDraft}
+                aria-label="Search issues"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="relative h-9 shrink-0 gap-1.5 px-3"
+              onClick={() => handleFilterSheetOpenChange(true)}
+            >
+              <ListFilter className="h-4 w-4" />
+              Filters
+              {sheetFilterCount > 0 && (
+                <Badge className="ml-0.5 h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px]">
+                  {sheetFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+
+          {hasActiveFilters && (
+            <MobileActiveFilterChips
+              search={search}
+              projects={projects}
+              onRemove={(next) => updateSearch(next)}
+              onClearAll={clearFilters}
+            />
+          )}
+        </div>
+
+        <Sheet open={filterSheetOpen} onOpenChange={handleFilterSheetOpenChange}>
+          <SheetContent
+            side="bottom"
+            className="flex h-[min(88dvh,720px)] flex-col gap-0 rounded-t-2xl p-0"
+          >
+            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/25" />
+            <SheetHeader className="shrink-0 border-b px-4 pb-3 pt-4 text-left">
+              <SheetTitle>Filter issues</SheetTitle>
+              <SheetDescription>
+                Narrow the list by project, priority, status, or date.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              <IssuesFilterFields
+                draft={mobileDraft}
+                onDraftChange={setMobileDraft}
+                projects={projects}
+                priorities={priorities}
+                clientStates={clientStates}
+              />
+            </div>
+
+            <SheetFooter className="grid shrink-0 grid-cols-2 gap-2 border-t bg-background px-4 py-3">
+              <Button type="button" variant="outline" onClick={resetMobileFilters}>
+                Reset filters
+              </Button>
+              <Button type="button" onClick={applyMobileFilters}>
+                Apply filters
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
 
   return (
-    <div className="border-b bg-muted/20 px-3 py-3 sm:px-4">
-      <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end">
-        <FilterField label="Search" className="w-full sm:min-w-[200px] sm:flex-1">
+    <div className="border-b bg-muted/20 px-4 py-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <FilterField label="Search" className="min-w-[200px] flex-1">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") commitDrafts();
+                if (e.key === "Enter") commitSearchDraft();
               }}
               placeholder="Search issues..."
-              className="h-9 pl-8 sm:h-8"
+              className="h-8 pl-8"
             />
           </div>
         </FilterField>
 
-        <FilterField label="Project" className="w-full sm:w-[180px]">
-          <Select
-            value={search.projectId ?? ALL}
-            onValueChange={(value) =>
-              updateSearch({
-                projectId: value === ALL ? undefined : value,
-              })
-            }
-          >
-            <SelectTrigger className="h-9 sm:h-8">
-              <SelectValue placeholder="All projects" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All projects</SelectItem>
-              {(projectsQ.data ?? []).map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FilterField>
+        <IssuesFilterFields
+          draft={{
+            projectId: search.projectId,
+            priority: search.priority ?? [],
+            status: search.status ?? [],
+            from: search.from,
+            to: search.to,
+          }}
+          onDraftChange={(next) =>
+            updateSearch({
+              projectId: next.projectId,
+              priority: next.priority.length ? next.priority : undefined,
+              status: next.status.length ? next.status : undefined,
+              from: next.from,
+              to: next.to,
+            })
+          }
+          projects={projects}
+          priorities={priorities}
+          clientStates={clientStates}
+          layout="inline"
+        />
 
-        <FilterField label="Priority" className="w-full sm:w-[180px]">
-          <MultiSelectFilter
-            options={prioritiesQ.data ?? []}
-            selected={search.priority ?? []}
-            onChange={(next) =>
-              updateSearch({ priority: next.length ? next : undefined })
-            }
-            placeholder="Any priority"
-          />
-        </FilterField>
-
-        <FilterField label="Status" className="w-full sm:w-[200px]">
-          <MultiSelectFilter
-            options={[
-              EMPTY_CLIENT_STATE_VALUE,
-              ...(clientStatesQ.data ?? []).filter(
-                (state) => state !== EMPTY_CLIENT_STATE_VALUE,
-              ),
-            ]}
-            optionLabels={{
-              [EMPTY_CLIENT_STATE_VALUE]: EMPTY_CLIENT_STATE_LABEL,
-            }}
-            selected={search.status ?? []}
-            onChange={(next) =>
-              updateSearch({ status: next.length ? next : undefined })
-            }
-            placeholder="Any status"
-          />
-        </FilterField>
-
-        <FilterField label="From" className="w-full sm:w-[170px]">
-          <DatePicker
-            value={isoToDate(search.from)}
-            onChange={(date) =>
-              updateSearch({
-                from: date ? toStartOfDay(date) : undefined,
-              })
-            }
-            placeholder="Start date"
-            toDate={isoToDate(search.to)}
-            className="h-9 sm:h-8"
-          />
-        </FilterField>
-
-        <FilterField label="To" className="w-full sm:w-[170px]">
-          <DatePicker
-            value={isoToDate(search.to)}
-            onChange={(date) =>
-              updateSearch({
-                to: date ? toEndOfDay(date) : undefined,
-              })
-            }
-            placeholder="End date"
-            fromDate={isoToDate(search.from)}
-            className="h-9 sm:h-8"
-          />
-        </FilterField>
-
-        <div className="flex items-center gap-2 pb-0.5 w-full sm:w-auto">
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-9 flex-1 sm:h-8 sm:flex-none"
-            onClick={commitDrafts}
-          >
+        <div className="flex items-center gap-2 pb-0.5">
+          <Button size="sm" variant="secondary" className="h-8" onClick={commitSearchDraft}>
             Apply
           </Button>
           {hasActiveFilters && (
             <Button
               size="sm"
               variant="ghost"
-              className="h-9 flex-1 sm:h-8 sm:flex-none text-muted-foreground"
+              className="h-8 text-muted-foreground"
               onClick={clearFilters}
             >
               <X className="mr-1 h-3.5 w-3.5" />
@@ -232,18 +360,213 @@ export function IssuesFilterBar({ search }: Props) {
   );
 }
 
+function IssuesFilterFields({
+  draft,
+  onDraftChange,
+  projects,
+  priorities,
+  clientStates,
+  layout = "stacked",
+}: {
+  draft: FilterDraft;
+  onDraftChange: (next: FilterDraft) => void;
+  projects: { id: string; name: string }[];
+  priorities: readonly string[];
+  clientStates: readonly string[];
+  layout?: "stacked" | "inline";
+}) {
+  const patch = (next: Partial<FilterDraft>) =>
+    onDraftChange({ ...draft, ...next });
+
+  const containerClass =
+    layout === "inline"
+      ? "contents"
+      : "grid grid-cols-1 gap-4";
+
+  return (
+    <div className={containerClass}>
+      <FilterField label="Project" className={layout === "inline" ? "w-[180px]" : undefined}>
+        <Select
+          value={draft.projectId ?? ALL}
+          onValueChange={(value) =>
+            patch({ projectId: value === ALL ? undefined : value })
+          }
+        >
+          <SelectTrigger className={layout === "inline" ? "h-8" : "h-10"}>
+            <SelectValue placeholder="All projects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>All projects</SelectItem>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FilterField>
+
+      <FilterField label="Priority" className={layout === "inline" ? "w-[180px]" : undefined}>
+        <MultiSelectFilter
+          options={priorities}
+          selected={draft.priority}
+          onChange={(next) => patch({ priority: next })}
+          placeholder="Any priority"
+          triggerClassName={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+
+      <FilterField label="Status" className={layout === "inline" ? "w-[200px]" : undefined}>
+        <MultiSelectFilter
+          options={[
+            EMPTY_CLIENT_STATE_VALUE,
+            ...clientStates.filter((state) => state !== EMPTY_CLIENT_STATE_VALUE),
+          ]}
+          optionLabels={{
+            [EMPTY_CLIENT_STATE_VALUE]: EMPTY_CLIENT_STATE_LABEL,
+          }}
+          selected={draft.status}
+          onChange={(next) => patch({ status: next })}
+          placeholder="Any status"
+          triggerClassName={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+
+      <FilterField label="From" className={layout === "inline" ? "w-[170px]" : undefined}>
+        <DatePicker
+          value={isoToDate(draft.from)}
+          onChange={(date) =>
+            patch({ from: date ? toStartOfDay(date) : undefined })
+          }
+          placeholder="Start date"
+          toDate={isoToDate(draft.to)}
+          className={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+
+      <FilterField label="To" className={layout === "inline" ? "w-[170px]" : undefined}>
+        <DatePicker
+          value={isoToDate(draft.to)}
+          onChange={(date) =>
+            patch({ to: date ? toEndOfDay(date) : undefined })
+          }
+          placeholder="End date"
+          fromDate={isoToDate(draft.from)}
+          className={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+    </div>
+  );
+}
+
+function MobileActiveFilterChips({
+  search,
+  projects,
+  onRemove,
+  onClearAll,
+}: {
+  search: IssuesSearch;
+  projects: { id: string; name: string }[];
+  onRemove: (next: Partial<IssuesSearch>) => void;
+  onClearAll: () => void;
+}) {
+  const chips: { key: string; label: string; clear: Partial<IssuesSearch> }[] = [];
+
+  if (search.search) {
+    chips.push({
+      key: "search",
+      label: `"${search.search}"`,
+      clear: { search: undefined },
+    });
+  }
+
+  if (search.projectId) {
+    const project = projects.find((p) => p.id === search.projectId);
+    chips.push({
+      key: "project",
+      label: project?.name ?? "Project",
+      clear: { projectId: undefined },
+    });
+  }
+
+  if (search.priority?.length) {
+    chips.push({
+      key: "priority",
+      label:
+        search.priority.length === 1
+          ? search.priority[0]
+          : `${search.priority.length} priorities`,
+      clear: { priority: undefined },
+    });
+  }
+
+  if (search.status?.length) {
+    const labels = search.status.map((s) =>
+      s === EMPTY_CLIENT_STATE_VALUE ? EMPTY_CLIENT_STATE_LABEL : s,
+    );
+    chips.push({
+      key: "status",
+      label: labels.length === 1 ? labels[0] : `${labels.length} statuses`,
+      clear: { status: undefined },
+    });
+  }
+
+  if (search.from || search.to) {
+    const from = search.from ? isoToDate(search.from) : undefined;
+    const to = search.to ? isoToDate(search.to) : undefined;
+    const label =
+      from && to
+        ? `${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
+        : from
+          ? `From ${from.toLocaleDateString()}`
+          : `Until ${to!.toLocaleDateString()}`;
+    chips.push({
+      key: "dates",
+      label,
+      clear: { from: undefined, to: undefined },
+    });
+  }
+
+  if (!chips.length) return null;
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      {chips.map((chip) => (
+        <button
+          key={chip.key}
+          type="button"
+          onClick={() => onRemove(chip.clear)}
+          className="inline-flex max-w-full items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-xs text-foreground"
+        >
+          <span className="truncate">{chip.label}</span>
+          <X className="h-3 w-3 shrink-0 opacity-60" />
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={onClearAll}
+        className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+      >
+        Clear all
+      </button>
+    </div>
+  );
+}
+
 function MultiSelectFilter({
   options,
   optionLabels,
   selected,
   onChange,
   placeholder,
+  triggerClassName,
 }: {
   options: readonly string[];
   optionLabels?: Record<string, string>;
   selected: string[];
   onChange: (next: string[]) => void;
   placeholder: string;
+  triggerClassName?: string;
 }) {
   const labelFor = (option: string) => optionLabels?.[option] ?? option;
   const [open, setOpen] = useState(false);
@@ -281,7 +604,10 @@ function MultiSelectFilter({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="h-9 w-full justify-between font-normal sm:h-8"
+          className={cn(
+            "w-full justify-between font-normal",
+            triggerClassName ?? "h-8",
+          )}
         >
           <span
             className={cn(
@@ -363,7 +689,7 @@ function FilterField({
 }) {
   return (
     <div className={className}>
-      <Label className="mb-1 block text-[11px] font-medium text-muted-foreground">
+      <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
         {label}
       </Label>
       {children}

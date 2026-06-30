@@ -1,10 +1,12 @@
-import { apiRequest } from "@/shared/api/client";
+import { api, apiRequest } from "@/shared/api/client";
 import type {
   ApiPaginatedResult,
   CreateIssueDto,
   Issue,
   IssueAttachment,
   IssueComment,
+  IssueExportFormat,
+  IssueExportParams,
   IssueListParams,
   PaginatedResult,
   UpdateIssueDto,
@@ -19,11 +21,28 @@ function toPaginatedResult<T>(result: ApiPaginatedResult<T>): PaginatedResult<T>
   };
 }
 
-function toListParams(params: IssueListParams) {
-  const query: Record<string, string | number | boolean | string[]> = {
-    Page: params.page,
-    PageSize: params.pageSize,
-  };
+const EXPORT_DEFAULT_FILENAMES: Record<IssueExportFormat, string> = {
+  0: "issues.xlsx",
+  1: "issues.csv",
+  2: "issues.pdf",
+};
+
+function parseContentDispositionFilename(disposition?: string) {
+  if (!disposition) return undefined;
+  const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(disposition);
+  if (!match?.[1]) return undefined;
+  try {
+    return decodeURIComponent(match[1].replace(/"/g, ""));
+  } catch {
+    return match[1].replace(/"/g, "");
+  }
+}
+
+function toFilterParams(
+  params: Omit<IssueListParams, "page" | "pageSize"> & { format?: IssueExportFormat },
+) {
+  const query: Record<string, string | number | boolean | string[]> = {};
+  if (params.format !== undefined) query.Format = params.format;
   if (params.projectId) query.ProjectId = params.projectId;
   if (params.status?.length) query.Status = params.status;
   if (params.priority?.length) query.Priority = params.priority;
@@ -35,6 +54,14 @@ function toListParams(params: IssueListParams) {
     query.SortDescending = params.sortDescending;
   }
   return query;
+}
+
+function toListParams(params: IssueListParams) {
+  return {
+    Page: params.page,
+    PageSize: params.pageSize,
+    ...toFilterParams(params),
+  };
 }
 
 export const issuesApi = {
@@ -105,4 +132,22 @@ export const issuesApi = {
       method: "POST",
       url: `/issues/${id}/estimation/approve`,
     }),
+
+  export: async (params: IssueExportParams) => {
+    const response = await api.request<Blob>({
+      method: "GET",
+      url: "/issues/export",
+      params: toFilterParams(params),
+      paramsSerializer: { indexes: null },
+      responseType: "blob",
+    });
+    const disposition = response.headers["content-disposition"];
+    return {
+      blob: response.data,
+      filename:
+        parseContentDispositionFilename(
+          typeof disposition === "string" ? disposition : undefined,
+        ) ?? EXPORT_DEFAULT_FILENAMES[params.format],
+    };
+  },
 };

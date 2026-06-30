@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { CheckSquare, ChevronDown, Star } from "lucide-react";
+import { CheckSquare, ChevronDown, Download, Star } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { issuesSearchSchema } from "../schemas";
 import { issueReadableId } from "../utils";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { CreateIssueDialog } from "./CreateIssueDialog";
+import { ExportIssuesDialog } from "./ExportIssuesDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
 import {
   clientStateTextColor,
@@ -45,6 +46,7 @@ export function IssuesListPage() {
     sortDescending,
   } = search;
   const [createOpen, setCreateOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
 
   const { hasPermission } = useAuth();
@@ -115,6 +117,14 @@ export function IssuesListPage() {
           <span className="text-xs text-muted-foreground">{total}</span>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => setExportOpen(true)}
+          >
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            Export
+          </Button>
           {canCreate && (
             <Button
               size="sm"
@@ -267,6 +277,21 @@ export function IssuesListPage() {
         onOpenChange={setCreateOpen}
         defaultProjectId={projectId}
         onCreated={(id) => navigate({ to: "/issues/$id", params: { id } })}
+      />
+
+      <ExportIssuesDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        filters={{
+          projectId,
+          status,
+          priority,
+          from,
+          to,
+          search: searchText,
+          sortBy,
+          sortDescending,
+        }}
       />
     </div>
   );

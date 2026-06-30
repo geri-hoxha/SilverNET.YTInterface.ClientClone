@@ -46,6 +46,13 @@ export interface IssueListParams {
   sortDescending?: boolean;
 }
 
+/** 0 = Excel, 1 = CSV, 2 = PDF */
+export type IssueExportFormat = 0 | 1 | 2;
+
+export type IssueExportParams = Omit<IssueListParams, "page" | "pageSize"> & {
+  format: IssueExportFormat;
+};
+
 export interface PaginatedResult<T> {
   items: T[];
   total: number;
