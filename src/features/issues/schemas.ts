@@ -17,6 +17,8 @@ export const issuesSearchSchema = z.object({
   priority: z.array(z.string()).optional(),
   from: z.string().optional(),
   to: z.string().optional(),
+  closedFrom: z.string().optional(),
+  closedTo: z.string().optional(),
   search: z.string().optional(),
   sortBy: issueSortFieldSchema.optional(),
   sortDescending: z.boolean().optional(),

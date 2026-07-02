@@ -48,6 +48,8 @@ function toFilterParams(
   if (params.priority?.length) query.Priority = params.priority;
   if (params.from) query.From = params.from;
   if (params.to) query.To = params.to;
+  if (params.closedFrom) query.ClosedFrom = params.closedFrom;
+  if (params.closedTo) query.ClosedTo = params.closedTo;
   if (params.search) query.Search = params.search;
   if (params.sortBy) query.SortBy = params.sortBy;
   if (params.sortDescending !== undefined) {

@@ -26,7 +26,7 @@ import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import type { Issue, IssueSortField } from "../types";
 
 const ISSUE_GRID =
-  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px_minmax(120px,0.75fr)] items-center gap-2";
+  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px_112px_minmax(120px,0.75fr)] items-center gap-2";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -41,6 +41,8 @@ export function IssuesListPage() {
     priority,
     from,
     to,
+    closedFrom,
+    closedTo,
     search: searchText,
     sortBy,
     sortDescending,
@@ -63,6 +65,8 @@ export function IssuesListPage() {
     priority,
     from,
     to,
+    closedFrom,
+    closedTo,
     search: searchText,
     sortBy,
     sortDescending,
@@ -201,6 +205,7 @@ export function IssuesListPage() {
                   onSort={setSort}
                 />
               </span>
+              <span className="hidden md:block">Closed</span>
               <span className="hidden md:block">Created by</span>
             </div>
 
@@ -215,6 +220,7 @@ export function IssuesListPage() {
                   <Skeleton className="h-4 w-14" />
                   <Skeleton className="hidden md:block h-4 w-20" />
                   <Skeleton className="hidden md:block h-4 w-16" />
+                  <Skeleton className="hidden md:block h-4 w-20" />
                   <Skeleton className="hidden md:block h-4 w-20" />
                   <Skeleton className="hidden md:block h-4 w-24" />
                 </div>
@@ -288,6 +294,8 @@ export function IssuesListPage() {
           priority,
           from,
           to,
+          closedFrom,
+          closedTo,
           search: searchText,
           sortBy,
           sortDescending,
@@ -441,6 +449,12 @@ function IssueRow({
         title={formatShortDate(issue.createdOnUtc)}
       >
         {formatRelative(issue.createdOnUtc)}
+      </div>
+      <div
+        className="hidden md:block truncate text-xs text-muted-foreground"
+        title={issue.closedAt ? formatShortDate(issue.closedAt) : undefined}
+      >
+        {issue.closedAt ? formatRelative(issue.closedAt) : "—"}
       </div>
       <div
         className="hidden md:block min-w-0 truncate"

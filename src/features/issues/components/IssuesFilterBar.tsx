@@ -59,6 +59,8 @@ type FilterDraft = {
   status: string[];
   from?: string;
   to?: string;
+  closedFrom?: string;
+  closedTo?: string;
 };
 
 function isoToDate(iso?: string) {
@@ -89,6 +91,8 @@ function countSheetFilters(search: IssuesSearch) {
   if (search.status?.length) count++;
   if (search.from) count++;
   if (search.to) count++;
+  if (search.closedFrom) count++;
+  if (search.closedTo) count++;
   return count;
 }
 
@@ -99,6 +103,8 @@ function emptyFilterDraft(): FilterDraft {
     status: [],
     from: undefined,
     to: undefined,
+    closedFrom: undefined,
+    closedTo: undefined,
   };
 }
 
@@ -109,6 +115,8 @@ function filterDraftFromSearch(search: IssuesSearch): FilterDraft {
     status: search.status ?? [],
     from: search.from,
     to: search.to,
+    closedFrom: search.closedFrom,
+    closedTo: search.closedTo,
   };
 }
 
@@ -174,6 +182,8 @@ export function IssuesFilterBar({ search }: Props) {
       status: mobileDraft.status.length ? mobileDraft.status : undefined,
       from: mobileDraft.from,
       to: mobileDraft.to,
+      closedFrom: mobileDraft.closedFrom,
+      closedTo: mobileDraft.closedTo,
     });
     handleFilterSheetOpenChange(false);
   };
@@ -187,6 +197,8 @@ export function IssuesFilterBar({ search }: Props) {
       status: undefined,
       from: undefined,
       to: undefined,
+      closedFrom: undefined,
+      closedTo: undefined,
     });
     handleFilterSheetOpenChange(false);
   };
@@ -270,7 +282,7 @@ export function IssuesFilterBar({ search }: Props) {
             <SheetHeader className="shrink-0 border-b px-4 pb-3 pt-4 text-left">
               <SheetTitle>Filter issues</SheetTitle>
               <SheetDescription>
-                Narrow the list by project, priority, status, or date.
+                Narrow the list by project, priority, status, or date range.
               </SheetDescription>
             </SheetHeader>
 
@@ -301,7 +313,7 @@ export function IssuesFilterBar({ search }: Props) {
   return (
     <div className="border-b bg-muted/20 px-4 py-3">
       <div className="flex flex-wrap items-end gap-3">
-        <FilterField label="Search" className="min-w-[200px] flex-1">
+        <FilterField label="Search" className="w-[340px] shrink-0">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -323,6 +335,8 @@ export function IssuesFilterBar({ search }: Props) {
             status: search.status ?? [],
             from: search.from,
             to: search.to,
+            closedFrom: search.closedFrom,
+            closedTo: search.closedTo,
           }}
           onDraftChange={(next) =>
             updateSearch({
@@ -331,6 +345,8 @@ export function IssuesFilterBar({ search }: Props) {
               status: next.status.length ? next.status : undefined,
               from: next.from,
               to: next.to,
+              closedFrom: next.closedFrom,
+              closedTo: next.closedTo,
             })
           }
           projects={projects}
@@ -432,7 +448,10 @@ function IssuesFilterFields({
         />
       </FilterField>
 
-      <FilterField label="From" className={layout === "inline" ? "w-[170px]" : undefined}>
+      <FilterField
+        label="Created from"
+        className={layout === "inline" ? "w-[155px]" : undefined}
+      >
         <DatePicker
           value={isoToDate(draft.from)}
           onChange={(date) =>
@@ -444,7 +463,10 @@ function IssuesFilterFields({
         />
       </FilterField>
 
-      <FilterField label="To" className={layout === "inline" ? "w-[170px]" : undefined}>
+      <FilterField
+        label="Created to"
+        className={layout === "inline" ? "w-[155px]" : undefined}
+      >
         <DatePicker
           value={isoToDate(draft.to)}
           onChange={(date) =>
@@ -452,6 +474,36 @@ function IssuesFilterFields({
           }
           placeholder="End date"
           fromDate={isoToDate(draft.from)}
+          className={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+
+      <FilterField
+        label="Closed from"
+        className={layout === "inline" ? "w-[155px]" : undefined}
+      >
+        <DatePicker
+          value={isoToDate(draft.closedFrom)}
+          onChange={(date) =>
+            patch({ closedFrom: date ? toStartOfDay(date) : undefined })
+          }
+          placeholder="Start date"
+          toDate={isoToDate(draft.closedTo)}
+          className={layout === "inline" ? "h-8" : "h-10"}
+        />
+      </FilterField>
+
+      <FilterField
+        label="Closed to"
+        className={layout === "inline" ? "w-[155px]" : undefined}
+      >
+        <DatePicker
+          value={isoToDate(draft.closedTo)}
+          onChange={(date) =>
+            patch({ closedTo: date ? toEndOfDay(date) : undefined })
+          }
+          placeholder="End date"
+          fromDate={isoToDate(draft.closedFrom)}
           className={layout === "inline" ? "h-8" : "h-10"}
         />
       </FilterField>
@@ -516,14 +568,30 @@ function MobileActiveFilterChips({
     const to = search.to ? isoToDate(search.to) : undefined;
     const label =
       from && to
-        ? `${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
+        ? `Created ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
         : from
-          ? `From ${from.toLocaleDateString()}`
-          : `Until ${to!.toLocaleDateString()}`;
+          ? `Created from ${from.toLocaleDateString()}`
+          : `Created until ${to!.toLocaleDateString()}`;
     chips.push({
-      key: "dates",
+      key: "created-dates",
       label,
       clear: { from: undefined, to: undefined },
+    });
+  }
+
+  if (search.closedFrom || search.closedTo) {
+    const from = search.closedFrom ? isoToDate(search.closedFrom) : undefined;
+    const to = search.closedTo ? isoToDate(search.closedTo) : undefined;
+    const label =
+      from && to
+        ? `Closed ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
+        : from
+          ? `Closed from ${from.toLocaleDateString()}`
+          : `Closed until ${to!.toLocaleDateString()}`;
+    chips.push({
+      key: "closed-dates",
+      label,
+      clear: { closedFrom: undefined, closedTo: undefined },
     });
   }
 

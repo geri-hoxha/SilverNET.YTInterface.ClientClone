@@ -13,6 +13,7 @@ export interface Issue {
   priority: string;
   issueType?: string;
   createdOnUtc: string;
+  closedAt?: string;
   createdByUserId?: string;
   createdByUserFullName?: string;
   key?: string;
@@ -41,6 +42,8 @@ export interface IssueListParams {
   priority?: string[];
   from?: string;
   to?: string;
+  closedFrom?: string;
+  closedTo?: string;
   search?: string;
   sortBy?: IssueSortField;
   sortDescending?: boolean;
