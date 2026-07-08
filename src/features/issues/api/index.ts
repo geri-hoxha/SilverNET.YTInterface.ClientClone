@@ -9,6 +9,8 @@ import type {
   IssueExportParams,
   IssueListParams,
   PaginatedResult,
+  SavedSearch,
+  SavedSearchFilters,
   UpdateIssueDto,
 } from "../types";
 
@@ -38,9 +40,7 @@ function parseContentDispositionFilename(disposition?: string) {
   }
 }
 
-function toFilterParams(
-  params: Omit<IssueListParams, "page" | "pageSize"> & { format?: IssueExportFormat },
-) {
+function toFilterParams(params: Omit<IssueListParams, "page" | "pageSize"> & { format?: IssueExportFormat }) {
   const query: Record<string, string | number | boolean | string[]> = {};
   if (params.format !== undefined) query.Format = params.format;
   if (params.projectId) query.ProjectId = params.projectId;
@@ -79,14 +79,11 @@ export const issuesApi = {
     return toPaginatedResult(result);
   },
 
-  get: (id: string) =>
-    apiRequest<Issue>({ method: "GET", url: `/issues/${id}` }),
+  get: (id: string) => apiRequest<Issue>({ method: "GET", url: `/issues/${id}` }),
 
-  create: (data: CreateIssueDto) =>
-    apiRequest<Issue>({ method: "POST", url: "/issues", data }),
+  create: (data: CreateIssueDto) => apiRequest<Issue>({ method: "POST", url: "/issues", data }),
 
-  update: (id: string, data: UpdateIssueDto) =>
-    apiRequest<Issue>({ method: "PUT", url: `/issues/${id}`, data }),
+  update: (id: string, data: UpdateIssueDto) => apiRequest<Issue>({ method: "PUT", url: `/issues/${id}`, data }),
 
   comments: async (id: string): Promise<PaginatedResult<IssueComment>> => {
     const result = await apiRequest<ApiPaginatedResult<IssueComment>>({
@@ -146,10 +143,15 @@ export const issuesApi = {
     const disposition = response.headers["content-disposition"];
     return {
       blob: response.data,
-      filename:
-        parseContentDispositionFilename(
-          typeof disposition === "string" ? disposition : undefined,
-        ) ?? EXPORT_DEFAULT_FILENAMES[params.format],
+      filename: parseContentDispositionFilename(typeof disposition === "string" ? disposition : undefined) ?? EXPORT_DEFAULT_FILENAMES[params.format],
     };
   },
+};
+
+export const savedSearchesApi = {
+  list: () => apiRequest<SavedSearch[]>({ method: "GET", url: "/issues/saved-searches" }),
+
+  create: (data: { name: string; filters: SavedSearchFilters; shared?: boolean }) => apiRequest<SavedSearch>({ method: "POST", url: "/issues/saved-searches", data }),
+
+  remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/issues/saved-searches/${id}` }),
 };

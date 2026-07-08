@@ -1,10 +1,3 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import {
-  ListChecks,
-  FolderKanban,
-  Building2,
-  Users,
-} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -16,8 +9,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Permission } from "@/features/auth";
+import { PERMISSIONS, useAuth } from "@/features/auth";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Building2, FolderKanban, ListChecks, Users } from "lucide-react";
 
 interface NavItem {
   title: string;
@@ -62,8 +57,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const active =
-                  path === item.url || path.startsWith(item.url + "/");
+                const active = path === item.url || path.startsWith(item.url + "/");
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={active}>

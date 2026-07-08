@@ -1,21 +1,12 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { notificationsApi } from "../api";
-import type {
-  NotificationListParams,
-  PaginatedNotifications,
-  UserNotification,
-} from "../types";
+import type { NotificationListParams, PaginatedNotifications, UserNotification } from "../types";
 import type { ApiError } from "@/shared/api/errors";
 
 export const notificationsKeys = {
   all: ["notifications"] as const,
-  list: (params: NotificationListParams) =>
-    [...notificationsKeys.all, "list", params] as const,
+  list: (params: NotificationListParams) => [...notificationsKeys.all, "list", params] as const,
   unreadCount: () => [...notificationsKeys.all, "unread-count"] as const,
 };
 
@@ -45,12 +36,9 @@ export function useMarkNotificationRead() {
     mutationFn: (id: string) => notificationsApi.markRead(id),
     onSuccess: (updated) => {
       if (updated.isRead) {
-        qc.setQueryData(
-          notificationsKeys.unreadCount(),
-          (prev: { count: number } | undefined) => ({
-            count: Math.max(0, (prev?.count ?? 0) - 1),
-          }),
-        );
+        qc.setQueryData(notificationsKeys.unreadCount(), (prev: { count: number } | undefined) => ({
+          count: Math.max(0, (prev?.count ?? 0) - 1),
+        }));
       }
       qc.invalidateQueries({ queryKey: notificationsKeys.all });
     },
@@ -88,12 +76,9 @@ export function prependNotificationToCache(
   );
 
   if (!notification.isRead) {
-    qc.setQueryData(
-      notificationsKeys.unreadCount(),
-      (prev: { count: number } | undefined) => ({
-        count: (prev?.count ?? 0) + 1,
-      }),
-    );
+    qc.setQueryData(notificationsKeys.unreadCount(), (prev: { count: number } | undefined) => ({
+      count: (prev?.count ?? 0) + 1,
+    }));
   }
 }
 

@@ -45,9 +45,7 @@ export const AttachmentImage = Image.extend({
         default: null,
         parseHTML: (el) => el.getAttribute("data-attachment-ref"),
         renderHTML: (attrs) =>
-          attrs.attachmentRef
-            ? { "data-attachment-ref": attrs.attachmentRef as string }
-            : {},
+          attrs.attachmentRef ? { "data-attachment-ref": attrs.attachmentRef as string } : {},
       },
       // CSS width (e.g. "70%" / "300px"), kept so YouTrack's `{width=…}` survives
       // a round-trip through the editor.
@@ -76,17 +74,13 @@ export const AttachmentImage = Image.extend({
       const dom = document.createElement("img");
 
       const apply = (n: typeof node) => {
-        const src =
-          (n.attrs.previewSrc as string | null) ||
-          (n.attrs.src as string | null) ||
-          "";
+        const src = (n.attrs.previewSrc as string | null) || (n.attrs.src as string | null) || "";
         dom.setAttribute("src", src);
         if (n.attrs.alt) dom.setAttribute("alt", String(n.attrs.alt));
         else dom.removeAttribute("alt");
         if (n.attrs.title) dom.setAttribute("title", String(n.attrs.title));
         else dom.removeAttribute("title");
-        if (n.attrs.width)
-          dom.style.width = normalizeWidth(String(n.attrs.width));
+        if (n.attrs.width) dom.style.width = normalizeWidth(String(n.attrs.width));
         else dom.style.removeProperty("width");
       };
 

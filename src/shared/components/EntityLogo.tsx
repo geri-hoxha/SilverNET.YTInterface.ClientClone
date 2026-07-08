@@ -66,11 +66,7 @@ export function EntityLogo({
       <img
         src={src}
         alt={name}
-        className={cn(
-          "rounded-md object-cover ring-1 ring-border",
-          sizes[size],
-          className,
-        )}
+        className={cn("rounded-md object-cover ring-1 ring-border", sizes[size], className)}
       />
     );
   }

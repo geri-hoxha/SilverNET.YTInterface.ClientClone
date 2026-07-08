@@ -1,40 +1,44 @@
 import js from "@eslint/js";
-import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
-import globals from "globals";
+import pluginQuery from "@tanstack/eslint-plugin-query";
+import { defineConfig } from "eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+export default defineConfig([
+    // 1. TanStack Query flat recommended configuration
+    ...pluginQuery.configs["flat/recommended"],
+
+    // 2. Global Ignores (TanStack Start & distribution build paths)
+    {
+        ignores: ["dist", ".tanstack/**/*", ".output/**/*", "node_modules/**/*"],
     },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "server-only",
-              message:
-                "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
+
+    // 3. Central Application Linting Rules
+    {
+        // Extends structural rules for JS and TypeScript
+        extends: [js.configs.recommended, ...tseslint.configs.recommended],
+        files: ["**/*.{ts,tsx}"],
+        languageOptions: {
+            ecmaVersion: 2020,
+            parserOptions: {
+                ecmaFeatures: {
+                    jsx: true, // Necessary for TanStack Start SSR/CSR TSX components
+                },
             },
-          ],
         },
-      ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+        plugins: {
+            "react-hooks": reactHooks,
+            "react-refresh": reactRefresh,
+            "@tanstack/router": pluginRouter, // Formats file-based routing validation
+        },
+        rules: {
+            ...reactHooks.configs.recommended.rules,
+            "@typescript-eslint/no-unused-vars": "warn",
+            "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+
+            // TanStack Router rule integration
+            ...pluginRouter.configs["flat/recommended"].rules,
+        },
     },
-  },
-  eslintPluginPrettier,
-);
+]);

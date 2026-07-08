@@ -2,11 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   useMarkAllNotificationsRead,
@@ -43,9 +39,7 @@ function NotificationItem({
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         <span>{getNotificationTypeLabel(notification.type)}</span>
         <span>·</span>
-        <span>
-          {formatDistanceToNow(new Date(notification.createdOnUtc), { addSuffix: true })}
-        </span>
+        <span>{formatDistanceToNow(new Date(notification.createdOnUtc), { addSuffix: true })}</span>
       </div>
     </button>
   );
@@ -86,7 +80,10 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="flex w-80 max-h-[min(24rem,70vh)] flex-col overflow-hidden p-0">
+      <PopoverContent
+        align="end"
+        className="flex w-80 max-h-[min(24rem,70vh)] flex-col overflow-hidden p-0"
+      >
         <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
           <h3 className="text-sm font-semibold">Notifications</h3>
           {unreadCount > 0 && (
@@ -104,9 +101,7 @@ export function NotificationBell() {
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {isLoading ? (
-            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Loading…
-            </p>
+            <p className="px-3 py-6 text-center text-sm text-muted-foreground">Loading…</p>
           ) : items.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">
               No notifications yet

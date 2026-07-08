@@ -77,9 +77,7 @@ export function UserDetailPage() {
   }
 
   const user = query.data;
-  const organization = (orgsQ.data ?? []).find(
-    (o) => o.id === user.organizationId,
-  );
+  const organization = (orgsQ.data ?? []).find((o) => o.id === user.organizationId);
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -90,18 +88,10 @@ export function UserDetailPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <UserAvatar
-            name={user.fullName}
-            seed={user.id}
-            className="h-10 w-10"
-          />
+          <UserAvatar name={user.fullName} seed={user.id} className="h-10 w-10" />
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold tracking-tight truncate">
-              {user.fullName}
-            </h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {user.email}
-            </p>
+            <h1 className="text-xl font-semibold tracking-tight truncate">{user.fullName}</h1>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
           </div>
         </div>
         {!editing && canUpdate && (
@@ -126,11 +116,7 @@ export function UserDetailPage() {
             {editing ? (
               <>
                 <FieldRow label="Full name">
-                  <Input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    autoFocus
-                  />
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} autoFocus />
                 </FieldRow>
                 <ReadonlyField label="Email" value={user.email} />
                 <FieldRow label="Role">
@@ -166,32 +152,18 @@ export function UserDetailPage() {
               <>
                 <ReadonlyField label="Full name" value={user.fullName} />
                 <ReadonlyField label="Email" value={user.email} />
-                <ReadonlyField
-                  label="Role"
-                  value={user.role ? formatRoleLabel(user.role) : "—"}
-                />
+                <ReadonlyField label="Role" value={user.role ? formatRoleLabel(user.role) : "—"} />
               </>
             )}
             <FieldRow label="Avatar">
-              <UserAvatar
-                name={user.fullName}
-                seed={user.id}
-                className="h-12 w-12 rounded-md"
-              />
+              <UserAvatar name={user.fullName} seed={user.id} className="h-12 w-12 rounded-md" />
             </FieldRow>
             <ReadonlyField
               label="Organization"
-              value={
-                user.organizationName ??
-                organization?.name ??
-                user.organizationId
-              }
+              value={user.organizationName ?? organization?.name ?? user.organizationId}
             />
             {!editing && (
-              <ReadonlyField
-                label="Status"
-                value={user.isActive ? "Active" : "Inactive"}
-              />
+              <ReadonlyField label="Status" value={user.isActive ? "Active" : "Inactive"} />
             )}
             {editing && (
               <div className="flex justify-end gap-2 pt-2">
@@ -212,9 +184,7 @@ export function UserDetailPage() {
                 <Button
                   type="button"
                   size="sm"
-                  disabled={
-                    updateMut.isPending || !fullName.trim() || !role
-                  }
+                  disabled={updateMut.isPending || !fullName.trim() || !role}
                   onClick={() => {
                     updateMut.mutate(
                       {
@@ -245,13 +215,7 @@ function ReadonlyField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FieldRow({
-  label,
-  children,
-}: {
-  label: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function FieldRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-6 items-start">
       <Label className="text-sm text-muted-foreground pt-2">{label}</Label>

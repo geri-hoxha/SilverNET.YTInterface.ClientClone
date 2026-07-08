@@ -1,12 +1,6 @@
 import { redirect, type ParsedLocation } from "@tanstack/react-router";
 import { tokenStore } from "@/shared/api/tokens";
-import {
-  hasAllPermissions,
-  hasAnyPermission,
-  hasAnyRole,
-  hasPermission,
-  hasRole,
-} from "./utils";
+import { hasAllPermissions, hasAnyPermission, hasAnyRole, hasPermission, hasRole } from "./utils";
 import { decodeJwtClaims } from "./jwt";
 import type { Permission } from "./permissions";
 import type { AuthUser, PortalRole } from "./types";

@@ -81,9 +81,7 @@ export function ExportIssuesDialog({ open, onOpenChange, filters }: Props) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Export issues</DialogTitle>
-          <DialogDescription>
-            Choose a file format for your export.
-          </DialogDescription>
+          <DialogDescription>Choose a file format for your export.</DialogDescription>
         </DialogHeader>
 
         <div className="rounded-md border border-yellow-500/40 bg-yellow-50 px-3 py-2.5 text-sm text-yellow-900 dark:border-yellow-500/30 dark:bg-yellow-500/10 dark:text-yellow-100">
@@ -101,7 +99,10 @@ export function ExportIssuesDialog({ open, onOpenChange, filters }: Props) {
             return (
               <div key={option.value} className="flex items-start gap-3">
                 <RadioGroupItem value={String(option.value)} id={id} className="mt-1" />
-                <Label htmlFor={id} className="flex flex-1 cursor-pointer items-start gap-2 font-normal">
+                <Label
+                  htmlFor={id}
+                  className="flex flex-1 cursor-pointer items-start gap-2 font-normal"
+                >
                   <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <span>
                     <span className="block font-medium">{option.label}</span>

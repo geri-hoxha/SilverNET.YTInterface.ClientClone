@@ -33,10 +33,7 @@ export function normalizeError(err: unknown): ApiError {
     const payload = ax.response?.data;
     const code = payload?.code ?? `http.${status || "network"}`;
     const friendly =
-      FRIENDLY[code] ??
-      payload?.message ??
-      ax.message ??
-      "Something went wrong. Please try again.";
+      FRIENDLY[code] ?? payload?.message ?? ax.message ?? "Something went wrong. Please try again.";
     return new ApiError(code, friendly, status);
   }
   if (err instanceof Error) return new ApiError("unknown", err.message, 0);

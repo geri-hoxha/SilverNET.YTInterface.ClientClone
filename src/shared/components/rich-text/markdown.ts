@@ -30,10 +30,7 @@ function escapeAttr(value: string): string {
 }
 
 function escapeHtmlText(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 // Parses YouTrack's `{width=70%}` / `{width=300}` attribute block into a CSS
@@ -174,10 +171,9 @@ function protectCode(md: string): { text: string; restore: (s: string) => string
     store.push(m);
     return `\u0000CODE${store.length - 1}\u0000`;
   };
-  const text = md
-    .replace(/```[\s\S]*?```/g, stash)
-    .replace(/`[^`\n]*`/g, stash);
+  const text = md.replace(/```[\s\S]*?```/g, stash).replace(/`[^`\n]*`/g, stash);
   const restore = (s: string) =>
+    // eslint-disable-next-line no-control-regex
     s.replace(/\u0000CODE(\d+)\u0000/g, (_, i) => store[Number(i)] ?? "");
   return { text, restore };
 }
@@ -211,8 +207,7 @@ function getTurndown(): TurndownService {
   });
 
   td.addRule("attachmentImage", {
-    filter: (node) =>
-      node.nodeName === "IMG" && node.hasAttribute("data-attachment-ref"),
+    filter: (node) => node.nodeName === "IMG" && node.hasAttribute("data-attachment-ref"),
     replacement: (_content, node) => {
       const el = node as Element;
       const ref = el.getAttribute("data-attachment-ref") ?? "";
@@ -225,14 +220,10 @@ function getTurndown(): TurndownService {
 
   td.addRule("attachmentFile", {
     filter: (node) =>
-      node.nodeName === "A" &&
-      (node.getAttribute("class") ?? "").split(/\s+/).includes("rte-file"),
+      node.nodeName === "A" && (node.getAttribute("class") ?? "").split(/\s+/).includes("rte-file"),
     replacement: (_content, node) => {
       const el = node as Element;
-      const ref =
-        el.getAttribute("data-attachment-ref") ??
-        el.getAttribute("data-file-name") ??
-        "";
+      const ref = el.getAttribute("data-attachment-ref") ?? el.getAttribute("data-file-name") ?? "";
       const name = el.getAttribute("data-file-name") ?? ref;
       return ref ? `[${name}](${ref})` : "";
     },

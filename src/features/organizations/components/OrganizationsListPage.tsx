@@ -74,9 +74,7 @@ export function OrganizationsListPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold tracking-tight">
-            Organizations
-          </h1>
+          <h1 className="text-xl font-semibold tracking-tight">Organizations</h1>
           <HelpCircle className="h-4 w-4 text-primary" />
         </div>
         {canCreate && (
@@ -102,18 +100,9 @@ export function OrganizationsListPage() {
           </div>
         ) : orgsQ.isError ? (
           <div className="px-4 py-12 text-center">
-            <p className="text-sm font-medium text-destructive">
-              Failed to load organizations
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {(orgsQ.error as Error)?.message}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => orgsQ.refetch()}
-            >
+            <p className="text-sm font-medium text-destructive">Failed to load organizations</p>
+            <p className="mt-1 text-xs text-muted-foreground">{(orgsQ.error as Error)?.message}</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => orgsQ.refetch()}>
               Try again
             </Button>
           </div>
@@ -124,62 +113,55 @@ export function OrganizationsListPage() {
         ) : (
           <div className="divide-y">
             {orgsQ.data.map((org) => (
-                <div
-                  key={org.id}
-                  className={cn(
-                    "group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors",
-                    canUpdate
-                      ? "cursor-pointer hover:bg-accent/40"
-                      : "cursor-default",
-                  )}
-                  onClick={canUpdate ? () => setEditing(org) : undefined}
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <EntityLogo name={org.name} seed={org.id} size="sm" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-semibold">
-                          {org.name}
-                        </span>
-                        {!org.isActive && (
-                          <Badge variant="secondary" className="font-normal">
-                            inactive
-                          </Badge>
-                        )}
-                      </div>
+              <div
+                key={org.id}
+                className={cn(
+                  "group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors",
+                  canUpdate ? "cursor-pointer hover:bg-accent/40" : "cursor-default",
+                )}
+                onClick={canUpdate ? () => setEditing(org) : undefined}
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <EntityLogo name={org.name} seed={org.id} size="sm" />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-semibold">{org.name}</span>
+                      {!org.isActive && (
+                        <Badge variant="secondary" className="font-normal">
+                          inactive
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                  <div
-                    className="text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {canUpdate && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => setEditing(org)}>
-                            <Pencil className="mr-2 h-4 w-4" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => setConfirmDelete(org)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
                 </div>
+                <div className="text-right" onClick={(e) => e.stopPropagation()}>
+                  {canUpdate && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem onClick={() => setEditing(org)}>
+                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setConfirmDelete(org)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -193,18 +175,13 @@ export function OrganizationsListPage() {
         organization={editing}
       />
 
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete {confirmDelete?.name}?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete {confirmDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the organization. Projects belonging
-              to it must be removed or reassigned first.
+              This will permanently delete the organization. Projects belonging to it must be
+              removed or reassigned first.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -248,9 +225,7 @@ function CreateOrgDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>New organization</DialogTitle>
-          <DialogDescription>
-            Organizations group related projects and users.
-          </DialogDescription>
+          <DialogDescription>Organizations group related projects and users.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -261,21 +236,14 @@ function CreateOrgDialog({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. SIGAL Insurance Group"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. SIGAL Insurance Group" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={pending}>
@@ -318,9 +286,7 @@ function EditOrgDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit organization</DialogTitle>
-          <DialogDescription>
-            Organizations group related projects and users.
-          </DialogDescription>
+          <DialogDescription>Organizations group related projects and users.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -331,10 +297,7 @@ function EditOrgDialog({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. SIGAL Insurance Group"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. SIGAL Insurance Group" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -352,20 +315,13 @@ function EditOrgDialog({
                     </p>
                   </div>
                   <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={pending}>

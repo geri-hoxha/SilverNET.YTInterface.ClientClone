@@ -77,11 +77,7 @@ export function ApproveEstimationButton({
       <Button
         type="button"
         size="sm"
-        className={cn(
-          "h-6 px-2 text-[11px] leading-none",
-          approveButtonClassName,
-          className,
-        )}
+        className={cn("h-6 px-2 text-[11px] leading-none", approveButtonClassName, className)}
         disabled={isPending}
         onClick={handleClick}
       >

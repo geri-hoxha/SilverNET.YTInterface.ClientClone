@@ -54,11 +54,7 @@ import { formatRoleLabel } from "@/features/roles/utils";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { usersRouteApi } from "../route";
 import { useUsers, useCreateUser } from "../hooks";
-import {
-  usersSearchSchema,
-  createUserSchema,
-  type CreateUserFormValues,
-} from "../schemas";
+import { usersSearchSchema, createUserSchema, type CreateUserFormValues } from "../schemas";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { formatShortDate } from "@/shared/utils/format";
@@ -96,9 +92,7 @@ export function UsersListPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage portal users, roles and access.
-          </p>
+          <p className="text-sm text-muted-foreground">Manage portal users, roles and access.</p>
         </div>
         {canCreate && (
           <Button onClick={() => setCreating(true)}>
@@ -142,9 +136,7 @@ export function UsersListPage() {
             ) : query.isError ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-12">
-                  <p className="text-sm font-medium text-destructive">
-                    Failed to load users
-                  </p>
+                  <p className="text-sm font-medium text-destructive">Failed to load users</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {(query.error as Error)?.message}
                   </p>
@@ -160,10 +152,7 @@ export function UsersListPage() {
               </TableRow>
             ) : !items.length ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-12 text-sm text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -173,9 +162,7 @@ export function UsersListPage() {
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={!!selection[user.id]}
-                      onCheckedChange={(c) =>
-                        setSelection((s) => ({ ...s, [user.id]: !!c }))
-                      }
+                      onCheckedChange={(c) => setSelection((s) => ({ ...s, [user.id]: !!c }))}
                       aria-label={`Select ${user.fullName}`}
                     />
                   </TableCell>
@@ -193,9 +180,7 @@ export function UsersListPage() {
                           </Link>
                         </div>
                         {user.email && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {user.email}
-                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         )}
                       </div>
                     </div>
@@ -203,17 +188,9 @@ export function UsersListPage() {
                   <TableCell className="text-sm truncate max-w-[220px]">
                     {user.organizationName ?? "—"}
                   </TableCell>
+                  <TableCell className="text-sm">{formatRoleLabel(user.role)}</TableCell>
                   <TableCell className="text-sm">
-                    {formatRoleLabel(user.role)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    <span
-                      className={
-                        user.isActive
-                          ? "text-emerald-600"
-                          : "text-muted-foreground"
-                      }
-                    >
+                    <span className={user.isActive ? "text-emerald-600" : "text-muted-foreground"}>
                       {user.isActive ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
@@ -256,9 +233,7 @@ export function UsersListPage() {
             pageSizeOptions={[25, 50, 100]}
             summary={
               someSelected ? (
-                <span>
-                  {Object.values(selection).filter(Boolean).length} selected ·
-                </span>
+                <span>{Object.values(selection).filter(Boolean).length} selected ·</span>
               ) : undefined
             }
           />
@@ -338,11 +313,7 @@ function UserFormDialog({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="user@example.com"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="user@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -410,11 +381,7 @@ function UserFormDialog({
               )}
             />
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createMut.isPending}>

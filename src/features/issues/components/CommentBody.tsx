@@ -19,7 +19,11 @@ export function CommentBody({ body, users, className }: CommentBodyProps) {
   }, [users]);
 
   const parts = useMemo(
-    () => parseCommentBodyParts(body, users.map((u) => u.mentionHandle)),
+    () =>
+      parseCommentBodyParts(
+        body,
+        users.map((u) => u.mentionHandle),
+      ),
     [body, users],
   );
 

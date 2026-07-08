@@ -65,9 +65,7 @@ export function EditIssuePage() {
                 <Label htmlFor="title">Title</Label>
                 <Input id="title" {...form.register("title")} />
                 {form.formState.errors.title && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.title.message}
-                  </p>
+                  <p className="text-xs text-destructive">{form.formState.errors.title.message}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -86,9 +84,7 @@ export function EditIssuePage() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={update.isPending}>
-                  {update.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save changes
                 </Button>
               </div>

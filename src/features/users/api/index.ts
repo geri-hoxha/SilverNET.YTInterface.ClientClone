@@ -31,20 +31,16 @@ export const usersApi = {
     };
   },
 
-  get: (id: string) =>
-    apiRequest<PortalUser>({ method: "GET", url: `/users/${id}` }),
+  get: (id: string) => apiRequest<PortalUser>({ method: "GET", url: `/users/${id}` }),
 
-  mentionable: () =>
-    apiRequest<MentionableUser[]>({ method: "GET", url: "/users/mentionable" }),
+  mentionable: () => apiRequest<MentionableUser[]>({ method: "GET", url: "/users/mentionable" }),
 
-  create: (data: CreateUserDto) =>
-    apiRequest<PortalUser>({ method: "POST", url: "/users", data }),
+  create: (data: CreateUserDto) => apiRequest<PortalUser>({ method: "POST", url: "/users", data }),
 
   update: (id: string, data: UpdateUserDto) =>
     apiRequest<PortalUser>({ method: "PUT", url: `/users/${id}`, data }),
 
-  remove: (id: string) =>
-    apiRequest<void>({ method: "DELETE", url: `/users/${id}` }),
+  remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/users/${id}` }),
 
   sendTestEmail: (id: string) =>
     apiRequest<void>({ method: "POST", url: `/users/${id}/test-email` }),

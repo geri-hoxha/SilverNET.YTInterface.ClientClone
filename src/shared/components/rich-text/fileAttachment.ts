@@ -22,8 +22,7 @@ function formatBytes(bytes: number): string {
   if (!bytes || bytes < 0) return "";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -146,11 +145,7 @@ function buildCard(node: ProseMirrorNode, href: string): DomSpec {
 
 // Minimal renderer for the small, static DOM spec used by the node view.
 function renderSpecToDom(spec: unknown): HTMLElement {
-  const [tag, attrs, ...children] = spec as [
-    string,
-    Record<string, string>,
-    ...unknown[],
-  ];
+  const [tag, attrs, ...children] = spec as [string, Record<string, string>, ...unknown[]];
   const el = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
     el.setAttribute(key, value);

@@ -5,9 +5,7 @@ export function formatMention(handle: string): string {
 
 const MENTION_PATTERN = /@([a-zA-Z0-9._-]+)/g;
 
-export type CommentBodyPart =
-  | { type: "text"; value: string }
-  | { type: "mention"; handle: string };
+export type CommentBodyPart = { type: "text"; value: string } | { type: "mention"; handle: string };
 
 export function parseCommentBodyParts(body: string, handles: string[]): CommentBodyPart[] {
   if (!body) return [];

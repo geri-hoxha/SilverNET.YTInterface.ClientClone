@@ -17,9 +17,7 @@ function toListParams(params?: OrganizationListParams) {
 }
 
 export const organizationsApi = {
-  list: async (
-    params?: OrganizationListParams,
-  ): Promise<PaginatedResult<Organization>> => {
+  list: async (params?: OrganizationListParams): Promise<PaginatedResult<Organization>> => {
     const result = await apiRequest<ApiPaginatedResult<Organization>>({
       method: "GET",
       url: "/organizations",
@@ -32,8 +30,7 @@ export const organizationsApi = {
       total: result.totalCount,
     };
   },
-  get: (id: string) =>
-    apiRequest<Organization>({ method: "GET", url: `/organizations/${id}` }),
+  get: (id: string) => apiRequest<Organization>({ method: "GET", url: `/organizations/${id}` }),
   create: (data: CreateOrganizationDto) =>
     apiRequest<Organization>({ method: "POST", url: "/organizations", data }),
   update: (id: string, data: UpdateOrganizationDto) =>
@@ -42,6 +39,5 @@ export const organizationsApi = {
       url: `/organizations/${id}`,
       data,
     }),
-  remove: (id: string) =>
-    apiRequest<void>({ method: "DELETE", url: `/organizations/${id}` }),
+  remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/organizations/${id}` }),
 };

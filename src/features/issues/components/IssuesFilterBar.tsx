@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { endOfDay, parseISO, startOfDay } from "date-fns";
 import { Check, ChevronsUpDown, ListFilter, Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +17,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -37,15 +33,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useClientStates, usePriorities, useProjects } from "@/features/projects/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import {
-  useClientStates,
-  usePriorities,
-  useProjects,
-} from "@/features/projects/hooks";
-import { issuesSearchSchema } from "../schemas";
 import { issuesRouteApi } from "../route";
+import { issuesSearchSchema } from "../schemas";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -132,9 +124,7 @@ export function IssuesFilterBar({ search }: Props) {
   const clientStatesQ = useClientStates();
   const [searchDraft, setSearchDraft] = useState(search.search ?? "");
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [mobileDraft, setMobileDraft] = useState<FilterDraft>(() =>
-    filterDraftFromSearch(search),
-  );
+  const [mobileDraft, setMobileDraft] = useState<FilterDraft>(() => filterDraftFromSearch(search));
 
   useEffect(() => {
     setSearchDraft(search.search ?? "");
@@ -203,8 +193,7 @@ export function IssuesFilterBar({ search }: Props) {
     handleFilterSheetOpenChange(false);
   };
 
-  const searchDraftDirty =
-    searchDraft.trim() !== (search.search ?? "").trim();
+  const searchDraftDirty = searchDraft.trim() !== (search.search ?? "").trim();
 
   if (isMobile) {
     return (
@@ -313,7 +302,7 @@ export function IssuesFilterBar({ search }: Props) {
   return (
     <div className="border-b bg-muted/20 px-4 py-3">
       <div className="flex flex-wrap items-end gap-3">
-        <FilterField label="Search" className="w-[340px] shrink-0">
+        <FilterField label="Search" className="w-85 shrink-0">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -391,22 +380,16 @@ function IssuesFilterFields({
   clientStates: readonly string[];
   layout?: "stacked" | "inline";
 }) {
-  const patch = (next: Partial<FilterDraft>) =>
-    onDraftChange({ ...draft, ...next });
+  const patch = (next: Partial<FilterDraft>) => onDraftChange({ ...draft, ...next });
 
-  const containerClass =
-    layout === "inline"
-      ? "contents"
-      : "grid grid-cols-1 gap-4";
+  const containerClass = layout === "inline" ? "contents" : "grid grid-cols-1 gap-4";
 
   return (
     <div className={containerClass}>
-      <FilterField label="Project" className={layout === "inline" ? "w-[180px]" : undefined}>
+      <FilterField label="Project" className={layout === "inline" ? "w-45" : undefined}>
         <Select
           value={draft.projectId ?? ALL}
-          onValueChange={(value) =>
-            patch({ projectId: value === ALL ? undefined : value })
-          }
+          onValueChange={(value) => patch({ projectId: value === ALL ? undefined : value })}
         >
           <SelectTrigger className={layout === "inline" ? "h-8" : "h-10"}>
             <SelectValue placeholder="All projects" />
@@ -422,7 +405,7 @@ function IssuesFilterFields({
         </Select>
       </FilterField>
 
-      <FilterField label="Priority" className={layout === "inline" ? "w-[180px]" : undefined}>
+      <FilterField label="Priority" className={layout === "inline" ? "w-45" : undefined}>
         <MultiSelectFilter
           options={priorities}
           selected={draft.priority}
@@ -432,7 +415,7 @@ function IssuesFilterFields({
         />
       </FilterField>
 
-      <FilterField label="Status" className={layout === "inline" ? "w-[200px]" : undefined}>
+      <FilterField label="Status" className={layout === "inline" ? "w-50" : undefined}>
         <MultiSelectFilter
           options={[
             EMPTY_CLIENT_STATE_VALUE,
@@ -448,60 +431,40 @@ function IssuesFilterFields({
         />
       </FilterField>
 
-      <FilterField
-        label="Created from"
-        className={layout === "inline" ? "w-[155px]" : undefined}
-      >
+      <FilterField label="Created from" className={layout === "inline" ? "w-[155px]" : undefined}>
         <DatePicker
           value={isoToDate(draft.from)}
-          onChange={(date) =>
-            patch({ from: date ? toStartOfDay(date) : undefined })
-          }
+          onChange={(date) => patch({ from: date ? toStartOfDay(date) : undefined })}
           placeholder="Start date"
           toDate={isoToDate(draft.to)}
           className={layout === "inline" ? "h-8" : "h-10"}
         />
       </FilterField>
 
-      <FilterField
-        label="Created to"
-        className={layout === "inline" ? "w-[155px]" : undefined}
-      >
+      <FilterField label="Created to" className={layout === "inline" ? "w-[155px]" : undefined}>
         <DatePicker
           value={isoToDate(draft.to)}
-          onChange={(date) =>
-            patch({ to: date ? toEndOfDay(date) : undefined })
-          }
+          onChange={(date) => patch({ to: date ? toEndOfDay(date) : undefined })}
           placeholder="End date"
           fromDate={isoToDate(draft.from)}
           className={layout === "inline" ? "h-8" : "h-10"}
         />
       </FilterField>
 
-      <FilterField
-        label="Closed from"
-        className={layout === "inline" ? "w-[155px]" : undefined}
-      >
+      <FilterField label="Closed from" className={layout === "inline" ? "w-[155px]" : undefined}>
         <DatePicker
           value={isoToDate(draft.closedFrom)}
-          onChange={(date) =>
-            patch({ closedFrom: date ? toStartOfDay(date) : undefined })
-          }
+          onChange={(date) => patch({ closedFrom: date ? toStartOfDay(date) : undefined })}
           placeholder="Start date"
           toDate={isoToDate(draft.closedTo)}
           className={layout === "inline" ? "h-8" : "h-10"}
         />
       </FilterField>
 
-      <FilterField
-        label="Closed to"
-        className={layout === "inline" ? "w-[155px]" : undefined}
-      >
+      <FilterField label="Closed to" className={layout === "inline" ? "w-[155px]" : undefined}>
         <DatePicker
           value={isoToDate(draft.closedTo)}
-          onChange={(date) =>
-            patch({ closedTo: date ? toEndOfDay(date) : undefined })
-          }
+          onChange={(date) => patch({ closedTo: date ? toEndOfDay(date) : undefined })}
           placeholder="End date"
           fromDate={isoToDate(draft.closedFrom)}
           className={layout === "inline" ? "h-8" : "h-10"}
@@ -545,9 +508,7 @@ function MobileActiveFilterChips({
     chips.push({
       key: "priority",
       label:
-        search.priority.length === 1
-          ? search.priority[0]
-          : `${search.priority.length} priorities`,
+        search.priority.length === 1 ? search.priority[0] : `${search.priority.length} priorities`,
       clear: { priority: undefined },
     });
   }
@@ -647,8 +608,7 @@ function MultiSelectFilter({
     }
   };
 
-  const allSelected =
-    options.length > 0 && options.every((o) => selected.includes(o));
+  const allSelected = options.length > 0 && options.every((o) => selected.includes(o));
 
   const toggleAll = () => {
     if (allSelected) {
@@ -672,26 +632,15 @@ function MultiSelectFilter({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between font-normal",
-            triggerClassName ?? "h-8",
-          )}
+          className={cn("w-full justify-between font-normal", triggerClassName ?? "h-8")}
         >
-          <span
-            className={cn(
-              "truncate",
-              selected.length === 0 && "text-muted-foreground",
-            )}
-          >
+          <span className={cn("truncate", selected.length === 0 && "text-muted-foreground")}>
             {label}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-(--radix-popover-trigger-width) min-w-[180px] p-0"
-        align="start"
-      >
+      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-45 p-0" align="start">
         <Command>
           <CommandInput placeholder="Filter..." />
           <CommandList>
@@ -757,9 +706,7 @@ function FilterField({
 }) {
   return (
     <div className={className}>
-      <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-        {label}
-      </Label>
+      <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
     </div>
   );

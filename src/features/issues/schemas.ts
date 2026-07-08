@@ -23,6 +23,7 @@ export const issuesSearchSchema = z.object({
   sortBy: issueSortFieldSchema.optional(),
   sortDescending: z.boolean().optional(),
   saved: z.enum(["assigned", "commented", "reported", "star"]).optional(),
+  savedSearchId: z.string().optional(),
 });
 export type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 

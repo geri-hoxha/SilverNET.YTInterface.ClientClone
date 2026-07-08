@@ -1,18 +1,9 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
+import type { ApiError } from "@/shared/api/errors";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { issuesApi } from "../api";
-import type {
-  CreateIssueDto,
-  IssueListParams,
-  UpdateIssueDto,
-} from "../types";
-import type { ApiError } from "@/shared/api/errors";
+import type { CreateIssueDto, IssueListParams, SavedSearch, SavedSearchFilters, UpdateIssueDto } from "../types";
 
 export const issuesKeys = {
   all: ["issues"] as const,
@@ -158,9 +149,7 @@ export function useIssueAttachmentUrls(issueId: string) {
           // Already downloaded under a different (but equivalent) reference;
           // make sure this exact reference is mapped so the <img> resolves.
           const existing = objectUrlsRef.current[attachmentId];
-          setUrls((prev) =>
-            prev[name] === existing ? prev : { ...prev, [name]: existing },
-          );
+          setUrls((prev) => (prev[name] === existing ? prev : { ...prev, [name]: existing }));
           continue;
         }
         if (inFlightRef.current.has(attachmentId)) continue;
@@ -201,5 +190,107 @@ export function useApproveEstimation() {
       toast.success("Estimation approved");
     },
     onError: (e: ApiError) => toast.error(e.message),
+  });
+}
+
+// --- Saved searches ---
+// Backed by localStorage for now since /issues/saved-searches doesn't exist
+// yet. When it does, swap only the three function bodies below for
+// savedSearchesApi.list() / .create() / .remove() — see api.ts.
+
+export const savedSearchesKeys = {
+  all: ["issues", "saved-searches"] as const,
+};
+
+const SAVED_SEARCHES_STORAGE_KEY = "issues:saved-searches";
+
+function readSavedSearches(): SavedSearch[] {
+  try {
+    const raw = localStorage.getItem(SAVED_SEARCHES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedSearches(items: SavedSearch[]) {
+  localStorage.setItem(SAVED_SEARCHES_STORAGE_KEY, JSON.stringify(items));
+}
+
+export function useSavedSearches() {
+  return useQuery({
+    queryKey: savedSearchesKeys.all,
+    queryFn: () => Promise.resolve(readSavedSearches()),
+  });
+}
+
+export function useCreateSavedSearch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { name: string; filters: SavedSearchFilters }) => {
+      const item: SavedSearch = {
+        id: crypto.randomUUID(),
+        name: input.name,
+        filters: input.filters,
+        createdOnUtc: new Date().toISOString(),
+        isDefault: false,
+      };
+      writeSavedSearches([...readSavedSearches(), item]);
+      return Promise.resolve(item);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
+      toast.success("Search saved");
+    },
+  });
+}
+
+export function useDeleteSavedSearch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => {
+      writeSavedSearches(readSavedSearches().filter((s) => s.id !== id));
+      return Promise.resolve();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
+      toast.success("Saved search removed");
+    },
+  });
+}
+
+export function useUpdateSavedSearch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { id: string; successMessage?: string } & Partial<SavedSearch>) => {
+      const searches = readSavedSearches();
+      writeSavedSearches(searches.map((s) => (s.id === input.id ? { ...s, ...input } : s)));
+      return Promise.resolve(input.successMessage);
+    },
+    onSuccess: (successMessage) => {
+      queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
+      toast.success(successMessage ?? "Saved search updated");
+    },
+  });
+}
+
+export function useSetDefaultSavedSearch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => {
+      const searches = readSavedSearches();
+      const target = searches.find((s) => s.id === id);
+      const nextIsDefault = !target?.isDefault;
+      writeSavedSearches(searches.map((s) => ({ ...s, isDefault: s.id === id ? nextIsDefault : false })));
+      return Promise.resolve(nextIsDefault);
+    },
+    onSuccess: (nextIsDefault) => {
+      queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
+      toast.success(nextIsDefault ? "Set as default search" : "Removed default search");
+    },
   });
 }

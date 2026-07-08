@@ -18,9 +18,7 @@ function toListParams(params?: ProjectListParams) {
 }
 
 export const projectsApi = {
-  list: async (
-    params?: ProjectListParams,
-  ): Promise<PaginatedResult<Project>> => {
+  list: async (params?: ProjectListParams): Promise<PaginatedResult<Project>> => {
     const result = await apiRequest<ApiPaginatedResult<Project>>({
       method: "GET",
       url: "/projects",
@@ -33,21 +31,17 @@ export const projectsApi = {
       total: result.totalCount,
     };
   },
-  get: (id: string) =>
-    apiRequest<Project>({ method: "GET", url: `/projects/${id}` }),
+  get: (id: string) => apiRequest<Project>({ method: "GET", url: `/projects/${id}` }),
   create: (data: CreateProjectDto) =>
     apiRequest<Project>({ method: "POST", url: "/projects", data }),
   update: (id: string, data: UpdateProjectDto) =>
     apiRequest<Project>({ method: "PUT", url: `/projects/${id}`, data }),
-  remove: (id: string) =>
-    apiRequest<void>({ method: "DELETE", url: `/projects/${id}` }),
+  remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/projects/${id}` }),
   syncPriorities: (id: string) =>
     apiRequest<Project>({
       method: "POST",
       url: `/projects/${id}/priorities/sync`,
     }),
-  clientStates: () =>
-    apiRequest<string[]>({ method: "GET", url: "/projects/client-states" }),
-  priorities: () =>
-    apiRequest<string[]>({ method: "GET", url: "/projects/priorities" }),
+  clientStates: () => apiRequest<string[]>({ method: "GET", url: "/projects/client-states" }),
+  priorities: () => apiRequest<string[]>({ method: "GET", url: "/projects/priorities" }),
 };

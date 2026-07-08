@@ -16,10 +16,7 @@ interface NotificationToastProps {
   onDismiss: () => void;
 }
 
-export function showNotificationToast(
-  notification: UserNotification,
-  onView: () => void,
-) {
+export function showNotificationToast(notification: UserNotification, onView: () => void) {
   return toast.custom(
     (id) => (
       <NotificationToast
@@ -38,11 +35,7 @@ export function showNotificationToast(
   );
 }
 
-export function NotificationToast({
-  notification,
-  onView,
-  onDismiss,
-}: NotificationToastProps) {
+export function NotificationToast({ notification, onView, onDismiss }: NotificationToastProps) {
   const Icon = getNotificationTypeIcon(notification.type);
   const typeLabel = getNotificationTypeLabel(notification.type);
   const accent = getNotificationTypeAccent(notification.type);

@@ -42,9 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored && storedUser) {
       // Backfill permissions for sessions stored before this field existed.
       const permissions =
-        storedUser.permissions ??
-        decodeJwtClaims(stored.accessToken)?.permissions ??
-        [];
+        storedUser.permissions ?? decodeJwtClaims(stored.accessToken)?.permissions ?? [];
       setUser({ ...storedUser, permissions });
     }
     setIsReady(true);
@@ -68,8 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: res.user?.role ?? claims?.role,
       organizationId: res.user?.organizationId ?? claims?.organizationId,
       organizationName: res.user?.organizationName,
-      permissions:
-        res.permissions ?? res.user?.permissions ?? claims?.permissions ?? [],
+      permissions: res.permissions ?? res.user?.permissions ?? claims?.permissions ?? [],
     };
     tokenStore.setUser(u);
     setUser(u);

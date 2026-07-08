@@ -153,12 +153,8 @@ export function IssueDetailPage() {
               <span>{formatDate(data.createdOnUtc)}</span>
             </SidebarField>
             <SidebarField label="Created by">
-              { data.createdByUserFullName ? (
-                <div
-                  className=" "
-                >
-                  {data.createdByUserFullName}
-                </div>
+              {data.createdByUserFullName ? (
+                <div className=" ">{data.createdByUserFullName}</div>
               ) : (
                 <span>—</span>
               )}
@@ -430,11 +426,7 @@ function CommentsArea({ id }: { id: string }) {
                       Commented {formatRelative(c.createdOnUtc)}
                     </span>
                   </div>
-                  <CommentBody
-                    body={c.body}
-                    users={mentionableUsers}
-                    className="mt-1 text-sm"
-                  />
+                  <CommentBody body={c.body} users={mentionableUsers} className="mt-1 text-sm" />
                 </div>
               </li>
             );

@@ -85,8 +85,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
       ...inlineFilesRef.current.keys(),
     ]);
     const fileName = uniqueFileName(file.name, used);
-    const staged =
-      fileName === file.name ? file : new File([file], fileName, { type: file.type });
+    const staged = fileName === file.name ? file : new File([file], fileName, { type: file.type });
     inlineFilesRef.current.set(fileName, staged);
     return fileName;
   };
@@ -205,7 +204,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-[1080px] p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-270 p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[90vh] md:max-h-[85vh]"
@@ -491,7 +490,7 @@ function ProjectPicker({
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="end">
+      <PopoverContent className="w-70 p-0" align="end">
         <Command>
           <CommandInput placeholder="Search projects..." />
           <CommandList>
@@ -563,7 +562,7 @@ function PriorityPicker({
           {value || placeholder}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[260px] p-0" align="end">
+      <PopoverContent className="w-65 p-0" align="end">
         <Command>
           <CommandInput placeholder="Filter items" />
           <CommandList>

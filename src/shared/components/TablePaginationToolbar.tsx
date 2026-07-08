@@ -48,10 +48,7 @@ export function TablePaginationToolbar({
       </div>
       <div className="flex items-center gap-2">
         {onPageSizeChange && (
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => onPageSizeChange(Number(v))}
-          >
+          <Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
             <SelectTrigger className="h-8 w-[110px] text-xs">
               <SelectValue />
             </SelectTrigger>

@@ -8,10 +8,7 @@ const ENTITY_MAP: Record<string, string> = {
 };
 
 function decodeHtmlEntities(value: string): string {
-  return value.replace(
-    /&(amp|lt|gt|quot|#39|#x27);/g,
-    (match) => ENTITY_MAP[match] ?? match,
-  );
+  return value.replace(/&(amp|lt|gt|quot|#39|#x27);/g, (match) => ENTITY_MAP[match] ?? match);
 }
 
 /**

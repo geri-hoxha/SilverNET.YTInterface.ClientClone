@@ -1,10 +1,10 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import { UserAvatar } from "@/shared/components/UserAvatar";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
 
 function useBreadcrumbs() {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -26,10 +26,7 @@ export function AppHeader() {
         {crumbs.map((c, i) => (
           <span key={c.href} className="flex items-center gap-1">
             {i > 0 && <span className="text-muted-foreground/50">/</span>}
-            <Link
-              to={c.href}
-              className="capitalize hover:text-foreground transition-colors"
-            >
+            <Link to={c.href} className="capitalize hover:text-foreground transition-colors">
               {c.label}
             </Link>
           </span>
@@ -40,12 +37,8 @@ export function AppHeader() {
         <div className="flex items-center gap-2 px-1">
           <UserAvatar name={user?.fullName} seed={user?.id} className="h-7 w-7" />
           <div className="hidden min-w-0 text-left sm:block">
-            <div className="truncate text-sm font-medium leading-none">
-              {user?.fullName}
-            </div>
-            <div className="truncate text-xs text-muted-foreground">
-              {user?.email}
-            </div>
+            <div className="truncate text-sm font-medium leading-none">{user?.fullName}</div>
+            <div className="truncate text-xs text-muted-foreground">{user?.email}</div>
           </div>
         </div>
         <Button

@@ -12,10 +12,7 @@ export interface JwtClaims {
 
 function base64UrlDecode(segment: string): string {
   const padded = segment.replace(/-/g, "+").replace(/_/g, "/");
-  const withPadding = padded.padEnd(
-    padded.length + ((4 - (padded.length % 4)) % 4),
-    "=",
-  );
+  const withPadding = padded.padEnd(padded.length + ((4 - (padded.length % 4)) % 4), "=");
   if (typeof atob === "function") {
     // Decode and handle UTF-8 byte sequences.
     const binary = atob(withPadding);

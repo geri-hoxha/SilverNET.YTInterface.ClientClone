@@ -10,7 +10,10 @@ export function issueReadableId(issue: Issue) {
 
 export function stripHtmlToText(html?: string) {
   if (!html) return "";
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -35,8 +38,7 @@ export function uniqueFileName(name: string, used: Set<string>): string {
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -51,24 +53,132 @@ export interface FileMeta {
 export function fileTypeMeta(name: string): FileMeta {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   const map: Record<string, FileMeta> = {
-    xlsx: { label: "XLS", typeLabel: "Excel spreadsheet", bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-green-600" },
-    xls:  { label: "XLS", typeLabel: "Excel spreadsheet", bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-green-600" },
-    csv:  { label: "CSV", typeLabel: "CSV file",           bg: "bg-green-50 dark:bg-green-950/30", border: "border-green-200 dark:border-green-900", badge: "bg-emerald-600" },
-    doc:  { label: "DOC", typeLabel: "Word document",      bg: "bg-blue-50 dark:bg-blue-950/30",   border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-600" },
-    docx: { label: "DOC", typeLabel: "Word document",      bg: "bg-blue-50 dark:bg-blue-950/30",   border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-600" },
-    pdf:  { label: "PDF", typeLabel: "PDF document",       bg: "bg-red-50 dark:bg-red-950/30",     border: "border-red-200 dark:border-red-900",     badge: "bg-red-600" },
-    ppt:  { label: "PPT", typeLabel: "PowerPoint",         bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-200 dark:border-orange-900", badge: "bg-orange-600" },
-    pptx: { label: "PPT", typeLabel: "PowerPoint",         bg: "bg-orange-50 dark:bg-orange-950/30", border: "border-orange-200 dark:border-orange-900", badge: "bg-orange-600" },
-    png:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
-    jpg:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
-    jpeg: { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
-    gif:  { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
-    webp: { label: "IMG", typeLabel: "Image",              bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-purple-600" },
-    svg:  { label: "SVG", typeLabel: "Vector image",       bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-900", badge: "bg-fuchsia-600" },
-    zip:  { label: "ZIP", typeLabel: "Archive",            bg: "bg-amber-50 dark:bg-amber-950/30",   border: "border-amber-200 dark:border-amber-900",   badge: "bg-amber-600" },
-    rar:  { label: "RAR", typeLabel: "Archive",            bg: "bg-amber-50 dark:bg-amber-950/30",   border: "border-amber-200 dark:border-amber-900",   badge: "bg-amber-600" },
-    txt:  { label: "TXT", typeLabel: "Text file",          bg: "bg-slate-50 dark:bg-slate-900/40",   border: "border-slate-200 dark:border-slate-800",   badge: "bg-slate-600" },
-    md:   { label: "MD",  typeLabel: "Markdown",           bg: "bg-slate-50 dark:bg-slate-900/40",   border: "border-slate-200 dark:border-slate-800",   badge: "bg-slate-600" },
+    xlsx: {
+      label: "XLS",
+      typeLabel: "Excel spreadsheet",
+      bg: "bg-green-50 dark:bg-green-950/30",
+      border: "border-green-200 dark:border-green-900",
+      badge: "bg-green-600",
+    },
+    xls: {
+      label: "XLS",
+      typeLabel: "Excel spreadsheet",
+      bg: "bg-green-50 dark:bg-green-950/30",
+      border: "border-green-200 dark:border-green-900",
+      badge: "bg-green-600",
+    },
+    csv: {
+      label: "CSV",
+      typeLabel: "CSV file",
+      bg: "bg-green-50 dark:bg-green-950/30",
+      border: "border-green-200 dark:border-green-900",
+      badge: "bg-emerald-600",
+    },
+    doc: {
+      label: "DOC",
+      typeLabel: "Word document",
+      bg: "bg-blue-50 dark:bg-blue-950/30",
+      border: "border-blue-200 dark:border-blue-900",
+      badge: "bg-blue-600",
+    },
+    docx: {
+      label: "DOC",
+      typeLabel: "Word document",
+      bg: "bg-blue-50 dark:bg-blue-950/30",
+      border: "border-blue-200 dark:border-blue-900",
+      badge: "bg-blue-600",
+    },
+    pdf: {
+      label: "PDF",
+      typeLabel: "PDF document",
+      bg: "bg-red-50 dark:bg-red-950/30",
+      border: "border-red-200 dark:border-red-900",
+      badge: "bg-red-600",
+    },
+    ppt: {
+      label: "PPT",
+      typeLabel: "PowerPoint",
+      bg: "bg-orange-50 dark:bg-orange-950/30",
+      border: "border-orange-200 dark:border-orange-900",
+      badge: "bg-orange-600",
+    },
+    pptx: {
+      label: "PPT",
+      typeLabel: "PowerPoint",
+      bg: "bg-orange-50 dark:bg-orange-950/30",
+      border: "border-orange-200 dark:border-orange-900",
+      badge: "bg-orange-600",
+    },
+    png: {
+      label: "IMG",
+      typeLabel: "Image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-purple-600",
+    },
+    jpg: {
+      label: "IMG",
+      typeLabel: "Image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-purple-600",
+    },
+    jpeg: {
+      label: "IMG",
+      typeLabel: "Image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-purple-600",
+    },
+    gif: {
+      label: "IMG",
+      typeLabel: "Image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-purple-600",
+    },
+    webp: {
+      label: "IMG",
+      typeLabel: "Image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-purple-600",
+    },
+    svg: {
+      label: "SVG",
+      typeLabel: "Vector image",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+      border: "border-purple-200 dark:border-purple-900",
+      badge: "bg-fuchsia-600",
+    },
+    zip: {
+      label: "ZIP",
+      typeLabel: "Archive",
+      bg: "bg-amber-50 dark:bg-amber-950/30",
+      border: "border-amber-200 dark:border-amber-900",
+      badge: "bg-amber-600",
+    },
+    rar: {
+      label: "RAR",
+      typeLabel: "Archive",
+      bg: "bg-amber-50 dark:bg-amber-950/30",
+      border: "border-amber-200 dark:border-amber-900",
+      badge: "bg-amber-600",
+    },
+    txt: {
+      label: "TXT",
+      typeLabel: "Text file",
+      bg: "bg-slate-50 dark:bg-slate-900/40",
+      border: "border-slate-200 dark:border-slate-800",
+      badge: "bg-slate-600",
+    },
+    md: {
+      label: "MD",
+      typeLabel: "Markdown",
+      bg: "bg-slate-50 dark:bg-slate-900/40",
+      border: "border-slate-200 dark:border-slate-800",
+      badge: "bg-slate-600",
+    },
   };
   return (
     map[ext] ?? {

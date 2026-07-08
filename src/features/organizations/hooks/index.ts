@@ -43,8 +43,7 @@ export function useCreateOrganization() {
 export function useUpdateOrganization(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateOrganizationDto) =>
-      organizationsApi.update(id, data),
+    mutationFn: (data: UpdateOrganizationDto) => organizationsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: orgsKeys.all });
       toast.success("Organization updated");

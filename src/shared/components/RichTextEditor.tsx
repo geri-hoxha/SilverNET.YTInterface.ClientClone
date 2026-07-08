@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { toast } from "sonner";
+import { EditorContent, useEditor, type Editor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
   Code2,
@@ -16,10 +14,9 @@ import {
   Strikethrough,
   Type as TypeIcon,
 } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
-import { FileAttachment } from "./rich-text/fileAttachment";
-import { AttachmentImage } from "./rich-text/attachmentImage";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -27,7 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { AttachmentImage } from "./rich-text/attachmentImage";
+import { FileAttachment } from "./rich-text/fileAttachment";
 
 interface Props {
   value: string;
@@ -65,9 +65,7 @@ export function RichTextEditor({
   const applyingPreviewsRef = useRef(false);
   // Holds the latest file-insertion handler so the (statically configured)
   // paste/drop handlers can route files through the upload flow.
-  const insertFilesRef = useRef<
-    ((files: File[], at?: number) => void) | null
-  >(null);
+  const insertFilesRef = useRef<((files: File[], at?: number) => void) | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -80,10 +78,7 @@ export function RichTextEditor({
     content: value || "",
     editorProps: {
       attributes: {
-        class: cn(
-          "rte-content max-w-none focus:outline-none",
-          "min-h-[var(--rte-min-h)] py-2",
-        ),
+        class: cn("rte-content max-w-none focus:outline-none", "min-h-[var(--rte-min-h)] py-2"),
         style: `--rte-min-h: ${minHeight}px`,
       },
       // Pasting/dropping files (e.g. a pasted screenshot) goes through the same
@@ -120,13 +115,7 @@ export function RichTextEditor({
       let position = at;
       for (const file of files) {
         if (onUploadFile) {
-          await insertViaUpload(
-            editor,
-            file,
-            onUploadFile,
-            previewUrlsRef,
-            position,
-          );
+          await insertViaUpload(editor, file, onUploadFile, previewUrlsRef, position);
         } else {
           await insertViaBase64(editor, file, position);
         }
@@ -236,11 +225,7 @@ async function insertViaUpload(
   try {
     const fileName = await onUploadFile(file);
     if (isImage) {
-      editor
-        .chain()
-        .focus(at)
-        .setAttachmentImage({ fileName, previewSrc, alt: file.name })
-        .run();
+      editor.chain().focus(at).setAttachmentImage({ fileName, previewSrc, alt: file.name }).run();
     } else {
       editor
         .chain()
@@ -250,9 +235,7 @@ async function insertViaUpload(
     }
   } catch {
     URL.revokeObjectURL(previewSrc);
-    previewUrlsRef.current = previewUrlsRef.current.filter(
-      (u) => u !== previewSrc,
-    );
+    previewUrlsRef.current = previewUrlsRef.current.filter((u) => u !== previewSrc);
     toast.error(`Could not upload "${file.name}".`);
   }
 }
@@ -261,9 +244,7 @@ async function insertViaUpload(
 // image as a base64 data URL.
 async function insertViaBase64(editor: Editor, file: File, at?: number) {
   if (file.size > MAX_FILE_BYTES) {
-    toast.error(
-      `"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`,
-    );
+    toast.error(`"${file.name}" is too large to embed (max ${MAX_FILE_BYTES / (1024 * 1024)} MB).`);
     return;
   }
   if (!file.type.startsWith("image/")) {
@@ -373,11 +354,7 @@ function Toolbar({
       >
         <Code2 className="h-3.5 w-3.5" />
       </TBtn>
-      <TBtn
-        label="Link"
-        active={editor?.isActive("link")}
-        onClick={promptLink}
-      >
+      <TBtn label="Link" active={editor?.isActive("link")} onClick={promptLink}>
         <LinkIcon className="h-3.5 w-3.5" />
       </TBtn>
       <TBtn
@@ -395,10 +372,7 @@ function Toolbar({
         <ListOrdered className="h-3.5 w-3.5" />
       </TBtn>
       <Separator orientation="vertical" className="mx-1 h-5" />
-      <TBtn
-        label="Attach file or image"
-        onClick={() => fileInputRef.current?.click()}
-      >
+      <TBtn label="Attach file or image" onClick={() => fileInputRef.current?.click()}>
         <Paperclip className="h-3.5 w-3.5" />
       </TBtn>
       <input

@@ -1,7 +1,4 @@
-export type PortalRole =
-  | "SuperAdmin"
-  | "OrganizationAdmin"
-  | "OrganizationUser";
+export type PortalRole = "SuperAdmin" | "OrganizationAdmin" | "OrganizationUser";
 
 export interface AuthUser {
   id: string;

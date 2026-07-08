@@ -15,9 +15,7 @@ function buildConnection() {
       accessTokenFactory: () => tokenStore.getAccessToken() ?? "",
     })
     .withAutomaticReconnect()
-    .configureLogging(
-      import.meta.env.DEV ? signalR.LogLevel.Information : signalR.LogLevel.Warning,
-    )
+    .configureLogging(import.meta.env.DEV ? signalR.LogLevel.Information : signalR.LogLevel.Warning)
     .build();
 }
 

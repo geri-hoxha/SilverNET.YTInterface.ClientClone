@@ -1,16 +1,11 @@
-import axios, {
-  AxiosError,
-  type AxiosRequestConfig,
-  type InternalAxiosRequestConfig,
-} from "axios";
-import { tokenStore } from "./tokens";
-import { normalizeError } from "./errors";
 import { decodeJwtClaims } from "@/features/auth/jwt";
 import type { AuthUser, RefreshResponse } from "@/features/auth/types";
+import axios, { AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from "axios";
+import { normalizeError } from "./errors";
+import { tokenStore } from "./tokens";
 
 // Dev uses the Vite proxy (/api); production sets VITE_API_BASE_URL to the full API origin.
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -40,16 +35,14 @@ async function performRefresh(): Promise<string | null> {
   const refreshToken = tokenStore.getRefreshToken();
   if (!refreshToken) return null;
   try {
-    const { data } = await axios.post<RefreshResponse>(
-      `${API_BASE_URL}/auth/refresh`,
-      { refreshToken },
-    );
+    const { data } = await axios.post<RefreshResponse>(`${API_BASE_URL}/auth/refresh`, {
+      refreshToken,
+    });
     tokenStore.set(data);
 
     // Permissions may change between sessions; keep the stored user in sync from
     // the refresh response (or the new token's claims as a fallback).
-    const permissions =
-      data.permissions ?? decodeJwtClaims(data.accessToken)?.permissions;
+    const permissions = data.permissions ?? decodeJwtClaims(data.accessToken)?.permissions;
     if (permissions) {
       const storedUser = tokenStore.getUser<AuthUser>();
       if (storedUser) {
@@ -69,12 +62,7 @@ api.interceptors.response.use(
     const original = error.config as RetryConfig | undefined;
     const status = error.response?.status;
 
-    if (
-      status === 401 &&
-      original &&
-      !original._retry &&
-      !original.url?.includes("/auth/")
-    ) {
+    if (status === 401 && original && !original._retry && !original.url?.includes("/auth/")) {
       original._retry = true;
       refreshPromise = refreshPromise ?? performRefresh();
       const newToken = await refreshPromise;

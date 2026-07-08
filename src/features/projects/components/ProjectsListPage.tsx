@@ -68,10 +68,7 @@ import {
   useSyncPriorities,
   useUpdateProject,
 } from "../hooks";
-import {
-  projectFormSchema as formSchema,
-  type ProjectFormValues as FormValues,
-} from "../schemas";
+import { projectFormSchema as formSchema, type ProjectFormValues as FormValues } from "../schemas";
 import { groupProjectsByOrganization } from "../utils";
 import { EntityLogo } from "@/shared/components/EntityLogo";
 import { cn } from "@/lib/utils";
@@ -81,8 +78,7 @@ import type { Organization } from "@/features/organizations/types";
 
 const PROJECT_GRID_COLS =
   "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
-const PROJECT_ROW_LAYOUT =
-  "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
+const PROJECT_ROW_LAYOUT = "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
 
 export function ProjectsListPage() {
   const { hasPermission } = useAuth();
@@ -97,9 +93,7 @@ export function ProjectsListPage() {
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Project | null>(null);
-  const [creating, setCreating] = useState<{ organizationId?: string } | null>(
-    null,
-  );
+  const [creating, setCreating] = useState<{ organizationId?: string } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Project | null>(null);
 
   const grouped = useMemo(
@@ -128,9 +122,7 @@ export function ProjectsListPage() {
         </Card>
       ) : orgsQ.isError || projectsQ.isError ? (
         <Card className="py-12 text-center">
-          <p className="text-sm font-medium text-destructive">
-            Failed to load data
-          </p>
+          <p className="text-sm font-medium text-destructive">Failed to load data</p>
           <Button
             variant="outline"
             size="sm"
@@ -158,9 +150,7 @@ export function ProjectsListPage() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
-                    onClick={() =>
-                      setCollapsed((c) => ({ ...c, [org.id]: !c[org.id] }))
-                    }
+                    onClick={() => setCollapsed((c) => ({ ...c, [org.id]: !c[org.id] }))}
                   >
                     {isCollapsed ? (
                       <ChevronRight className="h-4 w-4" />
@@ -169,12 +159,9 @@ export function ProjectsListPage() {
                     )}
                   </Button>
                   <EntityLogo name={org.name} seed={org.id} size="sm" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">
-                    {org.name}
-                  </span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">{org.name}</span>
                   <span className="text-xs text-muted-foreground">
-                    · {projects.length}{" "}
-                    {projects.length === 1 ? "project" : "projects"}
+                    · {projects.length} {projects.length === 1 ? "project" : "projects"}
                   </span>
                   <div className="ml-auto flex items-center gap-1">
                     {canCreate && (
@@ -225,10 +212,7 @@ export function ProjectsListPage() {
                             onEdit={() => setEditing(project)}
                             onDelete={() => setConfirmDelete(project)}
                             onSync={() => syncMut.mutate(project.id)}
-                            syncing={
-                              syncMut.isPending &&
-                              syncMut.variables === project.id
-                            }
+                            syncing={syncMut.isPending && syncMut.variables === project.id}
                             canUpdate={canUpdate}
                             canSync={canSync}
                           />
@@ -244,11 +228,7 @@ export function ProjectsListPage() {
       )}
 
       <ProjectFormDialog
-        key={
-          creating
-            ? `create-${creating.organizationId ?? "none"}`
-            : "create-closed"
-        }
+        key={creating ? `create-${creating.organizationId ?? "none"}` : "create-closed"}
         open={!!creating}
         onOpenChange={(o) => !o && setCreating(null)}
         mode="create"
@@ -264,18 +244,12 @@ export function ProjectsListPage() {
         organizations={orgsQ.data ?? []}
       />
 
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete project {confirmDelete?.name}?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete project {confirmDelete?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. Existing issues will become
-              unlinked.
+              This action cannot be undone. Existing issues will become unlinked.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -329,15 +303,10 @@ function ProjectRow({
           seed={project.id}
           size="sm"
         />
-        <span className="min-w-0 truncate text-sm font-semibold">
-          {project.name}
-        </span>
+        <span className="min-w-0 truncate text-sm font-semibold">{project.name}</span>
       </div>
 
-      <Badge
-        variant="outline"
-        className="w-fit shrink-0 font-mono text-[10px]"
-      >
+      <Badge variant="outline" className="w-fit shrink-0 font-mono text-[10px]">
         {project.youTrackProjectId}
       </Badge>
 
@@ -348,15 +317,9 @@ function ProjectRow({
         {project.isActive ? "Active" : "Inactive"}
       </Badge>
 
-      <ProjectOptionBadges
-        items={project.priorityOptions}
-        emptyLabel="Not synced"
-      />
+      <ProjectOptionBadges items={project.priorityOptions} emptyLabel="Not synced" />
 
-      <ProjectOptionBadges
-        items={project.clientStates}
-        emptyLabel="Not synced"
-      />
+      <ProjectOptionBadges items={project.clientStates} emptyLabel="Not synced" />
 
       <div
         className="flex shrink-0 items-center justify-end gap-0.5"
@@ -372,9 +335,7 @@ function ProjectRow({
             aria-label={syncing ? "Syncing from YouTrack" : "Sync from YouTrack"}
             className="h-7 w-7 bg-green-600 text-white shadow-sm hover:bg-green-700"
           >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`}
-            />
+            <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
           </Button>
         )}
         {showMenu && (
@@ -407,17 +368,9 @@ function ProjectRow({
   );
 }
 
-function ProjectOptionBadges({
-  items,
-  emptyLabel,
-}: {
-  items: string[];
-  emptyLabel: string;
-}) {
+function ProjectOptionBadges({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
   if (!items.length) {
-    return (
-      <span className="text-xs text-muted-foreground italic">{emptyLabel}</span>
-    );
+    return <span className="text-xs text-muted-foreground italic">{emptyLabel}</span>;
   }
 
   return (
@@ -456,8 +409,7 @@ function ProjectFormDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      organizationId:
-        project?.organizationId ?? defaultOrganizationId ?? "",
+      organizationId: project?.organizationId ?? defaultOrganizationId ?? "",
       name: project?.name ?? "",
       youTrackProjectId: project?.youTrackProjectId ?? "",
       isActive: project?.isActive ?? true,
@@ -467,8 +419,7 @@ function ProjectFormDialog({
   useEffect(() => {
     if (open) {
       form.reset({
-        organizationId:
-          project?.organizationId ?? defaultOrganizationId ?? "",
+        organizationId: project?.organizationId ?? defaultOrganizationId ?? "",
         name: project?.name ?? "",
         youTrackProjectId: project?.youTrackProjectId ?? "",
         isActive: project?.isActive ?? true,
@@ -500,16 +451,13 @@ function ProjectFormDialog({
     }
   };
 
-  const organizationName =
-    organizations.find((o) => o.id === project?.organizationId)?.name ?? "—";
+  const organizationName = organizations.find((o) => o.id === project?.organizationId)?.name ?? "—";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "New project" : "Edit project"}
-          </DialogTitle>
+          <DialogTitle>{mode === "create" ? "New project" : "Edit project"}</DialogTitle>
           <DialogDescription>
             Projects are linked to a YouTrack project by short ID.
           </DialogDescription>
@@ -564,11 +512,7 @@ function ProjectFormDialog({
                 <FormItem>
                   <FormLabel>YouTrack project ID</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. SLD"
-                      className="font-mono uppercase"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. SLD" className="font-mono uppercase" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -588,10 +532,7 @@ function ProjectFormDialog({
                         </p>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -599,15 +540,8 @@ function ProjectFormDialog({
 
                 {project && (
                   <div className="space-y-4 rounded-md border bg-muted/30 p-4">
-                    <ProjectDetailReadonly
-                      label="Project ID"
-                      value={project.id}
-                      mono
-                    />
-                    <ProjectDetailReadonly
-                      label="Organization"
-                      value={organizationName}
-                    />
+                    <ProjectDetailReadonly label="Project ID" value={project.id} mono />
+                    <ProjectDetailReadonly label="Organization" value={organizationName} />
                     <div>
                       <p className="mb-2 text-xs font-medium text-muted-foreground">
                         Priorities ({project.priorityOptions.length})
@@ -631,11 +565,7 @@ function ProjectFormDialog({
               </>
             )}
             <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={pending}>
@@ -661,10 +591,7 @@ function ProjectDetailReadonly({
   return (
     <div>
       <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
-      <p
-        className={`text-sm break-all ${mono ? "font-mono text-xs" : ""}`}
-        title={value}
-      >
+      <p className={`text-sm break-all ${mono ? "font-mono text-xs" : ""}`} title={value}>
         {value}
       </p>
     </div>

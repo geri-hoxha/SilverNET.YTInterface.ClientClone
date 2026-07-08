@@ -13,16 +13,10 @@ export function hasPermission(user: AuthUser | null, permission: Permission) {
   return !!user && user.permissions.includes(permission);
 }
 
-export function hasAnyPermission(
-  user: AuthUser | null,
-  permissions: Permission[],
-) {
+export function hasAnyPermission(user: AuthUser | null, permissions: Permission[]) {
   return !!user && permissions.some((p) => user.permissions.includes(p));
 }
 
-export function hasAllPermissions(
-  user: AuthUser | null,
-  permissions: Permission[],
-) {
+export function hasAllPermissions(user: AuthUser | null, permissions: Permission[]) {
   return !!user && permissions.every((p) => user.permissions.includes(p));
 }
