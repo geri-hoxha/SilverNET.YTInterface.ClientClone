@@ -226,13 +226,12 @@ export function IssuesListPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-8 w-8 md:w-fit bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => setExportOpen(true)}>
+          <Button size="sm" className="h-8 w-8 bg-emerald-600 text-white hover:bg-emerald-700 md:w-fit" onClick={() => setExportOpen(true)}>
             <Download className="h-3.5 w-3.5" />
             <span className="hidden md:block">Export</span>
           </Button>
           {canCreate && (
-            <Button size="sm" className="h-8 w-8 md:w-fit bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>
-              
+            <Button size="sm" className="h-8 bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>
               New Issue
             </Button>
           )}

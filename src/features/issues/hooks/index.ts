@@ -286,11 +286,11 @@ export function useSetDefaultSavedSearch() {
       const target = searches.find((s) => s.id === id);
       const nextIsDefault = !target?.isDefault;
       writeSavedSearches(searches.map((s) => ({ ...s, isDefault: s.id === id ? nextIsDefault : false })));
-      return Promise.resolve(nextIsDefault);
+      return Promise.resolve({nextIsDefault, target});
     },
-    onSuccess: (nextIsDefault) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
-      toast.success(nextIsDefault ? "Set as default search" : "Removed default search");
+      toast.success(result.nextIsDefault ? `"${result.target?.name}" successfully set as default search` : "Removed default search");
     },
   });
 }
