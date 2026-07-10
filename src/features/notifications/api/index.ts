@@ -13,21 +13,13 @@ export const notificationsApi = {
       },
     }),
 
-  unreadCount: () =>
-    apiRequest<UnreadCountResponse>({
-      method: "GET",
-      url: "/notifications/unread-count",
-    }),
+  unreadCount: () => apiRequest<UnreadCountResponse>({ method: "GET", url: "/notifications/unread-count" }),
 
-  markRead: (id: string) =>
-    apiRequest<UserNotification>({
-      method: "PATCH",
-      url: `/notifications/${id}/read`,
-    }),
+  markRead: (id: string) => apiRequest<UserNotification>({ method: "PATCH", url: `/notifications/${id}/read` }),
 
-  markAllRead: () =>
-    apiRequest<void>({
-      method: "PATCH",
-      url: "/notifications/read-all",
-    }),
+  markAllRead: () => apiRequest<void>({ method: "PATCH", url: "/notifications/read-all" }),
+
+  hide: (id: string) => apiRequest<UserNotification>({ method: "PATCH", url: `/notifications/${id}/hide` }),
+
+  hideAll: () => apiRequest<void>({ method: "PATCH", url: "/notifications/hide-all" }),
 };

@@ -1,8 +1,8 @@
+import type { ApiError } from "@/shared/api/errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { notificationsApi } from "../api";
 import type { NotificationListParams, PaginatedNotifications, UserNotification } from "../types";
-import type { ApiError } from "@/shared/api/errors";
 
 export const notificationsKeys = {
   all: ["notifications"] as const,
@@ -58,22 +58,45 @@ export function useMarkAllNotificationsRead() {
   });
 }
 
-export function prependNotificationToCache(
-  qc: ReturnType<typeof useQueryClient>,
-  notification: UserNotification,
-) {
-  qc.setQueryData(
-    notificationsKeys.list(DEFAULT_LIST_PARAMS),
-    (prev: PaginatedNotifications | undefined) => {
-      if (!prev) return prev;
-      if (prev.items.some((n) => n.id === notification.id)) return prev;
-      return {
-        ...prev,
-        items: [notification, ...prev.items].slice(0, prev.pageSize),
-        totalCount: prev.totalCount + 1,
-      };
+export function useHideNotification() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => notificationsApi.hide(id),
+    onSuccess: (updated) => {
+      // Hidden + still unread → drop from unread total
+      if (!updated.isRead) {
+        qc.setQueryData(notificationsKeys.unreadCount(), (prev: { count: number } | undefined) => ({
+          count: Math.max(0, (prev?.count ?? 0) - 1),
+        }));
+      }
+      qc.invalidateQueries({ queryKey: notificationsKeys.all });
     },
-  );
+    onError: (e: ApiError) => toast.error(e.message),
+  });
+}
+
+export function useHideAllNotifications() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => notificationsApi.hideAll(),
+    onSuccess: () => {
+      qc.setQueryData(notificationsKeys.unreadCount(), { count: 0 });
+      qc.invalidateQueries({ queryKey: notificationsKeys.all });
+    },
+    onError: (e: ApiError) => toast.error(e.message),
+  });
+}
+
+export function prependNotificationToCache(qc: ReturnType<typeof useQueryClient>, notification: UserNotification) {
+  qc.setQueryData(notificationsKeys.list(DEFAULT_LIST_PARAMS), (prev: PaginatedNotifications | undefined) => {
+    if (!prev) return prev;
+    if (prev.items.some((n) => n.id === notification.id)) return prev;
+    return {
+      ...prev,
+      items: [notification, ...prev.items].slice(0, prev.pageSize),
+      totalCount: prev.totalCount + 1,
+    };
+  });
 
   if (!notification.isRead) {
     qc.setQueryData(notificationsKeys.unreadCount(), (prev: { count: number } | undefined) => ({

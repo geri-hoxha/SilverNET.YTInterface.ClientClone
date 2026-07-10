@@ -76,7 +76,7 @@ function filtersMatchSaved(current: IssuesSearch, saved: SavedSearchFilters): bo
 export function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues/" });
   const search = issuesRouteApi.useSearch();
-  const { page, pageSize, saved, savedSearchId, status, projectId, priority, from, to, closedFrom, closedTo, search: searchText, sortBy, sortDescending } = search;
+  const { page, pageSize, savedSearchId, status, projectId, priority, from, to, closedFrom, closedTo, search: searchText, sortBy, sortDescending } = search;
   const [createOpen, setCreateOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
@@ -201,14 +201,14 @@ export function IssuesListPage() {
 
           {/* No active saved search + has filters */}
           {!savedSearchId && hasActiveCriteria(search) && (
-            <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 px-0 hover:underline">
+            <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="px-0 text-xs font-medium text-pink-600 hover:underline">
               Save as new search
             </Button>
           )}
 
           {/* Active saved search + dirty */}
           {savedSearchId && activeSavedSearch && isDirty && (
-            <div className="flex items-center gap-4 ml-3">
+            <div className="ml-3 flex items-center gap-4">
               <Button
                 type="button"
                 variant="link"
@@ -222,11 +222,11 @@ export function IssuesListPage() {
                   })
                 }
                 disabled={updateSavedSearch.isPending}
-                className="text-xs font-medium text-emerald-600 px-0 hover:underline"
+                className="px-0 text-xs font-medium text-emerald-600 hover:underline"
               >
                 Update filters
               </Button>
-              <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 px-0 hover:underline">
+              <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="px-0 text-xs font-medium text-pink-600 hover:underline">
                 Save as new search
               </Button>
             </div>
