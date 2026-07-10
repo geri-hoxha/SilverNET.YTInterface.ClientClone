@@ -31,7 +31,7 @@ const ISSUE_GRID =
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
 // Same rationale as SavedSearchesList: reset every key before merging saved
-// filters on top of live search state, so absence in the saved filters
+// criteria on top of live search state, so absence in the saved criteria
 // actually clears the field instead of inheriting whatever was there before.
 const FILTER_RESET: Partial<IssuesSearch> = {
   projectId: undefined,
@@ -94,7 +94,7 @@ export function IssuesListPage() {
 
   const activeSavedSearch = savedSearchId ? (savedSearches.data?.find((s) => s.id === savedSearchId) ?? null) : null;
 
-  const isDirty = activeSavedSearch ? !filtersMatchSaved(search, activeSavedSearch.filters) : false;
+  const isDirty = activeSavedSearch ? !filtersMatchSaved(search, activeSavedSearch.criteria) : false;
 
   // Apply the default saved search (if any) exactly once, on initial mount,
   // and only when the URL is otherwise "empty" — no filters, no active saved
@@ -117,7 +117,7 @@ export function IssuesListPage() {
       search: (p: IssuesSearch) => ({
         ...p,
         ...FILTER_RESET,
-        ...defaultSearch.filters,
+        ...defaultSearch.criteria,
         page: p.page ?? 1,
         savedSearchId: defaultSearch.id,
       }),
@@ -192,7 +192,7 @@ export function IssuesListPage() {
                 <ChevronDown className={cn("text-muted-foreground size-3.5 duration-200 ease-in-out", searchesListOpen && "rotate-180")} />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-64 p-2">
+            <PopoverContent align="start" className="min-w-64 p-2">
               <SavedSearchesList projects={projectsQ.data ?? []} onSelect={() => setSearchesListOpen(false)} />
             </PopoverContent>
           </Popover>
@@ -201,27 +201,35 @@ export function IssuesListPage() {
 
           {/* No active saved search + has filters */}
           {!savedSearchId && hasActiveCriteria(search) && (
-            <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 hover:underline">
+            <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 px-0 hover:underline">
               Save as new search
             </Button>
           )}
 
           {/* Active saved search + dirty */}
-          {savedSearchId && isDirty && (
-            <>
+          {savedSearchId && activeSavedSearch && isDirty && (
+            <div className="flex items-center gap-4 ml-3">
               <Button
                 type="button"
                 variant="link"
-                onClick={() => updateSavedSearch.mutate({ id: savedSearchId, filters: toSavedFilters(search) })}
+                onClick={() =>
+                  updateSavedSearch.mutate({
+                    id: activeSavedSearch.id,
+                    name: activeSavedSearch.name,
+                    criteria: toSavedFilters(search),
+                    isDefault: activeSavedSearch.isDefault,
+                    successMessage: "Search filters updated",
+                  })
+                }
                 disabled={updateSavedSearch.isPending}
-                className="text-xs font-medium text-emerald-600 hover:underline"
+                className="text-xs font-medium text-emerald-600 px-0 hover:underline"
               >
                 Update filters
               </Button>
-              <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 hover:underline">
+              <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="text-xs font-medium text-pink-600 px-0 hover:underline">
                 Save as new search
               </Button>
-            </>
+            </div>
           )}
         </div>
 

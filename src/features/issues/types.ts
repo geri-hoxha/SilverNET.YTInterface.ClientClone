@@ -100,7 +100,9 @@ export type SavedSearchFilters = Omit<IssueListParams, "page">;
 export interface SavedSearch {
     id: string;
     name: string;
-    filters: SavedSearchFilters;
-    createdOnUtc: string;
     isDefault: boolean;
+    criteria: SavedSearchFilters;
+    createdOnUtc: string;
 }
+
+export type CreateSavedSearchType = Omit<SavedSearch, "id" | "createdOnUtc">;

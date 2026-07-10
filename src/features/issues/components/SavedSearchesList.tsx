@@ -8,9 +8,9 @@ import { issuesRouteApi } from "../route";
 import type { SavedSearch } from "../types";
 import { SaveSearchDialog } from "./SaveSearchDialog";
 
-// Reset every known filter key before spreading a saved search's filters on
+// Reset every known filter key before spreading a saved search's criteria on
 // top of the current URL state. Without this, a key that's absent from
-// `s.filters` (because it was empty when that search was saved — JSON drops
+// `s.criteria` (because it was empty when that search was saved — JSON drops
 // `undefined` keys) silently inherits whatever value the *previous* search
 // left behind, instead of clearing it.
 const FILTER_RESET = {
@@ -49,13 +49,13 @@ export function SavedSearchesList({ onSelect, projects }: Props) {
       <div>
         <p className="text-muted-foreground px-2 py-1 text-xs font-medium">Saved searches</p>
         {savedSearches.map((s) => (
-          <div key={s.id} className="group hover:bg-primary/10 flex cursor-pointer items-center justify-between rounded-md px-2 py-1.5 text-sm">
+          <div key={s.id} className="group hover:bg-primary/10 flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm">
             <button
               type="button"
               className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 truncate text-left"
               onClick={() => {
                 navigate({
-                  search: (p) => ({ ...p, ...FILTER_RESET, ...s.filters, page: 1, savedSearchId: s.id }),
+                  search: (p) => ({ ...p, ...FILTER_RESET, ...s.criteria, page: 1, savedSearchId: s.id }),
                 });
                 onSelect();
               }}
@@ -70,7 +70,7 @@ export function SavedSearchesList({ onSelect, projects }: Props) {
                 className="h-6 w-6 shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDefaultSavedSearch.mutate(s.id);
+                  setDefaultSavedSearch.mutate(s);
                 }}
                 aria-label={s.isDefault ? "Unset as default search" : "Set as default search"}
                 title={s.isDefault ? "Default search — click to unset" : "Set as default search"}
@@ -125,8 +125,8 @@ export function SavedSearchesList({ onSelect, projects }: Props) {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
-                if (pendingDeleteId) {
-                  deleteSavedSearch.mutate(pendingDeleteId);
+                if (pendingSearch) {
+                  deleteSavedSearch.mutate({ id: pendingSearch.id, name: pendingSearch.name });
                   setPendingDeleteId(null);
                 }
               }}

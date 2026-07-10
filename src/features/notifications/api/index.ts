@@ -1,10 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import type {
-  NotificationListParams,
-  PaginatedNotifications,
-  UnreadCountResponse,
-  UserNotification,
-} from "../types";
+import type { NotificationListParams, PaginatedNotifications, UnreadCountResponse, UserNotification } from "../types";
 
 export const notificationsApi = {
   list: (params: NotificationListParams = {}) =>

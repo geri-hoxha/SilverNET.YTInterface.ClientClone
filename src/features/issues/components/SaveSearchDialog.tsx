@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { useCreateSavedSearch, useUpdateSavedSearch } from "../hooks";
@@ -14,6 +15,17 @@ interface FilterBadge {
   label: string;
   value: string;
 }
+
+import type { IssueSortField } from "../types";
+
+const SORT_FIELD_LABELS: Record<IssueSortField, string> = {
+  YouTrackReadableId: "ID",
+  Title: "Summary",
+  ProjectName: "Project",
+  Priority: "Priority",
+  ClientState: "State",
+  CreatedOnUtc: "Created date",
+};
 
 function buildFilterBadges(filters: SavedSearchFilters, projects: { id: string; name: string }[]): FilterBadge[] {
   const badges: FilterBadge[] = [];
@@ -53,6 +65,14 @@ function buildFilterBadges(filters: SavedSearchFilters, projects: { id: string; 
     const to = filters.closedTo ? new Date(filters.closedTo).toLocaleDateString() : "…";
     badges.push({ key: "closed", label: "Closed", value: `${from} – ${to}` });
   }
+  if (filters.sortBy) {
+    const fieldLabel = SORT_FIELD_LABELS[filters.sortBy] ?? filters.sortBy;
+    badges.push({
+      key: "sort",
+      label: "Sort",
+      value: `${fieldLabel} (${filters.sortDescending ? "desc" : "asc"})`,
+    });
+  }
 
   return badges;
 }
@@ -65,6 +85,8 @@ export function toSavedFilters(search: IssuesSearch): SavedSearchFilters {
 interface FormContentProps {
   name: string;
   setName: (v: string) => void;
+  isDefault: boolean;
+  setIsDefault: (v: boolean) => void;
   badges: FilterBadge[];
   mode: "create" | "edit";
   isPending: boolean;
@@ -72,7 +94,7 @@ interface FormContentProps {
   onCancel: () => void;
 }
 
-function SaveSearchFormContent({ name, setName, badges, mode, isPending, onSave, onCancel }: FormContentProps) {
+function SaveSearchFormContent({ name, setName, isDefault, setIsDefault, badges, onSave }: FormContentProps) {
   return (
     <div className="space-y-4 py-2">
       <div className="space-y-1.5">
@@ -87,6 +109,13 @@ function SaveSearchFormContent({ name, setName, badges, mode, isPending, onSave,
             if (e.key === "Enter") onSave();
           }}
         />
+      </div>
+
+      <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+        <Label htmlFor="saved-search-is-default" className="cursor-pointer text-sm font-normal">
+          Set as default
+        </Label>
+        <Switch id="saved-search-is-default" checked={isDefault} onCheckedChange={setIsDefault} />
       </div>
 
       <div className="space-y-1.5">
@@ -120,6 +149,7 @@ interface Props {
 
 export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSearch, projects, onSaved, mode = "create" }: Props) {
   const [name, setName] = useState("");
+  const [isDefault, setIsDefault] = useState(false);
   const createSavedSearch = useCreateSavedSearch();
   const updateSavedSearch = useUpdateSavedSearch();
   const isMobile = useIsMobile();
@@ -127,16 +157,24 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
   useEffect(() => {
     if (!open) return;
     setName(mode === "edit" ? (editingSearch?.name ?? "") : "");
+    setIsDefault(mode === "edit" ? (editingSearch?.isDefault ?? false) : false);
   }, [open, mode, editingSearch]);
 
-  const filtersForBadges: SavedSearchFilters = mode === "edit" ? (editingSearch?.filters ?? ({} as SavedSearchFilters)) : currentSearch ? toSavedFilters(currentSearch) : ({} as SavedSearchFilters);
+  const filtersForBadges: SavedSearchFilters = mode === "edit" ? (editingSearch?.criteria ?? ({} as SavedSearchFilters)) : currentSearch ? toSavedFilters(currentSearch) : ({} as SavedSearchFilters);
 
   const badges = buildFilterBadges(filtersForBadges, projects);
   const isPending = createSavedSearch.isPending || updateSavedSearch.isPending;
   const title = mode === "edit" ? "Rename saved search" : "New saved search";
 
+  // Only name and isDefault are editable in this dialog — criteria comes
+  // along for the ride unchanged. So "dirty" just means either of those two
+  // fields differs from what's on the record already.
+  const isDirty = mode === "create" || !editingSearch || name.trim() !== editingSearch.name || isDefault !== editingSearch.isDefault;
+
+  const canSave = Boolean(name.trim()) && isDirty && !isPending;
+
   const handleSave = () => {
-    if (!name.trim()) return;
+    if (!canSave) return;
 
     if (mode === "edit") {
       if (!editingSearch) return;
@@ -144,6 +182,8 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
         {
           id: editingSearch.id,
           name: name.trim(),
+          criteria: editingSearch.criteria,
+          isDefault,
           successMessage: "Search has been renamed successfully!",
         },
         {
@@ -158,10 +198,11 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
 
     if (!currentSearch) return;
     createSavedSearch.mutate(
-      { name: name.trim(), filters: toSavedFilters(currentSearch) },
+      { name: name.trim(), criteria: toSavedFilters(currentSearch), isDefault },
       {
         onSuccess: (saved) => {
           setName("");
+          setIsDefault(false);
           onOpenChange(false);
           onSaved?.(saved.id);
         },
@@ -172,6 +213,8 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
   const formProps: FormContentProps = {
     name,
     setName,
+    isDefault,
+    setIsDefault,
     badges,
     mode,
     isPending,
@@ -190,7 +233,7 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
             <SaveSearchFormContent {...formProps} />
           </div>
           <DrawerFooter>
-            <Button onClick={handleSave} disabled={!name.trim() || isPending}>
+            <Button onClick={handleSave} disabled={!canSave}>
               {mode === "edit" ? "Save" : "Create"}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -213,7 +256,7 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!name.trim() || isPending}>
+          <Button onClick={handleSave} disabled={!canSave}>
             {mode === "edit" ? "Save" : "Create"}
           </Button>
         </div>

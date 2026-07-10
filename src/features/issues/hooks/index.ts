@@ -2,8 +2,9 @@ import type { ApiError } from "@/shared/api/errors";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { issuesApi } from "../api";
-import type { CreateIssueDto, IssueListParams, SavedSearch, SavedSearchFilters, UpdateIssueDto } from "../types";
+import { issuesApi, savedSearchesApi } from "../api";
+import type { CreateIssueDto, CreateSavedSearchType, IssueListParams, SavedSearch, UpdateIssueDto } from "../types";
+import { nullsToUndefined } from "../utils/utils";
 
 export const issuesKeys = {
   all: ["issues"] as const,
@@ -202,47 +203,28 @@ export const savedSearchesKeys = {
   all: ["issues", "saved-searches"] as const,
 };
 
-const SAVED_SEARCHES_STORAGE_KEY = "issues:saved-searches";
-
-function readSavedSearches(): SavedSearch[] {
-  try {
-    const raw = localStorage.getItem(SAVED_SEARCHES_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeSavedSearches(items: SavedSearch[]) {
-  localStorage.setItem(SAVED_SEARCHES_STORAGE_KEY, JSON.stringify(items));
-}
-
 export function useSavedSearches() {
   return useQuery({
     queryKey: savedSearchesKeys.all,
-    queryFn: () => Promise.resolve(readSavedSearches()),
+    queryFn: () => savedSearchesApi.list(),
+    select: (data) => data.map((s) => ({ ...s, criteria: nullsToUndefined(s.criteria) })),
   });
 }
-
 export function useCreateSavedSearch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { name: string; filters: SavedSearchFilters }) => {
-      const item: SavedSearch = {
-        id: crypto.randomUUID(),
-        name: input.name,
-        filters: input.filters,
-        createdOnUtc: new Date().toISOString(),
-        isDefault: false,
-      };
-      writeSavedSearches([...readSavedSearches(), item]);
-      return Promise.resolve(item);
-    },
-    onSuccess: () => {
+    mutationFn: (data: CreateSavedSearchType) =>
+      savedSearchesApi.create({
+        name: data.name,
+        criteria: data.criteria,
+        isDefault: data.isDefault ?? false,
+      }),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
-      toast.success("Search saved");
+      toast.success(`"${data.name}" has been saved successfully!`);
     },
+    onError: (e: ApiError) => toast.error(e.message),
   });
 }
 
@@ -250,14 +232,12 @@ export function useDeleteSavedSearch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => {
-      writeSavedSearches(readSavedSearches().filter((s) => s.id !== id));
-      return Promise.resolve();
-    },
-    onSuccess: () => {
+    mutationFn: ({ id }: { id: string; name: string }) => savedSearchesApi.remove(id),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
-      toast.success("Saved search removed");
+      toast.success(`"${variables.name}" has been removed successfully!`);
     },
+    onError: (e: ApiError) => toast.error(e.message),
   });
 }
 
@@ -265,15 +245,15 @@ export function useUpdateSavedSearch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { id: string; successMessage?: string } & Partial<SavedSearch>) => {
-      const searches = readSavedSearches();
-      writeSavedSearches(searches.map((s) => (s.id === input.id ? { ...s, ...input } : s)));
-      return Promise.resolve(input.successMessage);
+    mutationFn: (input: { id: string; successMessage?: string } & CreateSavedSearchType) => {
+      const { id, successMessage, ...data } = input;
+      return savedSearchesApi.update(id, data).then(() => successMessage);
     },
     onSuccess: (successMessage) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
       toast.success(successMessage ?? "Saved search updated");
     },
+    onError: (e: ApiError) => toast.error(e.message),
   });
 }
 
@@ -281,16 +261,20 @@ export function useSetDefaultSavedSearch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => {
-      const searches = readSavedSearches();
-      const target = searches.find((s) => s.id === id);
-      const nextIsDefault = !target?.isDefault;
-      writeSavedSearches(searches.map((s) => ({ ...s, isDefault: s.id === id ? nextIsDefault : false })));
-      return Promise.resolve({nextIsDefault, target});
+    mutationFn: (search: SavedSearch) => {
+      const nextIsDefault = !search.isDefault;
+      return savedSearchesApi
+        .update(search.id, {
+          name: search.name,
+          criteria: search.criteria,
+          isDefault: nextIsDefault,
+        })
+        .then((updated) => ({ updated, nextIsDefault }));
     },
-    onSuccess: (result) => {
+    onSuccess: ({ updated, nextIsDefault }) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
-      toast.success(result.nextIsDefault ? `"${result.target?.name}" successfully set as default search` : "Removed default search");
+      toast.success(nextIsDefault ? `"${updated.name}" successfully set as default search` : "Removed default search");
     },
+    onError: (e: ApiError) => toast.error(e.message),
   });
 }

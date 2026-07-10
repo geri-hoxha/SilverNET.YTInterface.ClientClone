@@ -20,7 +20,7 @@ export const issuesSearchSchema = z.object({
   closedFrom: z.string().optional(),
   closedTo: z.string().optional(),
   search: z.string().optional(),
-  sortBy: issueSortFieldSchema.optional(),
+  sortBy: issueSortFieldSchema.optional().catch(undefined),
   sortDescending: z.boolean().optional(),
   saved: z.enum(["assigned", "commented", "reported", "star"]).optional(),
   savedSearchId: z.string().optional(),

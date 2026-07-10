@@ -1,7 +1,9 @@
 import { api, apiRequest } from "@/shared/api/client";
+
 import type {
   ApiPaginatedResult,
   CreateIssueDto,
+  CreateSavedSearchType,
   Issue,
   IssueAttachment,
   IssueComment,
@@ -10,7 +12,6 @@ import type {
   IssueListParams,
   PaginatedResult,
   SavedSearch,
-  SavedSearchFilters,
   UpdateIssueDto,
 } from "../types";
 
@@ -151,7 +152,9 @@ export const issuesApi = {
 export const savedSearchesApi = {
   list: () => apiRequest<SavedSearch[]>({ method: "GET", url: "/issues/saved-searches" }),
 
-  create: (data: { name: string; filters: SavedSearchFilters; shared?: boolean }) => apiRequest<SavedSearch>({ method: "POST", url: "/issues/saved-searches", data }),
+  create: (data: CreateSavedSearchType) => apiRequest<SavedSearch>({ method: "POST", url: "/issues/saved-searches", data }),
+
+  update: (id: string, data: CreateSavedSearchType) => apiRequest<SavedSearch>({ method: "PUT", url: `/issues/saved-searches/${id}`, data }),
 
   remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/issues/saved-searches/${id}` }),
 };
