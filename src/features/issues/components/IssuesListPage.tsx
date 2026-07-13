@@ -16,14 +16,15 @@ import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import { useApproveEstimation, useIssues, useSavedSearches, useUpdateSavedSearch } from "../hooks";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
-import type { Issue, IssueSortField, SavedSearchFilters } from "../types";
+import type { Issue, IssueSortField } from "../types";
 import { issueReadableId } from "../utils";
+import { filtersMatchSaved, normalizeSavedCriteria } from "../utils/utils";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { ExportIssuesDialog } from "./ExportIssuesDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
-import { SavedSearchesList } from "./SavedSearchesList";
-import { SaveSearchDialog, toSavedFilters } from "./SaveSearchDialog";
+import { SavedSearchesList } from "./saved-search/SavedSearchesList";
+import { SaveSearchDialog, toSavedFilters } from "./saved-search/SaveSearchDialog";
 
 const ISSUE_GRID =
   "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px_112px_minmax(120px,0.75fr)] items-center gap-2";
@@ -49,28 +50,6 @@ const FILTER_RESET: Partial<IssuesSearch> = {
 
 function hasActiveCriteria(search: IssuesSearch) {
   return Boolean(search.search || search.projectId || search.priority?.length || search.status?.length || search.from || search.to || search.closedFrom || search.closedTo);
-}
-
-function filtersMatchSaved(current: IssuesSearch, saved: SavedSearchFilters): boolean {
-  const { page: _p, saved: _s, savedSearchId: _ssi, ...c } = current;
-  const arrEq = (a?: string[], b?: string[]) => {
-    if (!a?.length && !b?.length) return true;
-    if ((a?.length ?? 0) !== (b?.length ?? 0)) return false;
-    return [...(a ?? [])].sort().join() === [...(b ?? [])].sort().join();
-  };
-  return (
-    c.projectId === saved.projectId &&
-    c.search === saved.search &&
-    c.from === saved.from &&
-    c.to === saved.to &&
-    c.closedFrom === saved.closedFrom &&
-    c.closedTo === saved.closedTo &&
-    c.sortBy === saved.sortBy &&
-    c.sortDescending === saved.sortDescending &&
-    c.pageSize === saved.pageSize &&
-    arrEq(c.status, saved.status) &&
-    arrEq(c.priority, saved.priority)
-  );
 }
 
 export function IssuesListPage() {
@@ -117,7 +96,7 @@ export function IssuesListPage() {
       search: (p: IssuesSearch) => ({
         ...p,
         ...FILTER_RESET,
-        ...defaultSearch.criteria,
+        ...normalizeSavedCriteria(defaultSearch.criteria),
         page: p.page ?? 1,
         savedSearchId: defaultSearch.id,
       }),

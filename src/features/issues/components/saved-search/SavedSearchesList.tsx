@@ -1,11 +1,10 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Pencil, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useDeleteSavedSearch, useSavedSearches, useSetDefaultSavedSearch } from "../hooks";
-import { issuesRouteApi } from "../route";
-import type { SavedSearch } from "../types";
+import { useDeleteSavedSearch, useSavedSearches, useSetDefaultSavedSearch } from "../../hooks";
+import { issuesRouteApi } from "../../route";
+import type { SavedSearch } from "../../types";
+import { normalizeSavedCriteria } from "../../utils/utils";
+import SavedSearchItem from "./SavedSearchItem";
 import { SaveSearchDialog } from "./SaveSearchDialog";
 
 // Reset every known filter key before spreading a saved search's criteria on
@@ -34,6 +33,7 @@ interface Props {
 
 export function SavedSearchesList({ onSelect, projects }: Props) {
   const navigate = issuesRouteApi.useNavigate();
+  const { savedSearchId } = issuesRouteApi.useSearch();
   const { data: savedSearches = [] } = useSavedSearches();
   const deleteSavedSearch = useDeleteSavedSearch();
   const setDefaultSavedSearch = useSetDefaultSavedSearch();
@@ -42,68 +42,38 @@ export function SavedSearchesList({ onSelect, projects }: Props) {
 
   const pendingSearch = savedSearches.find((s) => s.id === pendingDeleteId);
 
-  if (!savedSearches.length) return <p className="text-muted-foreground px-2 py-3 text-center text-xs">No saved searches yet.</p>;
+  if (!savedSearches.length) {
+    return <p className="text-muted-foreground px-2 py-3 text-center text-xs">No saved searches yet.</p>;
+  }
 
   return (
     <>
       <div>
-        <p className="text-muted-foreground px-2 py-1 text-xs font-medium">Saved searches</p>
-        {savedSearches.map((s) => (
-          <div key={s.id} className="group hover:bg-primary/10 flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm">
-            <button
-              type="button"
-              className="flex min-w-0 flex-1 cursor-pointer items-center gap-1.5 truncate text-left"
-              onClick={() => {
+        <p className="text-muted-foreground px-2 pt-1 pb-2 text-xs font-medium">Saved searches</p>
+        <div className="space-y-0.5">
+          {savedSearches.map((search) => (
+            <SavedSearchItem
+              key={search.id}
+              search={search}
+              isActive={search.id === savedSearchId}
+              onSelect={() => {
                 navigate({
-                  search: (p) => ({ ...p, ...FILTER_RESET, ...s.criteria, page: 1, savedSearchId: s.id }),
+                  search: (p) => ({
+                    ...p,
+                    ...FILTER_RESET,
+                    ...normalizeSavedCriteria(search.criteria),
+                    page: 1,
+                    savedSearchId: search.id,
+                  }),
                 });
                 onSelect();
               }}
-            >
-              <span className="truncate">{s.name}</span>
-            </button>
-
-            <div className="flex shrink-0 items-center gap-0.5">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDefaultSavedSearch.mutate(s);
-                }}
-                aria-label={s.isDefault ? "Unset as default search" : "Set as default search"}
-                title={s.isDefault ? "Default search — click to unset" : "Set as default search"}
-              >
-                <Star className={cn("h-3.5 w-3.5", s.isDefault ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingSearch(s);
-                }}
-                aria-label="Rename saved search"
-              >
-                <Pencil className="text-muted-foreground h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="group/delete hover:bg-destructive h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPendingDeleteId(s.id);
-                }}
-                aria-label="Delete saved search"
-              >
-                <Trash2 className="text-destructive group-hover/delete:text-destructive-foreground h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-        ))}
+              onToggleDefault={() => setDefaultSavedSearch.mutate(search)}
+              onEdit={() => setEditingSearch(search)}
+              onDelete={() => setPendingDeleteId(search.id)}
+            />
+          ))}
+        </div>
       </div>
 
       <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
@@ -126,7 +96,10 @@ export function SavedSearchesList({ onSelect, projects }: Props) {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 if (pendingSearch) {
-                  deleteSavedSearch.mutate({ id: pendingSearch.id, name: pendingSearch.name });
+                  deleteSavedSearch.mutate({
+                    id: pendingSearch.id,
+                    name: pendingSearch.name,
+                  });
                   setPendingDeleteId(null);
                 }
               }}

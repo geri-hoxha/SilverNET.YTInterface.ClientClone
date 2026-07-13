@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { issuesApi, savedSearchesApi } from "../api";
 import type { CreateIssueDto, CreateSavedSearchType, IssueListParams, SavedSearch, UpdateIssueDto } from "../types";
-import { nullsToUndefined } from "../utils/utils";
+import { normalizeSavedCriteria, nullsToUndefined } from "../utils/utils";
 
 export const issuesKeys = {
   all: ["issues"] as const,
@@ -207,7 +207,11 @@ export function useSavedSearches() {
   return useQuery({
     queryKey: savedSearchesKeys.all,
     queryFn: () => savedSearchesApi.list(),
-    select: (data) => data.map((s) => ({ ...s, criteria: nullsToUndefined(s.criteria) })),
+    select: (data) =>
+      data.map((s) => ({
+        ...s,
+        criteria: normalizeSavedCriteria(nullsToUndefined(s.criteria ?? {})),
+      })),
   });
 }
 export function useCreateSavedSearch() {

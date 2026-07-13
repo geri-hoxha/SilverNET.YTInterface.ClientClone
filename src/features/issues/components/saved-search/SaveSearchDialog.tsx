@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
-import { useCreateSavedSearch, useUpdateSavedSearch } from "../hooks";
-import type { IssuesSearch } from "../schemas";
-import type { SavedSearch, SavedSearchFilters } from "../types";
+import { useCreateSavedSearch, useUpdateSavedSearch } from "../../hooks";
+import type { IssuesSearch } from "../../schemas";
+import type { SavedSearch, SavedSearchFilters } from "../../types";
 
 interface FilterBadge {
   key: string;
@@ -16,7 +16,7 @@ interface FilterBadge {
   value: string;
 }
 
-import type { IssueSortField } from "../types";
+import type { IssueSortField } from "../../types";
 
 const SORT_FIELD_LABELS: Record<IssueSortField, string> = {
   YouTrackReadableId: "ID",
