@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { CheckSquare, ChevronDown, Download, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

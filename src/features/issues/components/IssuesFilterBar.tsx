@@ -6,33 +6,13 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useClientStates, usePriorities, useProjects } from "@/features/projects/hooks";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -198,10 +178,10 @@ export function IssuesFilterBar({ search }: Props) {
   if (isMobile) {
     return (
       <>
-        <div className="border-b bg-muted/20 px-3 py-2.5">
+        <div className="bg-muted/20 border-b px-3 py-2.5">
           <div className="flex items-center gap-2">
             <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
               <Input
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.target.value)}
@@ -218,7 +198,7 @@ export function IssuesFilterBar({ search }: Props) {
                     setSearchDraft("");
                     if (search.search) updateSearch({ search: undefined });
                   }}
-                  className="absolute right-9 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-9 -translate-y-1/2 rounded-sm p-1"
                   aria-label="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -228,64 +208,36 @@ export function IssuesFilterBar({ search }: Props) {
                 type="button"
                 size="icon"
                 variant={searchDraftDirty ? "default" : "ghost"}
-                className="absolute right-0.5 top-1/2 h-8 w-8 -translate-y-1/2"
+                className="absolute top-1/2 right-0.5 h-8 w-8 -translate-y-1/2"
                 onClick={commitSearchDraft}
                 aria-label="Search issues"
               >
                 <Search className="h-4 w-4" />
               </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="relative h-9 shrink-0 gap-1.5 px-3"
-              onClick={() => handleFilterSheetOpenChange(true)}
-            >
+            <Button type="button" variant="outline" size="sm" className="relative h-9 shrink-0 gap-1.5 px-3" onClick={() => handleFilterSheetOpenChange(true)}>
               <ListFilter className="h-4 w-4" />
               Filters
-              {sheetFilterCount > 0 && (
-                <Badge className="ml-0.5 h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px]">
-                  {sheetFilterCount}
-                </Badge>
-              )}
+              {sheetFilterCount > 0 && <Badge className="ml-0.5 h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px]">{sheetFilterCount}</Badge>}
             </Button>
           </div>
 
-          {hasActiveFilters && (
-            <MobileActiveFilterChips
-              search={search}
-              projects={projects}
-              onRemove={(next) => updateSearch(next)}
-              onClearAll={clearFilters}
-            />
-          )}
+          {hasActiveFilters && <MobileActiveFilterChips search={search} projects={projects} onRemove={(next) => updateSearch(next)} onClearAll={clearFilters} />}
         </div>
 
         <Sheet open={filterSheetOpen} onOpenChange={handleFilterSheetOpenChange}>
-          <SheetContent
-            side="bottom"
-            className="flex h-[min(88dvh,720px)] flex-col gap-0 rounded-t-2xl p-0"
-          >
-            <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/25" />
-            <SheetHeader className="shrink-0 border-b px-4 pb-3 pt-4 text-left">
+          <SheetContent side="bottom" className="flex h-[min(88dvh,720px)] flex-col gap-0 rounded-t-2xl p-0">
+            <div className="bg-muted-foreground/25 mx-auto mt-2 h-1 w-10 shrink-0 rounded-full" />
+            <SheetHeader className="shrink-0 border-b px-4 pt-4 pb-3 text-left">
               <SheetTitle>Filter issues</SheetTitle>
-              <SheetDescription>
-                Narrow the list by project, priority, status, or date range.
-              </SheetDescription>
+              <SheetDescription>Narrow the list by project, priority, status, or date range.</SheetDescription>
             </SheetHeader>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-              <IssuesFilterFields
-                draft={mobileDraft}
-                onDraftChange={setMobileDraft}
-                projects={projects}
-                priorities={priorities}
-                clientStates={clientStates}
-              />
+              <IssuesFilterFields draft={mobileDraft} onDraftChange={setMobileDraft} projects={projects} priorities={priorities} clientStates={clientStates} />
             </div>
 
-            <SheetFooter className="grid shrink-0 grid-cols-2 gap-2 border-t bg-background px-4 py-3">
+            <SheetFooter className="bg-background grid shrink-0 grid-cols-2 gap-2 border-t px-4 py-3">
               <Button type="button" variant="outline" onClick={resetMobileFilters}>
                 Reset filters
               </Button>
@@ -300,11 +252,11 @@ export function IssuesFilterBar({ search }: Props) {
   }
 
   return (
-    <div className="border-b bg-muted/20 px-4 py-3">
+    <div className="bg-muted/20 border-b px-4 py-3">
       <div className="flex flex-wrap items-end gap-3">
         <FilterField label="Search" className="w-85 shrink-0">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
             <Input
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
@@ -344,17 +296,9 @@ export function IssuesFilterBar({ search }: Props) {
           layout="inline"
         />
 
-        <div className="flex items-center gap-2 pb-0.5">
-          <Button size="sm" variant="secondary" className="h-8" onClick={commitSearchDraft}>
-            Apply
-          </Button>
+        <div className="flex items-center gap-2">
           {hasActiveFilters && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 text-muted-foreground"
-              onClick={clearFilters}
-            >
+            <Button size="sm" variant="outline" className="text-muted-foreground h-8" onClick={clearFilters}>
               <X className="mr-1 h-3.5 w-3.5" />
               Clear
             </Button>
@@ -386,11 +330,8 @@ function IssuesFilterFields({
 
   return (
     <div className={containerClass}>
-      <FilterField label="Project" className={layout === "inline" ? "w-45" : undefined}>
-        <Select
-          value={draft.projectId ?? ALL}
-          onValueChange={(value) => patch({ projectId: value === ALL ? undefined : value })}
-        >
+      <FilterField label="Project" className={layout === "inline" ? "w-fit shrink-0" : undefined}>
+        <Select value={draft.projectId ?? ALL} onValueChange={(value) => patch({ projectId: value === ALL ? undefined : value })}>
           <SelectTrigger className={layout === "inline" ? "h-8" : "h-10"}>
             <SelectValue placeholder="All projects" />
           </SelectTrigger>
@@ -417,10 +358,7 @@ function IssuesFilterFields({
 
       <FilterField label="Status" className={layout === "inline" ? "w-50" : undefined}>
         <MultiSelectFilter
-          options={[
-            EMPTY_CLIENT_STATE_VALUE,
-            ...clientStates.filter((state) => state !== EMPTY_CLIENT_STATE_VALUE),
-          ]}
+          options={[EMPTY_CLIENT_STATE_VALUE, ...clientStates.filter((state) => state !== EMPTY_CLIENT_STATE_VALUE)]}
           optionLabels={{
             [EMPTY_CLIENT_STATE_VALUE]: EMPTY_CLIENT_STATE_LABEL,
           }}
@@ -507,16 +445,13 @@ function MobileActiveFilterChips({
   if (search.priority?.length) {
     chips.push({
       key: "priority",
-      label:
-        search.priority.length === 1 ? search.priority[0] : `${search.priority.length} priorities`,
+      label: search.priority.length === 1 ? search.priority[0] : `${search.priority.length} priorities`,
       clear: { priority: undefined },
     });
   }
 
   if (search.status?.length) {
-    const labels = search.status.map((s) =>
-      s === EMPTY_CLIENT_STATE_VALUE ? EMPTY_CLIENT_STATE_LABEL : s,
-    );
+    const labels = search.status.map((s) => (s === EMPTY_CLIENT_STATE_VALUE ? EMPTY_CLIENT_STATE_LABEL : s));
     chips.push({
       key: "status",
       label: labels.length === 1 ? labels[0] : `${labels.length} statuses`,
@@ -527,12 +462,7 @@ function MobileActiveFilterChips({
   if (search.from || search.to) {
     const from = search.from ? isoToDate(search.from) : undefined;
     const to = search.to ? isoToDate(search.to) : undefined;
-    const label =
-      from && to
-        ? `Created ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
-        : from
-          ? `Created from ${from.toLocaleDateString()}`
-          : `Created until ${to!.toLocaleDateString()}`;
+    const label = from && to ? `Created ${from.toLocaleDateString()} – ${to.toLocaleDateString()}` : from ? `Created from ${from.toLocaleDateString()}` : `Created until ${to!.toLocaleDateString()}`;
     chips.push({
       key: "created-dates",
       label,
@@ -543,12 +473,7 @@ function MobileActiveFilterChips({
   if (search.closedFrom || search.closedTo) {
     const from = search.closedFrom ? isoToDate(search.closedFrom) : undefined;
     const to = search.closedTo ? isoToDate(search.closedTo) : undefined;
-    const label =
-      from && to
-        ? `Closed ${from.toLocaleDateString()} – ${to.toLocaleDateString()}`
-        : from
-          ? `Closed from ${from.toLocaleDateString()}`
-          : `Closed until ${to!.toLocaleDateString()}`;
+    const label = from && to ? `Closed ${from.toLocaleDateString()} – ${to.toLocaleDateString()}` : from ? `Closed from ${from.toLocaleDateString()}` : `Closed until ${to!.toLocaleDateString()}`;
     chips.push({
       key: "closed-dates",
       label,
@@ -565,17 +490,13 @@ function MobileActiveFilterChips({
           key={chip.key}
           type="button"
           onClick={() => onRemove(chip.clear)}
-          className="inline-flex max-w-full items-center gap-1 rounded-full border bg-background px-2.5 py-1 text-xs text-foreground"
+          className="bg-background text-foreground inline-flex max-w-full items-center gap-1 rounded-full border px-2.5 py-1 text-xs"
         >
           <span className="truncate">{chip.label}</span>
           <X className="h-3 w-3 shrink-0 opacity-60" />
         </button>
       ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-      >
+      <button type="button" onClick={onClearAll} className="text-muted-foreground text-xs underline-offset-2 hover:underline">
         Clear all
       </button>
     </div>
@@ -618,25 +539,13 @@ function MultiSelectFilter({
     }
   };
 
-  const label =
-    selected.length === 0
-      ? placeholder
-      : selected.length === 1
-        ? labelFor(selected[0])
-        : `${selected.length} selected`;
+  const label = selected.length === 0 ? placeholder : selected.length === 1 ? labelFor(selected[0]) : `${selected.length} selected`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("w-full justify-between font-normal", triggerClassName ?? "h-8")}
-        >
-          <span className={cn("truncate", selected.length === 0 && "text-muted-foreground")}>
-            {label}
-          </span>
+        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full justify-between px-3 font-normal", triggerClassName ?? "h-8")}>
+          <span className={cn("truncate", selected.length === 0 && "text-muted-foreground")}>{label}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -650,12 +559,9 @@ function MultiSelectFilter({
                 <CommandItem
                   value={ALL}
                   onSelect={toggleAll}
-                  className="mb-1 flex items-center gap-2 border-b font-medium text-primary data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary"
+                  className="text-primary data-[selected=true]:bg-primary/10 data-[selected=true]:text-primary mb-1 flex items-center gap-2 border-b font-medium"
                 >
-                  <Checkbox
-                    checked={allSelected}
-                    className="pointer-events-none border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
-                  />
+                  <Checkbox checked={allSelected} className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground pointer-events-none" />
                   <span className="flex-1">Select All</span>
                   {allSelected && <Check className="h-4 w-4" />}
                 </CommandItem>
@@ -663,12 +569,7 @@ function MultiSelectFilter({
               {options.map((option) => {
                 const checked = selected.includes(option);
                 return (
-                  <CommandItem
-                    key={option}
-                    value={`${option} ${labelFor(option)}`}
-                    onSelect={() => toggle(option)}
-                    className="flex items-center gap-2"
-                  >
+                  <CommandItem key={option} value={`${option} ${labelFor(option)}`} onSelect={() => toggle(option)} className="flex items-center gap-2">
                     <Checkbox checked={checked} className="pointer-events-none" />
                     <span className="flex-1">{labelFor(option)}</span>
                     {checked && <Check className="h-4 w-4" />}
@@ -679,12 +580,7 @@ function MultiSelectFilter({
           </CommandList>
           {selected.length > 0 && (
             <div className="border-t p-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-center text-xs text-muted-foreground"
-                onClick={() => onChange([])}
-              >
+              <Button variant="ghost" size="sm" className="text-muted-foreground w-full justify-center text-xs" onClick={() => onChange([])}>
                 Clear selection
               </Button>
             </div>
@@ -695,18 +591,10 @@ function MultiSelectFilter({
   );
 }
 
-function FilterField({
-  label,
-  className,
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function FilterField({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className={className}>
-      <Label className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}</Label>
+    <div className={cn("min-w-45",className)}>
+      <Label className="text-muted-foreground mb-1.5 block text-xs font-medium">{label}</Label>
       {children}
     </div>
   );

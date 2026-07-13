@@ -3,11 +3,7 @@ import { CalendarIcon, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
@@ -20,33 +16,14 @@ interface DatePickerProps {
   className?: string;
 }
 
-export function DatePicker({
-  value,
-  onChange,
-  placeholder = "Pick a date",
-  disabled,
-  fromDate,
-  toDate,
-  className,
-}: DatePickerProps) {
+export function DatePicker({ value, onChange, placeholder = "Pick a date", disabled, fromDate, toDate, className }: DatePickerProps) {
   return (
     <div className="flex items-center gap-1">
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled}
-            className={cn(
-              "h-8 min-w-0 flex-1 justify-start gap-2 px-2.5 font-normal",
-              !value && "text-muted-foreground",
-              className,
-            )}
-          >
+          <Button type="button" variant="outline" disabled={disabled} className={cn("h-8 min-w-0 flex-1 justify-start gap-2 px-2.5 font-normal", !value && "text-muted-foreground", className)}>
             <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-60" />
-            <span className="truncate">
-              {value ? format(value, "dd MMM yyyy") : placeholder}
-            </span>
+            <span className="truncate">{value ? format(value, "dd MMM yyyy") : placeholder}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -64,19 +41,12 @@ export function DatePicker({
               if (toDate && isAfter(day, startOfDay(toDate))) return true;
               return false;
             }}
-            initialFocus
+            autoFocus
           />
         </PopoverContent>
       </Popover>
       {value && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0 text-muted-foreground"
-          onClick={() => onChange(undefined)}
-          aria-label="Clear date"
-        >
+        <Button type="button" variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 shrink-0" onClick={() => onChange(undefined)} aria-label="Clear date">
           <X className="h-3.5 w-3.5" />
         </Button>
       )}
