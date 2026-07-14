@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export interface TablePaginationToolbarProps {
@@ -19,28 +13,14 @@ export interface TablePaginationToolbarProps {
   className?: string;
 }
 
-export function TablePaginationToolbar({
-  page,
-  pageSize,
-  total,
-  onPageChange,
-  onPageSizeChange,
-  pageSizeOptions = [25, 50, 100],
-  summary,
-  className,
-}: TablePaginationToolbarProps) {
+export function TablePaginationToolbar({ page, pageSize, total, onPageChange, onPageSizeChange, pageSizeOptions = [25, 50, 100], summary, className }: TablePaginationToolbarProps) {
   if (total <= 0) return null;
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div
-      className={cn(
-        "flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3",
-        className,
-      )}
-    >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className={cn("flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3", className)}>
+      <div className="text-muted-foreground flex items-center gap-2 text-xs">
         {summary}
         <span>
           Page {page} of {totalPages} · {total} total
@@ -61,20 +41,10 @@ export function TablePaginationToolbar({
             </SelectContent>
           </Select>
         )}
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
+        <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
           Previous
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-        >
+        <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
           Next
         </Button>
       </div>

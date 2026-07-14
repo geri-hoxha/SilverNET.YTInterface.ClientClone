@@ -1,14 +1,4 @@
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { Permission } from "@/features/auth";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -42,12 +32,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
-            Y
-          </div>
+          <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-md font-bold">Y</div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold">YTInterface</span>
-            <span className="text-xs text-muted-foreground">Internal portal</span>
+            <span className="text-muted-foreground text-xs">Internal portal</span>
           </div>
         </div>
       </SidebarHeader>

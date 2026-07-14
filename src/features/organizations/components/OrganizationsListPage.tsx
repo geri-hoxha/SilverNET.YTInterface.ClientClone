@@ -6,49 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-import {
-  useCreateOrganization,
-  useDeleteOrganization,
-  useOrganizations,
-  useUpdateOrganization,
-} from "../hooks";
+import { useCreateOrganization, useDeleteOrganization, useOrganizations, useUpdateOrganization } from "../hooks";
 import {
   createOrganizationSchema as createFormSchema,
   editOrganizationSchema as editFormSchema,
@@ -75,7 +41,7 @@ export function OrganizationsListPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold tracking-tight">Organizations</h1>
-          <HelpCircle className="h-4 w-4 text-primary" />
+          <HelpCircle className="text-primary h-4 w-4" />
         </div>
         {canCreate && (
           <Button onClick={() => setCreating(true)}>
@@ -85,7 +51,7 @@ export function OrganizationsListPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="grid grid-cols-[1fr_40px] gap-4 border-b px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-muted-foreground grid grid-cols-[1fr_40px] gap-4 border-b px-4 py-2 text-xs font-medium tracking-wide uppercase">
           <div>Name</div>
           <div />
         </div>
@@ -100,25 +66,20 @@ export function OrganizationsListPage() {
           </div>
         ) : orgsQ.isError ? (
           <div className="px-4 py-12 text-center">
-            <p className="text-sm font-medium text-destructive">Failed to load organizations</p>
-            <p className="mt-1 text-xs text-muted-foreground">{(orgsQ.error as Error)?.message}</p>
+            <p className="text-destructive text-sm font-medium">Failed to load organizations</p>
+            <p className="text-muted-foreground mt-1 text-xs">{(orgsQ.error as Error)?.message}</p>
             <Button variant="outline" size="sm" className="mt-3" onClick={() => orgsQ.refetch()}>
               Try again
             </Button>
           </div>
         ) : !orgsQ.data?.length ? (
-          <div className="px-4 py-16 text-center text-sm text-muted-foreground">
-            No organizations yet.
-          </div>
+          <div className="text-muted-foreground px-4 py-16 text-center text-sm">No organizations yet.</div>
         ) : (
           <div className="divide-y">
             {orgsQ.data.map((org) => (
               <div
                 key={org.id}
-                className={cn(
-                  "group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors",
-                  canUpdate ? "cursor-pointer hover:bg-accent/40" : "cursor-default",
-                )}
+                className={cn("group grid grid-cols-[1fr_40px] items-center gap-4 px-4 py-3 transition-colors", canUpdate ? "hover:bg-accent/40 cursor-pointer" : "cursor-default")}
                 onClick={canUpdate ? () => setEditing(org) : undefined}
               >
                 <div className="flex min-w-0 items-center gap-3">
@@ -138,11 +99,7 @@ export function OrganizationsListPage() {
                   {canUpdate && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-                        >
+                        <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -151,10 +108,7 @@ export function OrganizationsListPage() {
                           <Pencil className="mr-2 h-4 w-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => setConfirmDelete(org)}
-                        >
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmDelete(org)}>
                           <Trash2 className="mr-2 h-4 w-4" /> Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -168,21 +122,13 @@ export function OrganizationsListPage() {
       </Card>
 
       <CreateOrgDialog open={creating} onOpenChange={setCreating} />
-      <EditOrgDialog
-        key={editing?.id ?? "edit"}
-        open={!!editing}
-        onOpenChange={(o) => !o && setEditing(null)}
-        organization={editing}
-      />
+      <EditOrgDialog key={editing?.id ?? "edit"} open={!!editing} onOpenChange={(o) => !o && setEditing(null)} organization={editing} />
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {confirmDelete?.name}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the organization. Projects belonging to it must be
-              removed or reassigned first.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This will permanently delete the organization. Projects belonging to it must be removed or reassigned first.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -202,13 +148,7 @@ export function OrganizationsListPage() {
   );
 }
 
-function CreateOrgDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
+function CreateOrgDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const createMut = useCreateOrganization();
   const form = useForm<CreateFormValues>({
     resolver: zodResolver(createFormSchema),
@@ -257,15 +197,7 @@ function CreateOrgDialog({
   );
 }
 
-function EditOrgDialog({
-  open,
-  onOpenChange,
-  organization,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  organization: Organization | null;
-}) {
+function EditOrgDialog({ open, onOpenChange, organization }: { open: boolean; onOpenChange: (open: boolean) => void; organization: Organization | null }) {
   const updateMut = useUpdateOrganization(organization?.id ?? "");
   const form = useForm<EditFormValues>({
     resolver: zodResolver(editFormSchema),
@@ -310,9 +242,7 @@ function EditOrgDialog({
                 <FormItem className="flex items-center justify-between rounded-md border p-3">
                   <div>
                     <FormLabel className="text-sm">Active</FormLabel>
-                    <p className="text-xs text-muted-foreground">
-                      Inactive organizations are hidden from most views.
-                    </p>
+                    <p className="text-muted-foreground text-xs">Inactive organizations are hidden from most views.</p>
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} />

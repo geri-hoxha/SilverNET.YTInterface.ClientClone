@@ -44,8 +44,7 @@ export const AttachmentImage = Image.extend({
       attachmentRef: {
         default: null,
         parseHTML: (el) => el.getAttribute("data-attachment-ref"),
-        renderHTML: (attrs) =>
-          attrs.attachmentRef ? { "data-attachment-ref": attrs.attachmentRef as string } : {},
+        renderHTML: (attrs) => (attrs.attachmentRef ? { "data-attachment-ref": attrs.attachmentRef as string } : {}),
       },
       // CSS width (e.g. "70%" / "300px"), kept so YouTrack's `{width=…}` survives
       // a round-trip through the editor.
@@ -57,8 +56,7 @@ export const AttachmentImage = Image.extend({
           if (m) return m[1];
           return el.getAttribute("width");
         },
-        renderHTML: (attrs) =>
-          attrs.width ? { style: `width:${normalizeWidth(attrs.width as string)}` } : {},
+        renderHTML: (attrs) => (attrs.width ? { style: `width:${normalizeWidth(attrs.width as string)}` } : {}),
       },
       // Live-preview source. Not serialised, so getHTML() always emits the
       // reference (`src`) rather than a throwaway blob URL.

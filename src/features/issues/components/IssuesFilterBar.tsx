@@ -544,7 +544,7 @@ function MultiSelectFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full justify-between active:scale-100 px-3 font-normal", triggerClassName ?? "h-8")}>
+        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full justify-between px-3 font-normal active:scale-100", triggerClassName ?? "h-8")}>
           <span className={cn("truncate", selected.length === 0 && "text-muted-foreground")}>{label}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

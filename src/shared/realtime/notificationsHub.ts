@@ -19,10 +19,7 @@ function buildConnection() {
     .build();
 }
 
-export async function startNotificationsHub(handlers: {
-  onNotification: (notification: UserNotification) => void;
-  onReconnected?: () => void;
-}) {
+export async function startNotificationsHub(handlers: { onNotification: (notification: UserNotification) => void; onReconnected?: () => void }) {
   onNotification = handlers.onNotification;
   onReconnected = handlers.onReconnected ?? null;
 

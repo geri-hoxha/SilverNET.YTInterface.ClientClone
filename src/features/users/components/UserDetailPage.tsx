@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { useOrganizations } from "@/features/organizations/hooks";
@@ -47,7 +41,7 @@ export function UserDetailPage() {
 
   if (query.isLoading) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="max-w-5xl space-y-6">
         <div className="flex items-center gap-3">
           <Skeleton className="h-9 w-9" />
           <Skeleton className="h-10 w-10 rounded-full" />
@@ -63,12 +57,9 @@ export function UserDetailPage() {
 
   if (query.isError || !query.data) {
     return (
-      <Card className="p-8 text-center space-y-3">
+      <Card className="space-y-3 p-8 text-center">
         <p className="text-sm font-medium">User not found</p>
-        <p className="text-xs text-muted-foreground">
-          {(query.error as Error)?.message ??
-            "This user may have been removed or you may not have access."}
-        </p>
+        <p className="text-muted-foreground text-xs">{(query.error as Error)?.message ?? "This user may have been removed or you may not have access."}</p>
         <Button asChild variant="outline" size="sm">
           <Link to="/users">Back to users</Link>
         </Button>
@@ -80,9 +71,9 @@ export function UserDetailPage() {
   const organization = (orgsQ.data ?? []).find((o) => o.id === user.organizationId);
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <Button asChild variant="ghost" size="icon">
             <Link to="/users">
               <ArrowLeft className="h-4 w-4" />
@@ -90,8 +81,8 @@ export function UserDetailPage() {
           </Button>
           <UserAvatar name={user.fullName} seed={user.id} className="h-10 w-10" />
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold tracking-tight truncate">{user.fullName}</h1>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <h1 className="truncate text-xl font-semibold tracking-tight">{user.fullName}</h1>
+            <p className="text-muted-foreground truncate text-xs">{user.email}</p>
           </div>
         </div>
         {!editing && canUpdate && (
@@ -102,17 +93,17 @@ export function UserDetailPage() {
       </div>
 
       <Tabs value="general">
-        <TabsList className="bg-transparent border-b w-full justify-start rounded-none h-auto p-0 gap-1">
+        <TabsList className="h-auto w-full justify-start gap-1 rounded-none border-b bg-transparent p-0">
           <TabsTrigger
             value="general"
-            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-foreground rounded-none px-3 py-2 -mb-px text-muted-foreground"
+            className="data-[state=active]:border-primary data-[state=active]:text-foreground text-muted-foreground -mb-px rounded-none px-3 py-2 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
             General
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="pt-6">
-          <div className="space-y-6 max-w-3xl">
+          <div className="max-w-3xl space-y-6">
             {editing ? (
               <>
                 <FieldRow label="Full name">
@@ -134,10 +125,7 @@ export function UserDetailPage() {
                   </Select>
                 </FieldRow>
                 <FieldRow label="Status">
-                  <Select
-                    value={isActive ? "active" : "inactive"}
-                    onValueChange={(v) => setIsActive(v === "active")}
-                  >
+                  <Select value={isActive ? "active" : "inactive"} onValueChange={(v) => setIsActive(v === "active")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -158,13 +146,8 @@ export function UserDetailPage() {
             <FieldRow label="Avatar">
               <UserAvatar name={user.fullName} seed={user.id} className="h-12 w-12 rounded-md" />
             </FieldRow>
-            <ReadonlyField
-              label="Organization"
-              value={user.organizationName ?? organization?.name ?? user.organizationId}
-            />
-            {!editing && (
-              <ReadonlyField label="Status" value={user.isActive ? "Active" : "Inactive"} />
-            )}
+            <ReadonlyField label="Organization" value={user.organizationName ?? organization?.name ?? user.organizationId} />
+            {!editing && <ReadonlyField label="Status" value={user.isActive ? "Active" : "Inactive"} />}
             {editing && (
               <div className="flex justify-end gap-2 pt-2">
                 <Button
@@ -210,15 +193,15 @@ export function UserDetailPage() {
 function ReadonlyField({ label, value }: { label: string; value: string }) {
   return (
     <FieldRow label={label}>
-      <p className="text-sm pt-2">{value || "—"}</p>
+      <p className="pt-2 text-sm">{value || "—"}</p>
     </FieldRow>
   );
 }
 
 function FieldRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-6 items-start">
-      <Label className="text-sm text-muted-foreground pt-2">{label}</Label>
+    <div className="grid grid-cols-1 items-start gap-2 md:grid-cols-[180px_1fr] md:gap-6">
+      <Label className="text-muted-foreground pt-2 text-sm">{label}</Label>
       <div>{children}</div>
     </div>
   );

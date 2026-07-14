@@ -6,10 +6,7 @@ export interface OrganizationProjects {
   projects: Project[];
 }
 
-export function groupProjectsByOrganization(
-  organizations: Organization[],
-  projects: Project[],
-): OrganizationProjects[] {
+export function groupProjectsByOrganization(organizations: Organization[], projects: Project[]): OrganizationProjects[] {
   return organizations.map((org) => ({
     org,
     projects: projects.filter((p) => p.organizationId === org.id),

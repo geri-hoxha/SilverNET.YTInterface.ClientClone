@@ -3,14 +3,7 @@ import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ApiError } from "@/shared/api/errors";
@@ -88,25 +81,18 @@ export function ExportIssuesDialog({ open, onOpenChange, filters }: Props) {
           The export will use the filters currently applied in the filter bar.
         </div>
 
-        <RadioGroup
-          value={String(format)}
-          onValueChange={(value) => setFormat(Number(value) as IssueExportFormat)}
-          className="gap-3"
-        >
+        <RadioGroup value={String(format)} onValueChange={(value) => setFormat(Number(value) as IssueExportFormat)} className="gap-3">
           {FORMAT_OPTIONS.map((option) => {
             const Icon = option.icon;
             const id = `export-format-${option.value}`;
             return (
               <div key={option.value} className="flex items-start gap-3">
                 <RadioGroupItem value={String(option.value)} id={id} className="mt-1" />
-                <Label
-                  htmlFor={id}
-                  className="flex flex-1 cursor-pointer items-start gap-2 font-normal"
-                >
-                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <Label htmlFor={id} className="flex flex-1 cursor-pointer items-start gap-2 font-normal">
+                  <Icon className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     <span className="block font-medium">{option.label}</span>
-                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                    <span className="text-muted-foreground text-xs">{option.description}</span>
                   </span>
                 </Label>
               </div>
@@ -115,12 +101,7 @@ export function ExportIssuesDialog({ open, onOpenChange, filters }: Props) {
         </RadioGroup>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={exporting}
-          >
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={exporting}>
             Cancel
           </Button>
           <Button type="button" onClick={handleExport} disabled={exporting}>

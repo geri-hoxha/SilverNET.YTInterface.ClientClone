@@ -1,12 +1,4 @@
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  MessageSquare,
-  PlusCircle,
-  RefreshCw,
-  type LucideIcon,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, MessageSquare, PlusCircle, RefreshCw, type LucideIcon } from "lucide-react";
 import type { NotificationType } from "./types";
 
 const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {

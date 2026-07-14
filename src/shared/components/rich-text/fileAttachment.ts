@@ -51,12 +51,7 @@ export const FileAttachment = Node.create({
       fileName: {
         default: "file",
         rendered: false,
-        parseHTML: (el) =>
-          el.getAttribute("data-attachment-ref") ||
-          el.getAttribute("data-file-name") ||
-          el.getAttribute("href") ||
-          el.getAttribute("download") ||
-          "file",
+        parseHTML: (el) => el.getAttribute("data-attachment-ref") || el.getAttribute("data-file-name") || el.getAttribute("href") || el.getAttribute("download") || "file",
       },
       fileSize: {
         default: 0,
@@ -84,8 +79,7 @@ export const FileAttachment = Node.create({
   // In-editor rendering: identical card, but the href uses the transient
   // preview URL when available so the just-attached file is downloadable.
   addNodeView() {
-    const hrefFor = (n: ProseMirrorNode) =>
-      String(n.attrs.previewSrc || n.attrs.fileName || "file");
+    const hrefFor = (n: ProseMirrorNode) => String(n.attrs.previewSrc || n.attrs.fileName || "file");
 
     return ({ node }) => {
       // The card's file name/size are fixed for a given node; only the preview
@@ -133,12 +127,7 @@ function buildCard(node: ProseMirrorNode, href: string): DomSpec {
       contenteditable: "false",
     }),
     ["span", { class: "rte-file-icon" }, extLabel(fileName)],
-    [
-      "span",
-      { class: "rte-file-info" },
-      ["span", { class: "rte-file-name" }, fileName],
-      ["span", { class: "rte-file-meta" }, meta || "File"],
-    ],
+    ["span", { class: "rte-file-info" }, ["span", { class: "rte-file-name" }, fileName], ["span", { class: "rte-file-meta" }, meta || "File"]],
     ["span", { class: "rte-file-download" }, "Download"],
   ];
 }

@@ -42,7 +42,7 @@ export function EditIssuePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <Button asChild variant="ghost" size="sm">
         <Link to="/issues/$id" params={{ id }}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to issue
@@ -64,23 +64,15 @@ export function EditIssuePage() {
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input id="title" {...form.register("title")} />
-                {form.formState.errors.title && (
-                  <p className="text-xs text-destructive">{form.formState.errors.title.message}</p>
-                )}
+                {form.formState.errors.title && <p className="text-destructive text-xs">{form.formState.errors.title.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" rows={8} {...form.register("description")} />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Status changes are managed in YouTrack and cannot be edited here.
-              </p>
+              <p className="text-muted-foreground text-xs">Status changes are managed in YouTrack and cannot be edited here.</p>
               <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate({ to: "/issues/$id", params: { id } })}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate({ to: "/issues/$id", params: { id } })}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={update.isPending}>

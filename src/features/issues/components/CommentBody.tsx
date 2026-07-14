@@ -31,15 +31,11 @@ export function CommentBody({ body, users, className }: CommentBodyProps) {
     <p className={className}>
       {parts.map((part, index) =>
         part.type === "mention" ? (
-          <span
-            key={index}
-            className="font-medium text-blue-600 dark:text-blue-400"
-            title={`@${part.handle}`}
-          >
+          <span key={index} className="font-medium text-blue-600 dark:text-blue-400" title={`@${part.handle}`}>
             {handleToName.get(part.handle.toLowerCase()) ?? part.handle}
           </span>
         ) : (
-          <span key={index} className="whitespace-pre-wrap break-words">
+          <span key={index} className="break-words whitespace-pre-wrap">
             {part.value}
           </span>
         ),

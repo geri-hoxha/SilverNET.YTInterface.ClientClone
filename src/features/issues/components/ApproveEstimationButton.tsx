@@ -1,16 +1,7 @@
 import { useState } from "react";
 import { CircleCheck, Loader2 } from "lucide-react";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -59,44 +50,17 @@ export function ApproveEstimationButton({
 
   const button =
     variant === "text" ? (
-      <Button
-        type="button"
-        size="sm"
-        className={cn("h-8", approveButtonClassName, className)}
-        disabled={isPending}
-        onClick={handleClick}
-      >
-        {isPending ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <CircleCheck className="mr-2 h-4 w-4" />
-        )}
+      <Button type="button" size="sm" className={cn("h-8", approveButtonClassName, className)} disabled={isPending} onClick={handleClick}>
+        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CircleCheck className="mr-2 h-4 w-4" />}
         Approve Estimation
       </Button>
     ) : variant === "compact" ? (
-      <Button
-        type="button"
-        size="sm"
-        className={cn("h-6 px-2 text-[11px] leading-none", approveButtonClassName, className)}
-        disabled={isPending}
-        onClick={handleClick}
-      >
+      <Button type="button" size="sm" className={cn("h-6 px-2 text-[11px] leading-none", approveButtonClassName, className)} disabled={isPending} onClick={handleClick}>
         {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Approve"}
       </Button>
     ) : (
-      <Button
-        type="button"
-        size="icon"
-        className={cn("h-7 w-7", approveButtonClassName, className)}
-        disabled={isPending}
-        onClick={handleClick}
-        aria-label="Approve estimation"
-      >
-        {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <CircleCheck className="h-4 w-4" />
-        )}
+      <Button type="button" size="icon" className={cn("h-7 w-7", approveButtonClassName, className)} disabled={isPending} onClick={handleClick} aria-label="Approve estimation">
+        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CircleCheck className="h-4 w-4" />}
       </Button>
     );
 
@@ -110,9 +74,7 @@ export function ApproveEstimationButton({
             <AlertDialogHeader>
               <AlertDialogTitle>Approve estimation?</AlertDialogTitle>
               <AlertDialogDescription>
-                {issueTitle
-                  ? `Are you sure you want to approve the estimation for "${issueTitle}"?`
-                  : "Are you sure you want to approve this estimation?"}
+                {issueTitle ? `Are you sure you want to approve the estimation for "${issueTitle}"?` : "Are you sure you want to approve this estimation?"}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

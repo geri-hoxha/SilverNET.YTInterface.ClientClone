@@ -50,10 +50,7 @@ export function parseCommentBodyParts(body: string, handles: string[]): CommentB
 }
 
 /** Active `@query` at the caret, if any. */
-export function getActiveMention(
-  text: string,
-  cursor: number,
-): { query: string; start: number } | null {
+export function getActiveMention(text: string, cursor: number): { query: string; start: number } | null {
   const before = text.slice(0, cursor);
   const match = /(?:^|[\s([{])@([\w.-]*)$/.exec(before);
   if (!match) return null;

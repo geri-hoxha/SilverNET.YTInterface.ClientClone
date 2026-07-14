@@ -5,8 +5,7 @@ import { markdownToHtml } from "./rich-text/markdown";
 
 // 1x1 transparent GIF, shown while an inline attachment is still resolving so we
 // never flash a broken-image icon for the (non-loadable) file-name reference.
-const PLACEHOLDER_SRC =
-  "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const PLACEHOLDER_SRC = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 interface Props {
   /** Description as YouTrack-flavoured Markdown. */
@@ -53,15 +52,7 @@ export function RichTextContent({ markdown, attachmentUrls, onReferences, classN
     onReferences?.(extractAttachmentRefs(baseHtml));
   }, [baseHtml, onReferences]);
 
-  const html = useMemo(
-    () => resolveAttachments(baseHtml, attachmentUrls),
-    [baseHtml, attachmentUrls],
-  );
+  const html = useMemo(() => resolveAttachments(baseHtml, attachmentUrls), [baseHtml, attachmentUrls]);
 
-  return (
-    <div
-      className={cn("rte-content max-w-none", className)}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
+  return <div className={cn("rte-content max-w-none", className)} dangerouslySetInnerHTML={{ __html: html }} />;
 }

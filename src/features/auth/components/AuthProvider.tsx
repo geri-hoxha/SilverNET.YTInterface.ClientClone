@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { onSessionExpired } from "@/shared/api/client";
 import { tokenStore } from "@/shared/api/tokens";
@@ -41,8 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = tokenStore.getUser<AuthUser>();
     if (stored && storedUser) {
       // Backfill permissions for sessions stored before this field existed.
-      const permissions =
-        storedUser.permissions ?? decodeJwtClaims(stored.accessToken)?.permissions ?? [];
+      const permissions = storedUser.permissions ?? decodeJwtClaims(stored.accessToken)?.permissions ?? [];
       setUser({ ...storedUser, permissions });
     }
     setIsReady(true);

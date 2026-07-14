@@ -1,12 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import type {
-  ApiPaginatedResult,
-  CreateOrganizationDto,
-  Organization,
-  OrganizationListParams,
-  PaginatedResult,
-  UpdateOrganizationDto,
-} from "../types";
+import type { ApiPaginatedResult, CreateOrganizationDto, Organization, OrganizationListParams, PaginatedResult, UpdateOrganizationDto } from "../types";
 
 function toListParams(params?: OrganizationListParams) {
   if (!params) return undefined;
@@ -31,8 +24,7 @@ export const organizationsApi = {
     };
   },
   get: (id: string) => apiRequest<Organization>({ method: "GET", url: `/organizations/${id}` }),
-  create: (data: CreateOrganizationDto) =>
-    apiRequest<Organization>({ method: "POST", url: "/organizations", data }),
+  create: (data: CreateOrganizationDto) => apiRequest<Organization>({ method: "POST", url: "/organizations", data }),
   update: (id: string, data: UpdateOrganizationDto) =>
     apiRequest<Organization>({
       method: "PUT",

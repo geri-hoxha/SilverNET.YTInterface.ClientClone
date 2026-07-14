@@ -18,8 +18,7 @@ const PRIORITY_STYLE_BY_TIER = {
   low: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
 } as const;
 
-const DEFAULT_PRIORITY_STYLE =
-  "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
+const DEFAULT_PRIORITY_STYLE = "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
 
 function priorityStyle(priority: string): string {
   const n = priority.toLowerCase();
@@ -54,8 +53,7 @@ const ISSUE_TYPE_STYLE_BY_KIND = {
   story: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
 } as const;
 
-const DEFAULT_ISSUE_TYPE_STYLE =
-  "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
+const DEFAULT_ISSUE_TYPE_STYLE = "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/25";
 
 function issueTypeStyle(issueType: string): string {
   const n = issueType.toLowerCase();
@@ -88,12 +86,9 @@ const CLIENT_STATE_TEXT_BY_TIER = {
 
 export function clientStateTextColor(state: string): string {
   const n = state.toLowerCase();
-  if (/(refus|reject|declin|block|cancel|won'?t fix|wontfix|fail)/.test(n))
-    return CLIENT_STATE_TEXT_BY_TIER.negative;
-  if (/(done|approv|resolv|fixed|complete|verified|closed)/.test(n))
-    return CLIENT_STATE_TEXT_BY_TIER.positive;
-  if (/(progress|pending|awaiting|review|estimat)/.test(n))
-    return CLIENT_STATE_TEXT_BY_TIER.inProgress;
+  if (/(refus|reject|declin|block|cancel|won'?t fix|wontfix|fail)/.test(n)) return CLIENT_STATE_TEXT_BY_TIER.negative;
+  if (/(done|approv|resolv|fixed|complete|verified|closed)/.test(n)) return CLIENT_STATE_TEXT_BY_TIER.positive;
+  if (/(progress|pending|awaiting|review|estimat)/.test(n)) return CLIENT_STATE_TEXT_BY_TIER.inProgress;
   if (/(needs|on hold|hold|waiting)/.test(n)) return CLIENT_STATE_TEXT_BY_TIER.attention;
   if (/(provided|open|new|to do|todo|reopen)/.test(n)) return CLIENT_STATE_TEXT_BY_TIER.info;
   return CLIENT_STATE_TEXT_BY_TIER.neutral;

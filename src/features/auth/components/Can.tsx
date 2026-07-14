@@ -19,10 +19,7 @@ interface CanProps {
 export function Can({ permission, anyOf, allOf, children, fallback = null }: CanProps) {
   const { permissions } = useAuth();
 
-  const ok =
-    (permission ? permissions.includes(permission) : true) &&
-    (anyOf ? anyOf.some((p) => permissions.includes(p)) : true) &&
-    (allOf ? allOf.every((p) => permissions.includes(p)) : true);
+  const ok = (permission ? permissions.includes(permission) : true) && (anyOf ? anyOf.some((p) => permissions.includes(p)) : true) && (allOf ? allOf.every((p) => permissions.includes(p)) : true);
 
   return <>{ok ? children : fallback}</>;
 }

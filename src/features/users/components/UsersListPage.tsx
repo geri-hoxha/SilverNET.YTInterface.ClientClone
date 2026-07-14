@@ -10,43 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
@@ -92,7 +60,7 @@ export function UsersListPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="text-sm text-muted-foreground">Manage portal users, roles and access.</p>
+          <p className="text-muted-foreground text-sm">Manage portal users, roles and access.</p>
         </div>
         {canCreate && (
           <Button onClick={() => setCreating(true)}>
@@ -135,24 +103,17 @@ export function UsersListPage() {
               ))
             ) : query.isError ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12">
-                  <p className="text-sm font-medium text-destructive">Failed to load users</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {(query.error as Error)?.message}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3"
-                    onClick={() => query.refetch()}
-                  >
+                <TableCell colSpan={7} className="py-12 text-center">
+                  <p className="text-destructive text-sm font-medium">Failed to load users</p>
+                  <p className="text-muted-foreground mt-1 text-xs">{(query.error as Error)?.message}</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
                     Try again
                   </Button>
                 </TableCell>
               </TableRow>
             ) : !items.length ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
+                <TableCell colSpan={7} className="text-muted-foreground py-12 text-center text-sm">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -160,51 +121,31 @@ export function UsersListPage() {
               items.map((user) => (
                 <TableRow key={user.id} className="group">
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={!!selection[user.id]}
-                      onCheckedChange={(c) => setSelection((s) => ({ ...s, [user.id]: !!c }))}
-                      aria-label={`Select ${user.fullName}`}
-                    />
+                    <Checkbox checked={!!selection[user.id]} onCheckedChange={(c) => setSelection((s) => ({ ...s, [user.id]: !!c }))} aria-label={`Select ${user.fullName}`} />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <UserAvatar name={user.fullName} seed={user.id} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <Link
-                            to="/users/$id"
-                            params={{ id: user.id }}
-                            className="font-medium text-primary hover:underline truncate"
-                          >
+                          <Link to="/users/$id" params={{ id: user.id }} className="text-primary truncate font-medium hover:underline">
                             {user.fullName || user.email}
                           </Link>
                         </div>
-                        {user.email && (
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                        )}
+                        {user.email && <p className="text-muted-foreground truncate text-xs">{user.email}</p>}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm truncate max-w-[220px]">
-                    {user.organizationName ?? "—"}
-                  </TableCell>
+                  <TableCell className="max-w-[220px] truncate text-sm">{user.organizationName ?? "—"}</TableCell>
                   <TableCell className="text-sm">{formatRoleLabel(user.role)}</TableCell>
                   <TableCell className="text-sm">
-                    <span className={user.isActive ? "text-emerald-600" : "text-muted-foreground"}>
-                      {user.isActive ? "Active" : "Inactive"}
-                    </span>
+                    <span className={user.isActive ? "text-emerald-600" : "text-muted-foreground"}>{user.isActive ? "Active" : "Inactive"}</span>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                    {formatShortDate(user.createdOnUtc)}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm whitespace-nowrap">{formatShortDate(user.createdOnUtc)}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 text-muted-foreground"
-                        >
+                        <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -231,11 +172,7 @@ export function UsersListPage() {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             pageSizeOptions={[25, 50, 100]}
-            summary={
-              someSelected ? (
-                <span>{Object.values(selection).filter(Boolean).length} selected ·</span>
-              ) : undefined
-            }
+            summary={someSelected ? <span>{Object.values(selection).filter(Boolean).length} selected ·</span> : undefined}
           />
         )}
       </Card>
@@ -245,13 +182,7 @@ export function UsersListPage() {
   );
 }
 
-function UserFormDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
+function UserFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const createMut = useCreateUser();
   const orgsQ = useOrganizations();
   const rolesQ = useRoles();
@@ -287,9 +218,7 @@ function UserFormDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>New user</DialogTitle>
-          <DialogDescription>
-            Create a portal user and assign an organization and role.
-          </DialogDescription>
+          <DialogDescription>Create a portal user and assign an organization and role.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

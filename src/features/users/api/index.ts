@@ -1,13 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import type {
-  ApiPaginatedResult,
-  CreateUserDto,
-  MentionableUser,
-  PaginatedResult,
-  PortalUser,
-  UpdateUserDto,
-  UserListParams,
-} from "../types";
+import type { ApiPaginatedResult, CreateUserDto, MentionableUser, PaginatedResult, PortalUser, UpdateUserDto, UserListParams } from "../types";
 
 function toListParams(params: UserListParams) {
   return {
@@ -37,13 +29,11 @@ export const usersApi = {
 
   create: (data: CreateUserDto) => apiRequest<PortalUser>({ method: "POST", url: "/users", data }),
 
-  update: (id: string, data: UpdateUserDto) =>
-    apiRequest<PortalUser>({ method: "PUT", url: `/users/${id}`, data }),
+  update: (id: string, data: UpdateUserDto) => apiRequest<PortalUser>({ method: "PUT", url: `/users/${id}`, data }),
 
   remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/users/${id}` }),
 
-  sendTestEmail: (id: string) =>
-    apiRequest<void>({ method: "POST", url: `/users/${id}/test-email` }),
+  sendTestEmail: (id: string) => apiRequest<void>({ method: "POST", url: `/users/${id}/test-email` }),
 
   exportPersonalData: (id: string) =>
     apiRequest<Blob>({

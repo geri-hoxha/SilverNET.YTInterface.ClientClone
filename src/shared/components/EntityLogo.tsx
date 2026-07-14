@@ -48,40 +48,19 @@ interface EntityLogoProps {
  * Square logo tile used for organizations & projects (YouTrack-style).
  * Renders an image if provided, otherwise a colored tile with initials.
  */
-export function EntityLogo({
-  name,
-  seed,
-  src,
-  shortCode,
-  size = "md",
-  className,
-}: EntityLogoProps) {
+export function EntityLogo({ name, seed, src, shortCode, size = "md", className }: EntityLogoProps) {
   const sizes = {
     sm: "h-8 w-8 text-[10px]",
     md: "h-10 w-10 text-xs",
     lg: "h-12 w-12 text-sm",
   };
   if (src) {
-    return (
-      <img
-        src={src}
-        alt={name}
-        className={cn("rounded-md object-cover ring-1 ring-border", sizes[size], className)}
-      />
-    );
+    return <img src={src} alt={name} className={cn("ring-border rounded-md object-cover ring-1", sizes[size], className)} />;
   }
   const label = (shortCode || initials(name)).slice(0, 4);
   const color = PALETTE[hashIndex(seed ?? name, PALETTE.length)];
   return (
-    <div
-      className={cn(
-        "flex items-center justify-center rounded-md font-bold text-white tracking-tight",
-        sizes[size],
-        color,
-        className,
-      )}
-      aria-hidden
-    >
+    <div className={cn("flex items-center justify-center rounded-md font-bold tracking-tight text-white", sizes[size], color, className)} aria-hidden>
       {label}
     </div>
   );

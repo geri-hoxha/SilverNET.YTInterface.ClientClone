@@ -44,8 +44,7 @@ export function decodeJwtClaims(token: string | null | undefined): JwtClaims | n
     const payload = JSON.parse(base64UrlDecode(parts[1])) as Record<string, unknown>;
     const permissions = asArray(payload.permission ?? payload.permissions);
     const role = typeof payload.role === "string" ? (payload.role as PortalRole) : undefined;
-    const organizationId =
-      typeof payload.organizationId === "string" ? payload.organizationId : undefined;
+    const organizationId = typeof payload.organizationId === "string" ? payload.organizationId : undefined;
     return { permissions, role, organizationId };
   } catch {
     return null;

@@ -1,15 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Settings as SettingsIcon,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, MoreHorizontal, Pencil, Plus, RefreshCw, Settings as SettingsIcon, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -19,55 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 import { useOrganizations } from "@/features/organizations/hooks";
-import {
-  useCreateProject,
-  useDeleteProject,
-  useProjects,
-  useSyncPriorities,
-  useUpdateProject,
-} from "../hooks";
+import { useCreateProject, useDeleteProject, useProjects, useSyncPriorities, useUpdateProject } from "../hooks";
 import { projectFormSchema as formSchema, type ProjectFormValues as FormValues } from "../schemas";
 import { groupProjectsByOrganization } from "../utils";
 import { EntityLogo } from "@/shared/components/EntityLogo";
@@ -76,8 +26,7 @@ import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Project } from "../types";
 import type { Organization } from "@/features/organizations/types";
 
-const PROJECT_GRID_COLS =
-  "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
+const PROJECT_GRID_COLS = "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
 const PROJECT_ROW_LAYOUT = "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";
 
 export function ProjectsListPage() {
@@ -96,15 +45,12 @@ export function ProjectsListPage() {
   const [creating, setCreating] = useState<{ organizationId?: string } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Project | null>(null);
 
-  const grouped = useMemo(
-    () => groupProjectsByOrganization(orgsQ.data ?? [], projectsQ.data ?? []),
-    [orgsQ.data, projectsQ.data],
-  );
+  const grouped = useMemo(() => groupProjectsByOrganization(orgsQ.data ?? [], projectsQ.data ?? []), [orgsQ.data, projectsQ.data]);
 
   const loading = orgsQ.isLoading || projectsQ.isLoading;
 
   return (
-    <div className="min-w-0 overflow-x-hidden space-y-4">
+    <div className="min-w-0 space-y-4 overflow-x-hidden">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold tracking-tight">Projects</h1>
         {canCreate && (
@@ -115,14 +61,14 @@ export function ProjectsListPage() {
       </div>
 
       {loading ? (
-        <Card className="p-4 space-y-3">
+        <Card className="space-y-3 p-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}
         </Card>
       ) : orgsQ.isError || projectsQ.isError ? (
         <Card className="py-12 text-center">
-          <p className="text-sm font-medium text-destructive">Failed to load data</p>
+          <p className="text-destructive text-sm font-medium">Failed to load data</p>
           <Button
             variant="outline"
             size="sm"
@@ -136,50 +82,29 @@ export function ProjectsListPage() {
           </Button>
         </Card>
       ) : !grouped.length ? (
-        <Card className="py-16 text-center text-sm text-muted-foreground">
-          No organizations found. Create an organization first.
-        </Card>
+        <Card className="text-muted-foreground py-16 text-center text-sm">No organizations found. Create an organization first.</Card>
       ) : (
         <div className="min-w-0 space-y-3">
           {grouped.map(({ org, projects }) => {
             const isCollapsed = collapsed[org.id];
             return (
               <Card key={org.id} className="min-w-0 overflow-hidden">
-                <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => setCollapsed((c) => ({ ...c, [org.id]: !c[org.id] }))}
-                  >
-                    {isCollapsed ? (
-                      <ChevronRight className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                <div className="bg-muted/40 flex items-center gap-2 border-b px-3 py-2">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCollapsed((c) => ({ ...c, [org.id]: !c[org.id] }))}>
+                    {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                   <EntityLogo name={org.name} seed={org.id} size="sm" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">{org.name}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs font-semibold tracking-wider uppercase">{org.name}</span>
+                  <span className="text-muted-foreground text-xs">
                     · {projects.length} {projects.length === 1 ? "project" : "projects"}
                   </span>
                   <div className="ml-auto flex items-center gap-1">
                     {canCreate && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCreating({ organizationId: org.id })}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setCreating({ organizationId: org.id })}>
                         <Plus className="mr-1 h-3.5 w-3.5" /> Add project
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground"
-                      title="Organization settings"
-                      asChild
-                    >
+                    <Button variant="ghost" size="icon" className="text-muted-foreground h-7 w-7" title="Organization settings" asChild>
                       <Link to="/organizations">
                         <SettingsIcon className="h-4 w-4" />
                       </Link>
@@ -190,14 +115,10 @@ export function ProjectsListPage() {
                 {!isCollapsed && (
                   <div className="w-full max-w-full overflow-x-auto">
                     {projects.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-xs text-muted-foreground">
-                        No projects in this organization.
-                      </div>
+                      <div className="text-muted-foreground px-4 py-6 text-center text-xs">No projects in this organization.</div>
                     ) : (
                       <div className={`grid w-full min-w-[640px] ${PROJECT_GRID_COLS}`}>
-                        <div
-                          className={`${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b bg-muted/20 py-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground`}
-                        >
+                        <div className={`${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} bg-muted/20 text-muted-foreground border-b py-1.5 text-[10px] font-medium tracking-wide uppercase`}>
                           <span>Project</span>
                           <span>YouTrack ID</span>
                           <span>Status</span>
@@ -235,22 +156,13 @@ export function ProjectsListPage() {
         defaultOrganizationId={creating?.organizationId}
         organizations={orgsQ.data ?? []}
       />
-      <ProjectFormDialog
-        key={editing?.id ?? "edit"}
-        open={!!editing}
-        onOpenChange={(o) => !o && setEditing(null)}
-        mode="edit"
-        project={editing}
-        organizations={orgsQ.data ?? []}
-      />
+      <ProjectFormDialog key={editing?.id ?? "edit"} open={!!editing} onOpenChange={(o) => !o && setEditing(null)} mode="edit" project={editing} organizations={orgsQ.data ?? []} />
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete project {confirmDelete?.name}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. Existing issues will become unlinked.
-            </AlertDialogDescription>
+            <AlertDialogDescription>This action cannot be undone. Existing issues will become unlinked.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -290,19 +202,11 @@ function ProjectRow({
   const showMenu = canUpdate;
   return (
     <div
-      className={cn(
-        `group ${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b py-2 transition-colors last:border-b-0`,
-        canUpdate ? "cursor-pointer hover:bg-accent/40" : "cursor-default",
-      )}
+      className={cn(`group ${PROJECT_ROW_LAYOUT} ${PROJECT_GRID_COLS} border-b py-2 transition-colors last:border-b-0`, canUpdate ? "hover:bg-accent/40 cursor-pointer" : "cursor-default")}
       onClick={canUpdate ? onEdit : undefined}
     >
       <div className="flex min-w-0 items-center gap-2">
-        <EntityLogo
-          name={project.name}
-          shortCode={project.youTrackProjectId}
-          seed={project.id}
-          size="sm"
-        />
+        <EntityLogo name={project.name} shortCode={project.youTrackProjectId} seed={project.id} size="sm" />
         <span className="min-w-0 truncate text-sm font-semibold">{project.name}</span>
       </div>
 
@@ -310,10 +214,7 @@ function ProjectRow({
         {project.youTrackProjectId}
       </Badge>
 
-      <Badge
-        variant={project.isActive ? "default" : "secondary"}
-        className="w-fit shrink-0 font-normal"
-      >
+      <Badge variant={project.isActive ? "default" : "secondary"} className="w-fit shrink-0 font-normal">
         {project.isActive ? "Active" : "Inactive"}
       </Badge>
 
@@ -321,10 +222,7 @@ function ProjectRow({
 
       <ProjectOptionBadges items={project.clientStates} emptyLabel="Not synced" />
 
-      <div
-        className="flex shrink-0 items-center justify-end gap-0.5"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="flex shrink-0 items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
         {canSync && (
           <Button
             variant="default"
@@ -341,11 +239,7 @@ function ProjectRow({
         {showMenu && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
-              >
+              <Button variant="ghost" size="icon" className="text-muted-foreground h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -354,10 +248,7 @@ function ProjectRow({
                 <Pencil className="mr-2 h-4 w-4" /> Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={onDelete}
-              >
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={onDelete}>
                 <Trash2 className="mr-2 h-4 w-4" /> Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -370,18 +261,13 @@ function ProjectRow({
 
 function ProjectOptionBadges({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
   if (!items.length) {
-    return <span className="text-xs text-muted-foreground italic">{emptyLabel}</span>;
+    return <span className="text-muted-foreground text-xs italic">{emptyLabel}</span>;
   }
 
   return (
     <div className="flex max-h-12 min-w-0 flex-wrap gap-0.5 overflow-hidden">
       {items.map((item) => (
-        <Badge
-          key={item}
-          variant="secondary"
-          className="max-w-full truncate font-normal text-[10px]"
-          title={item}
-        >
+        <Badge key={item} variant="secondary" className="max-w-full truncate text-[10px] font-normal" title={item}>
           {item}
         </Badge>
       ))}
@@ -458,9 +344,7 @@ function ProjectFormDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "New project" : "Edit project"}</DialogTitle>
-          <DialogDescription>
-            Projects are linked to a YouTrack project by short ID.
-          </DialogDescription>
+          <DialogDescription>Projects are linked to a YouTrack project by short ID.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -470,11 +354,7 @@ function ProjectFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Organization</FormLabel>
-                  <Select
-                    value={field.value || undefined}
-                    onValueChange={field.onChange}
-                    disabled={mode === "edit"}
-                  >
+                  <Select value={field.value || undefined} onValueChange={field.onChange} disabled={mode === "edit"}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select organization" />
@@ -527,9 +407,7 @@ function ProjectFormDialog({
                     <FormItem className="flex items-center justify-between rounded-md border p-3">
                       <div>
                         <FormLabel className="text-sm">Active</FormLabel>
-                        <p className="text-xs text-muted-foreground">
-                          Inactive projects are hidden from issue creation.
-                        </p>
+                        <p className="text-muted-foreground text-xs">Inactive projects are hidden from issue creation.</p>
                       </div>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -539,26 +417,16 @@ function ProjectFormDialog({
                 />
 
                 {project && (
-                  <div className="space-y-4 rounded-md border bg-muted/30 p-4">
+                  <div className="bg-muted/30 space-y-4 rounded-md border p-4">
                     <ProjectDetailReadonly label="Project ID" value={project.id} mono />
                     <ProjectDetailReadonly label="Organization" value={organizationName} />
                     <div>
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        Priorities ({project.priorityOptions.length})
-                      </p>
-                      <ProjectOptionBadges
-                        items={project.priorityOptions}
-                        emptyLabel="Not synced yet — use Sync on the projects list"
-                      />
+                      <p className="text-muted-foreground mb-2 text-xs font-medium">Priorities ({project.priorityOptions.length})</p>
+                      <ProjectOptionBadges items={project.priorityOptions} emptyLabel="Not synced yet — use Sync on the projects list" />
                     </div>
                     <div>
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">
-                        Workflow states ({project.clientStates.length})
-                      </p>
-                      <ProjectOptionBadges
-                        items={project.clientStates}
-                        emptyLabel="Not synced yet — use Sync on the projects list"
-                      />
+                      <p className="text-muted-foreground mb-2 text-xs font-medium">Workflow states ({project.clientStates.length})</p>
+                      <ProjectOptionBadges items={project.clientStates} emptyLabel="Not synced yet — use Sync on the projects list" />
                     </div>
                   </div>
                 )}
@@ -579,18 +447,10 @@ function ProjectFormDialog({
   );
 }
 
-function ProjectDetailReadonly({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function ProjectDetailReadonly({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-muted-foreground mb-1 text-xs font-medium">{label}</p>
       <p className={`text-sm break-all ${mono ? "font-mono text-xs" : ""}`} title={value}>
         {value}
       </p>

@@ -22,11 +22,7 @@ const FILE_LIKE = /\.[a-z0-9]{1,8}$/i;
 marked.setOptions({ gfm: true, breaks: true });
 
 function escapeAttr(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function escapeHtmlText(value: string): string {
@@ -219,8 +215,7 @@ function getTurndown(): TurndownService {
   });
 
   td.addRule("attachmentFile", {
-    filter: (node) =>
-      node.nodeName === "A" && (node.getAttribute("class") ?? "").split(/\s+/).includes("rte-file"),
+    filter: (node) => node.nodeName === "A" && (node.getAttribute("class") ?? "").split(/\s+/).includes("rte-file"),
     replacement: (_content, node) => {
       const el = node as Element;
       const ref = el.getAttribute("data-attachment-ref") ?? el.getAttribute("data-file-name") ?? "";

@@ -5,11 +5,7 @@ type LovableErrorOptions = {
 };
 
 type LovableEvents = {
-  captureException?: (
-    error: unknown,
-    context?: Record<string, unknown>,
-    options?: LovableErrorOptions,
-  ) => void;
+  captureException?: (error: unknown, context?: Record<string, unknown>, options?: LovableErrorOptions) => void;
 };
 
 declare global {

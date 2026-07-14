@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-const issueSortFieldSchema = z.enum([
-  "YouTrackReadableId",
-  "Title",
-  "ProjectName",
-  "Priority",
-  "ClientState",
-  "CreatedOnUtc",
-]);
+const issueSortFieldSchema = z.enum(["YouTrackReadableId", "Title", "ProjectName", "Priority", "ClientState", "CreatedOnUtc"]);
 
 export const issuesSearchSchema = z.object({
   page: z.number().int().min(1).default(1),

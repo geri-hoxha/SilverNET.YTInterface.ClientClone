@@ -3,11 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/features/auth";
 import { notificationsApi } from "../api";
-import {
-  notificationsKeys,
-  prependNotificationToCache,
-  refetchNotificationQueries,
-} from "../hooks";
+import { notificationsKeys, prependNotificationToCache, refetchNotificationQueries } from "../hooks";
 import { showNotificationToast } from "./NotificationToast";
 import type { UserNotification } from "../types";
 
@@ -34,12 +30,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       showNotificationToast(notification, () => {
         if (!notification.isRead) {
           void notificationsApi.markRead(notification.id).then(() => {
-            queryClientRef.current.setQueryData(
-              notificationsKeys.unreadCount(),
-              (prev: { count: number } | undefined) => ({
-                count: Math.max(0, (prev?.count ?? 0) - 1),
-              }),
-            );
+            queryClientRef.current.setQueryData(notificationsKeys.unreadCount(), (prev: { count: number } | undefined) => ({
+              count: Math.max(0, (prev?.count ?? 0) - 1),
+            }));
             refetchNotificationQueries(queryClientRef.current);
           });
         }

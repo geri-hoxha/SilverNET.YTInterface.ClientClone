@@ -23,9 +23,7 @@ export function UserAvatar({ name, src, className }: UserAvatarProps) {
   return (
     <Avatar className={cn("h-9 w-9", className)}>
       {src ? <AvatarImage src={src} alt={name ?? ""} /> : null}
-      <AvatarFallback className={cn("text-white text-xs font-semibold", AVATAR_COLOR)}>
-        {initials}
-      </AvatarFallback>
+      <AvatarFallback className={cn("text-xs font-semibold text-white", AVATAR_COLOR)}>{initials}</AvatarFallback>
     </Avatar>
   );
 }

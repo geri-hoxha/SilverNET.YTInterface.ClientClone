@@ -17,16 +17,7 @@ type MentionTextareaProps = {
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 };
 
-export function MentionTextarea({
-  value,
-  onChange,
-  users,
-  placeholder,
-  rows = 2,
-  className,
-  disabled,
-  onKeyDown,
-}: MentionTextareaProps) {
+export function MentionTextarea({ value, onChange, users, placeholder, rows = 2, className, disabled, onKeyDown }: MentionTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [cursor, setCursor] = useState(value.length);
@@ -119,14 +110,10 @@ export function MentionTextarea({
         placeholder={placeholder}
         rows={rows}
         disabled={disabled}
-        className={cn("resize-none bg-muted/30", className)}
+        className={cn("bg-muted/30 resize-none", className)}
       />
       {mentionOpen && (
-        <div
-          className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
-          role="listbox"
-          aria-label="Mention a user"
-        >
+        <div className="bg-popover text-popover-foreground absolute top-full right-0 left-0 z-50 mt-1 overflow-hidden rounded-md border shadow-md" role="listbox" aria-label="Mention a user">
           <ul className="max-h-48 overflow-y-auto p-1">
             {filteredUsers.map((user, index) => (
               <li key={user.id} role="option" aria-selected={index === selectedIndex}>
@@ -134,9 +121,7 @@ export function MentionTextarea({
                   type="button"
                   className={cn(
                     "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none",
-                    index === selectedIndex
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-accent/50",
+                    index === selectedIndex ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
                   )}
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -146,9 +131,7 @@ export function MentionTextarea({
                 >
                   <UserAvatar name={user.fullName} seed={user.id} className="h-6 w-6 text-[10px]" />
                   <span className="min-w-0 flex-1 truncate font-medium">{user.fullName}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    @{user.mentionHandle}
-                  </span>
+                  <span className="text-muted-foreground shrink-0 text-xs">@{user.mentionHandle}</span>
                 </button>
               </li>
             ))}
