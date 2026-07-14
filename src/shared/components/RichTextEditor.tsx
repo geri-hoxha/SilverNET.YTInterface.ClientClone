@@ -85,14 +85,14 @@ export function RichTextEditor({
       // upload path as the toolbar so we store a reference instead of inlining
       // base64 bytes into the description.
       handlePaste: (_view, event) => {
-        const files = filesFromTransfer(event.clipboardData);
+        const files = dedupeFiles(filesFromTransfer(event.clipboardData));
         if (!files.length || !insertFilesRef.current) return false;
         event.preventDefault();
         insertFilesRef.current(files);
         return true;
       },
       handleDrop: (view, event) => {
-        const files = filesFromTransfer(event.dataTransfer);
+        const files = dedupeFiles(filesFromTransfer(event.dataTransfer));
         if (!files.length || !insertFilesRef.current) return false;
         event.preventDefault();
         const at = view.posAtCoords({
@@ -210,6 +210,21 @@ function filesFromTransfer(dt: DataTransfer | null): File[] {
     .filter((file): file is File => file !== null);
 }
 
+// A single paste/drop of one image can populate more than one DataTransferItem
+// for the *same* file (e.g. macOS commonly exposes both a PNG and a TIFF
+// representation of one pasted screenshot). Without deduping, each would be
+// inserted and uploaded as if they were separate files, producing visible
+// duplicate attachments for what the user experienced as a single paste.
+function dedupeFiles(files: File[]): File[] {
+  const seen = new Set<string>();
+  return files.filter((f) => {
+    const key = `${f.name}:${f.size}:${f.lastModified}:${f.type}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // Uploads a file and inserts a reference node (image or file card) pointing at
 // the stored attachment, with a transient object URL for live preview.
 async function insertViaUpload(
@@ -300,7 +315,7 @@ function Toolbar({
   return (
     <div className="flex flex-wrap items-center gap-1 border-y bg-muted/40 px-3 py-1.5 text-muted-foreground">
       <Select value={blockValue} onValueChange={setBlock}>
-        <SelectTrigger className="h-7 w-[120px] border-0 bg-transparent text-xs shadow-none focus:ring-0">
+        <SelectTrigger className="h-7 w-30 border-0 bg-transparent text-xs shadow-none focus:ring-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -381,7 +396,7 @@ function Toolbar({
         multiple
         className="hidden"
         onChange={(e) => {
-          if (e.target.files?.length) insertFiles(Array.from(e.target.files));
+          if (e.target.files?.length) insertFiles(dedupeFiles(Array.from(e.target.files)));
           e.target.value = "";
         }}
       />

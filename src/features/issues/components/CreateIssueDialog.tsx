@@ -1,39 +1,27 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Check, ChevronsUpDown, FileText, Loader2, Paperclip, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown, Eye, FileText, Loader2, Paperclip, X } from "lucide-react";
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useProjects } from "@/features/projects/hooks";
+import { cn } from "@/lib/utils";
+import { EntityLogo } from "@/shared/components/EntityLogo";
+import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
+import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { issuesApi } from "../api";
 import { issuesKeys, useCreateIssue } from "../hooks";
-import { EntityLogo } from "@/shared/components/EntityLogo";
-import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { createIssueSchema, type CreateIssueFormValues } from "../schemas";
 import { fileTypeMeta, formatBytes, uniqueFileName } from "../utils";
-import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
-import { cn } from "@/lib/utils";
 
 // Maps a project's YouTrack priority name to a badge color. Falls back to a
 // neutral color for any custom/unknown priority value.
@@ -80,10 +68,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
   // Stage an inline file under a unique name and return the reference to store
   // in the description HTML.
   const stageInlineFile = (file: File): string => {
-    const used = new Set<string>([
-      ...attachments.map((f) => f.name),
-      ...inlineFilesRef.current.keys(),
-    ]);
+    const used = new Set<string>([...attachments.map((f) => f.name), ...inlineFilesRef.current.keys()]);
     const fileName = uniqueFileName(file.name, used);
     const staged = fileName === file.name ? file : new File([file], fileName, { type: file.type });
     inlineFilesRef.current.set(fileName, staged);
@@ -154,16 +139,10 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
     if (files.length > 0) {
       setUploading(true);
       try {
-        const results = await Promise.allSettled(
-          files.map((file) => issuesApi.uploadAttachment(issue.id, file)),
-        );
+        const results = await Promise.allSettled(files.map((file) => issuesApi.uploadAttachment(issue.id, file)));
         const failed = results.filter((r) => r.status === "rejected").length;
         if (failed > 0) {
-          toast.error(
-            failed === files.length
-              ? "Issue created, but attachments failed to upload"
-              : `Issue created, but ${failed} of ${files.length} attachment(s) failed to upload`,
-          );
+          toast.error(failed === files.length ? "Issue created, but attachments failed to upload" : `Issue created, but ${failed} of ${files.length} attachment(s) failed to upload`);
         }
 
         // Reconcile inline references: if the backend stored an inline file
@@ -204,31 +183,24 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-270 p-0 gap-0 overflow-hidden sm:w-full [&>button.absolute]:hidden">
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[90vh] md:max-h-[85vh]"
-        >
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-270 gap-0 overflow-hidden p-0 sm:w-full [&>button.absolute]:hidden">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid max-h-[90vh] grid-cols-1 md:max-h-[85vh] md:grid-cols-[1fr_320px]">
           {/* LEFT: editor */}
           <div className="flex min-w-0 flex-col overflow-y-auto">
             <div className="flex items-start gap-2 px-5 pt-4 pb-2">
               <Input
                 placeholder="Enter a summary"
-                className="h-auto border-0 px-0 py-1 text-xl font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+                className="placeholder:text-muted-foreground/60 h-auto border-0 px-0 py-1 text-xl font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 autoFocus
                 {...form.register("title")}
               />
-              <div className="flex items-center gap-1 text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-1">
                 <IconBtn title="Close" onClick={() => onOpenChange(false)} type="button">
                   <X className="h-4 w-4" />
                 </IconBtn>
               </div>
             </div>
-            {form.formState.errors.title && (
-              <p className="px-5 pb-1 text-xs text-destructive">
-                {form.formState.errors.title.message}
-              </p>
-            )}
+            {form.formState.errors.title && <p className="text-destructive px-5 pb-1 text-xs">{form.formState.errors.title.message}</p>}
 
             {/* rich text editor */}
             <div className="flex-1">
@@ -268,18 +240,12 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
                       addFiles(e.dataTransfer.files);
                     }}
                     className={cn(
-                      "flex w-full items-center justify-center rounded-md border border-dashed py-4 text-sm text-muted-foreground transition-colors",
-                      dragOver
-                        ? "border-primary bg-primary/5 text-foreground"
-                        : "hover:border-foreground/30 hover:text-foreground",
+                      "text-muted-foreground flex w-full items-center justify-center rounded-md border border-dashed py-4 text-sm transition-colors",
+                      dragOver ? "border-primary bg-primary/5 text-foreground" : "hover:border-foreground/30 hover:text-foreground",
                     )}
                   >
                     <Paperclip className="mr-2 h-4 w-4" />
-                    Click to{" "}
-                    <span className="mx-1 text-primary underline-offset-2 hover:underline">
-                      browse
-                    </span>{" "}
-                    or drag files here
+                    Click to <span className="text-primary mx-1 underline-offset-2 hover:underline">browse</span> or drag files here
                   </button>
                 );
 
@@ -290,27 +256,13 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
                     {attachments.map((file, idx) => {
                       const meta = fileTypeMeta(file.name);
                       return (
-                        <div
-                          key={`${file.name}-${idx}`}
-                          className={cn(
-                            "group flex items-center gap-3 rounded-md border px-3 py-2",
-                            meta.bg,
-                            meta.border,
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
-                              meta.badge,
-                            )}
-                          >
+                        <div key={`${file.name}-${idx}`} className={cn("group flex items-center gap-3 rounded-md border px-3 py-2", meta.bg, meta.border)}>
+                          <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white uppercase", meta.badge)}>
                             {meta.label ? meta.label : <FileText className="h-4 w-4" />}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium text-foreground">
-                              {file.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-foreground truncate text-sm font-medium">{file.name}</div>
+                            <div className="text-muted-foreground text-xs">
                               {meta.typeLabel} · {formatBytes(file.size)}
                             </div>
                           </div>
@@ -318,7 +270,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
                             type="button"
                             onClick={() => removeFile(idx)}
                             title="Remove"
-                            className="rounded p-1 text-muted-foreground opacity-60 hover:bg-background hover:text-foreground group-hover:opacity-100"
+                            className="text-muted-foreground hover:bg-background hover:text-foreground rounded p-1 opacity-60 group-hover:opacity-100"
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -332,13 +284,9 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
             </div>
 
             {/* footer */}
-            <div className="sticky bottom-0 z-10 mt-auto flex items-center gap-2 border-t bg-background px-5 py-3">
+            <div className="bg-background sticky bottom-0 z-10 mt-auto flex items-center gap-2 border-t px-5 py-3">
               <div className="flex">
-                <Button
-                  className="h-8 bg-blue-600 hover:bg-blue-700 text-white"
-                  type="submit"
-                  disabled={isBusy}
-                >
+                <Button className="h-8 bg-blue-600 text-white hover:bg-blue-700" type="submit" disabled={isBusy}>
                   {isBusy && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                   Create
                 </Button>
@@ -377,40 +325,16 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
           </div>
 
           {/* RIGHT: metadata sidebar */}
-          <aside className="border-l bg-muted/20 overflow-y-auto">
-            <div className="px-4 py-4 space-y-4">
+          <aside className="bg-muted/20 overflow-y-auto border-l">
+            <div className="space-y-4 px-4 py-4">
               <Field label="Project">
-                <ProjectPicker
-                  projects={projects}
-                  value={form.watch("projectId")}
-                  onChange={(id) => form.setValue("projectId", id, { shouldValidate: true })}
-                />
-                {form.formState.errors.projectId && (
-                  <p className="mt-1 text-xs text-destructive">
-                    {form.formState.errors.projectId.message}
-                  </p>
-                )}
+                <ProjectPicker projects={projects} value={form.watch("projectId")} onChange={(id) => form.setValue("projectId", id, { shouldValidate: true })} />
+                {form.formState.errors.projectId && <p className="text-destructive mt-1 text-xs">{form.formState.errors.projectId.message}</p>}
               </Field>
 
-              <Field
-                label="Priority"
-                rightSlot={
-                  form.watch("priority") ? (
-                    <TileBadge color={priorityBadgeBg(form.watch("priority"))}>S</TileBadge>
-                  ) : undefined
-                }
-              >
-                <PriorityPicker
-                  options={priorityOptions}
-                  value={form.watch("priority")}
-                  onChange={(v) => form.setValue("priority", v, { shouldValidate: true })}
-                  hasProject={!!selectedProjectId}
-                />
-                {form.formState.errors.priority && (
-                  <p className="mt-1 text-xs text-destructive">
-                    {form.formState.errors.priority.message}
-                  </p>
-                )}
+              <Field label="Priority" rightSlot={form.watch("priority") ? <TileBadge color={priorityBadgeBg(form.watch("priority"))}>S</TileBadge> : undefined}>
+                <PriorityPicker options={priorityOptions} value={form.watch("priority")} onChange={(v) => form.setValue("priority", v, { shouldValidate: true })} hasProject={!!selectedProjectId} />
+                {form.formState.errors.priority && <p className="text-destructive mt-1 text-xs">{form.formState.errors.priority.message}</p>}
               </Field>
             </div>
           </aside>
@@ -420,20 +344,10 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
   );
 }
 
-function Field({
-  label,
-  children,
-  rightSlot,
-}: {
-  label: string;
-  children: React.ReactNode;
-  rightSlot?: React.ReactNode;
-}) {
+function Field({ label, children, rightSlot }: { label: string; children: React.ReactNode; rightSlot?: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-muted-foreground text-xs font-medium tracking-wider uppercase">{label}</div>
       <div className="mt-1.5 flex items-center gap-2 text-base">
         <div className="min-w-0 flex-1 truncate">{children}</div>
         {rightSlot}
@@ -443,51 +357,25 @@ function Field({
 }
 
 function TileBadge({ children, color }: { children: React.ReactNode; color: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white",
-        color,
-      )}
-    >
-      {children}
-    </span>
-  );
+  return <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white", color)}>{children}</span>;
 }
 
-function ProjectPicker({
-  projects,
-  value,
-  onChange,
-}: {
-  projects: { id: string; name: string; youTrackProjectId: string }[];
-  value: string;
-  onChange: (id: string) => void;
-}) {
+function ProjectPicker({ projects, value, onChange }: { projects: { id: string; name: string; youTrackProjectId: string }[]; value: string; onChange: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const selected = projects.find((p) => p.id === value);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex w-full items-center justify-between gap-2 rounded text-left text-sm hover:text-foreground"
-        >
+        <button type="button" className="hover:text-foreground flex w-full items-center justify-between gap-2 rounded text-left text-sm">
           {selected ? (
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="truncate font-medium text-foreground">{selected.name}</span>
-              <EntityLogo
-                name={selected.name}
-                shortCode={selected.youTrackProjectId}
-                seed={selected.id}
-                size="sm"
-                className="ml-auto"
-              />
+              <span className="text-foreground truncate font-medium">{selected.name}</span>
+              <EntityLogo name={selected.name} shortCode={selected.youTrackProjectId} seed={selected.id} size="sm" className="ml-auto" />
             </div>
           ) : (
             <span className="text-muted-foreground">Select project</span>
           )}
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <ChevronsUpDown className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-70 p-0" align="end">
@@ -509,9 +397,7 @@ function ProjectPicker({
                   <EntityLogo name={p.name} shortCode={p.youTrackProjectId} seed={p.id} size="sm" />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate">{p.name}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {p.youTrackProjectId}
-                    </span>
+                    <span className="text-muted-foreground font-mono text-[10px]">{p.youTrackProjectId}</span>
                   </div>
                   {p.id === value && <Check className="h-4 w-4" />}
                 </CommandItem>
@@ -524,17 +410,7 @@ function ProjectPicker({
   );
 }
 
-function PriorityPicker({
-  options,
-  value,
-  onChange,
-  hasProject,
-}: {
-  options: string[];
-  value: string;
-  onChange: (v: string) => void;
-  hasProject: boolean;
-}) {
+function PriorityPicker({ options, value, onChange, hasProject }: { options: string[]; value: string; onChange: (v: string) => void; hasProject: boolean }) {
   const [open, setOpen] = useState(false);
 
   const noPriorities = hasProject && options.length === 0;
@@ -555,10 +431,7 @@ function PriorityPicker({
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex w-full items-center gap-2 text-left text-sm text-primary hover:underline underline-offset-2"
-        >
+        <button type="button" className="text-primary flex w-full items-center gap-2 text-left text-sm underline-offset-2 hover:underline">
           {value || placeholder}
         </button>
       </PopoverTrigger>
@@ -579,14 +452,7 @@ function PriorityPicker({
                   className="flex items-center gap-2"
                 >
                   <span className="flex-1">{option}</span>
-                  <span
-                    className={cn(
-                      "inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white",
-                      priorityBadgeBg(option),
-                    )}
-                  >
-                    S
-                  </span>
+                  <span className={cn("inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white", priorityBadgeBg(option))}>S</span>
                   {option === value && <Check className="h-4 w-4" />}
                 </CommandItem>
               ))}
@@ -600,14 +466,7 @@ function PriorityPicker({
 
 function IconBtn({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button
-      type="button"
-      {...props}
-      className={cn(
-        "inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground",
-        props.className,
-      )}
-    >
+    <button type="button" {...props} className={cn("text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-7 w-7 items-center justify-center rounded", props.className)}>
       {children}
     </button>
   );
