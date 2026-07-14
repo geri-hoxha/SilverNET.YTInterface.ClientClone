@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useProjects } from "@/features/projects/hooks";
 import { cn } from "@/lib/utils";
 import { EntityLogo } from "@/shared/components/EntityLogo";
+import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
 import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { issuesApi } from "../api";
@@ -134,8 +135,14 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
     // The editor produces HTML; YouTrack stores Markdown.
     const markdown = htmlToMarkdown(values.description ?? "");
     const issue = await createMut.mutateAsync({ ...values, description: markdown });
-    const inlineEntries = [...inlineFilesRef.current.entries()];
+
+    // Only upload inline files still referenced in the description. A paste that
+    // was deleted (or undone) before Create must never become an attachment.
+    // Bottom-of-dialog "Attachments" files are always intentional and stay.
+    const referenced = new Set(extractAttachmentRefs(values.description ?? ""));
+    const inlineEntries = [...inlineFilesRef.current.entries()].filter(([name]) => referenced.has(name));
     const files = [...attachments, ...inlineEntries.map(([, file]) => file)];
+
     if (files.length > 0) {
       setUploading(true);
       try {

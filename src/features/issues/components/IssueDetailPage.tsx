@@ -109,6 +109,9 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   const update = useUpdateIssue(id);
   const approveEstimation = useApproveEstimation();
   const { urls: attachmentUrls, ensure } = useIssueAttachmentUrls(id);
+  // Used so staged inline names never collide with already-uploaded files.
+  const attachmentsQ = useIssueAttachments(id);
+  const existingAttachmentNames = attachmentsQ.data?.items.map((a) => a.fileName) ?? [];
 
   // Files pasted/dropped/attached into the description while editing are
   // staged here (like CreateIssueDialog) instead of being uploaded immediately.
@@ -133,12 +136,32 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
 
   // Stage a pasted/dropped/attached file locally and return the reference name
   // to embed in the description. No network call happens here.
-  const stageInlineFile = useCallback((file: File): string => {
-    const used = new Set<string>(inlineFilesRef.current.keys());
-    const fileName = uniqueFileName(file.name, used);
-    const staged = fileName === file.name ? file : new File([file], fileName, { type: file.type });
-    inlineFilesRef.current.set(fileName, staged);
-    return fileName;
+  //
+  // Names are unique against staged files, refs already in the description, and
+  // existing uploaded attachments. Without that, a deleted Lightshot-style
+  // "image.png" paste can still match an older ![…](image.png) ref on Save and
+  // get uploaded as a duplicate.
+  const stageInlineFile = useCallback(
+    (file: File): string => {
+      const used = new Set<string>([...inlineFilesRef.current.keys(), ...extractAttachmentRefs(description), ...existingAttachmentNames]);
+      const fileName = uniqueFileName(file.name, used);
+      const staged = fileName === file.name ? file : new File([file], fileName, { type: file.type });
+      inlineFilesRef.current.set(fileName, staged);
+      return fileName;
+    },
+    [description, existingAttachmentNames],
+  );
+
+  // Keep description state in sync and immediately drop staged files the user
+  // has removed, so a paste+delete never reaches the upload step.
+  const handleDescriptionChange = useCallback((html: string) => {
+    setDescription(html);
+    const stillReferenced = new Set(extractAttachmentRefs(html));
+    for (const name of [...inlineFilesRef.current.keys()]) {
+      if (!stillReferenced.has(name)) {
+        inlineFilesRef.current.delete(name);
+      }
+    }
   }, []);
 
   const startEdit = () => {
@@ -236,7 +259,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
           <div className="space-y-4">
             <RichTextEditor
               value={description}
-              onChange={setDescription}
+              onChange={handleDescriptionChange}
               placeholder="Type or paste a description of the issue here"
               minHeight={200}
               onUploadFile={async (file) => stageInlineFile(file)}
