@@ -593,7 +593,7 @@ function MultiSelectFilter({
 
 function FilterField({ label, className, children }: { label: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className={cn("min-w-45",className)}>
+    <div className={cn("min-w-45", className)}>
       <Label className="text-muted-foreground mb-1.5 block text-xs font-medium">{label}</Label>
       {children}
     </div>

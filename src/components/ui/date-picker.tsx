@@ -21,23 +21,19 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
     <div className="flex items-center gap-1">
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled}
-            className={cn("h-8 min-w-0 flex-1 justify-start gap-2 px-2.5 font-normal active:scale-100", !value && "text-muted-foreground", className)}
-          >
+          <Button type="button" variant="outline" disabled={disabled} className={cn("h-8 min-w-0 flex-1 justify-start gap-2 px-2.5 font-normal active:scale-100", !value && "text-muted-foreground", className)}>
             <CalendarIcon className="h-3.5 w-3.5 shrink-0 opacity-60" />
             <span className="truncate">{value ? format(value, "dd MMM yyyy") : placeholder}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="center">
           <Calendar
             mode="single"
             selected={value}
             onSelect={onChange}
             defaultMonth={value}
             captionLayout="dropdown"
+            
             fromDate={fromDate}
             toDate={toDate}
             disabled={(date) => {

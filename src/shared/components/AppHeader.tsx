@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
+import ThemeToggle from "@/features/theme/ThemeToggle";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
@@ -33,6 +34,7 @@ export function AppHeader() {
         ))}
       </nav>
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <ThemeToggle />
         <NotificationBell />
         <div className="flex items-center gap-2 px-1">
           <UserAvatar name={user?.fullName} seed={user?.id} className="h-7 w-7" />
