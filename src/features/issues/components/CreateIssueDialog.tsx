@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useProjects } from "@/features/projects/hooks";
+import { useMentionableUsers } from "@/features/users/hooks";
 import { cn } from "@/lib/utils";
 import { EntityLogo } from "@/shared/components/EntityLogo";
 import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
@@ -55,12 +56,11 @@ interface Props {
 export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCreated }: Props) {
   const qc = useQueryClient();
   const projectsQ = useProjects();
+  const usersQ = useMentionableUsers();
+  const mentionableUsers = usersQ.data ?? [];
   const createMut = useCreateIssue();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
-  // Files inserted inline in the description (by file name). The issue doesn't
-  // exist yet, so they're staged here and uploaded once it's created; the
-  // description only stores references to them.
   const inlineFilesRef = useRef<Map<string, File>>(new Map());
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -190,7 +190,24 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-270 gap-0 overflow-hidden p-0 sm:w-full [&>button.absolute]:hidden">
+      <DialogContent
+        className="w-[calc(100vw-1rem)] max-w-270 gap-0 overflow-hidden p-0 sm:w-full [&>button.absolute]:hidden"
+        onPointerDownOutside={(e) => {
+          if ((e.target as HTMLElement).closest("[data-mention-list]")) {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          if ((e.target as HTMLElement).closest("[data-mention-list]")) {
+            e.preventDefault();
+          }
+        }}
+        onFocusOutside={(e) => {
+          if ((e.target as HTMLElement).closest("[data-mention-list]")) {
+            e.preventDefault();
+          }
+        }}
+      >
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid max-h-[90vh] grid-cols-1 md:max-h-[85vh] md:grid-cols-[1fr_320px]">
           {/* LEFT: editor */}
           <div className="flex min-w-0 flex-col overflow-y-auto">
@@ -216,6 +233,7 @@ export function CreateIssueDialog({ open, onOpenChange, defaultProjectId, onCrea
                 onChange={(html) => form.setValue("description", html, { shouldDirty: true })}
                 placeholder="Type or paste a description of the issue here"
                 onUploadFile={async (file) => stageInlineFile(file)}
+                mentionUsers={mentionableUsers}
               />
             </div>
 

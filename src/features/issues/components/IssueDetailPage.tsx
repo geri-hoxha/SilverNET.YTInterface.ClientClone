@@ -25,8 +25,6 @@ import { issueDetailRouteApi } from "../route";
 import type { Issue, IssueAttachment } from "../types";
 import { fileTypeMeta, issueReadableId, uniqueFileName } from "../utils";
 import { ApproveEstimationButton } from "./ApproveEstimationButton";
-import { CommentBody } from "./CommentBody";
-import { MentionTextarea } from "./MentionTextarea";
 
 export function IssueDetailPage() {
   const { id } = issueDetailRouteApi.useParams();
@@ -112,6 +110,8 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   // Used so staged inline names never collide with already-uploaded files.
   const attachmentsQ = useIssueAttachments(id);
   const existingAttachmentNames = attachmentsQ.data?.items.map((a) => a.fileName) ?? [];
+  const usersQ = useMentionableUsers();
+  const mentionableUsers = usersQ.data ?? [];
 
   // Files pasted/dropped/attached into the description while editing are
   // staged here (like CreateIssueDialog) instead of being uploaded immediately.
@@ -172,7 +172,6 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   };
 
   const cancelEdit = () => {
-    // Nothing was ever uploaded, so cancelling is just discarding local state.
     inlineFilesRef.current = new Map();
     setTitle(issue.title);
     setDescription(markdownToHtml(issue.description));
@@ -199,8 +198,6 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
         toast.error(failed === staged.length ? "Failed to upload attached files" : `${failed} of ${staged.length} attached file(s) failed to upload`);
       }
 
-      // If the backend stored a staged file under a different name, rewrite the
-      // markdown reference so it still resolves.
       staged.forEach(([stagedName], i) => {
         const r = results[i];
         if (r.status === "fulfilled" && r.value.fileName !== stagedName) {
@@ -264,6 +261,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
               minHeight={200}
               onUploadFile={async (file) => stageInlineFile(file)}
               attachmentUrls={attachmentUrls}
+              mentionUsers={mentionableUsers}
             />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" size="sm" onClick={cancelEdit} disabled={update.isPending}>
@@ -276,7 +274,7 @@ function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
             </div>
           </div>
         ) : issue.description ? (
-          <RichTextContent markdown={issue.description} attachmentUrls={attachmentUrls} onReferences={ensure} />
+          <RichTextContent markdown={issue.description} attachmentUrls={attachmentUrls} onReferences={ensure} mentionUsers={mentionableUsers} />
         ) : (
           <p className="text-muted-foreground italic">No description</p>
         )}
@@ -343,14 +341,73 @@ function CommentsArea({ id }: { id: string }) {
   const q = useIssueComments(id);
   const usersQ = useMentionableUsers();
   const add = useAddComment(id);
-  const [text, setText] = useState("");
+  const qc = useQueryClient();
+
+  const [bodyHtml, setBodyHtml] = useState("");
+  const { urls: attachmentUrls, ensure } = useIssueAttachmentUrls(id);
+  const attachmentsQ = useIssueAttachments(id);
+  const existingAttachmentNames = attachmentsQ.data?.items.map((a) => a.fileName) ?? [];
+
+  // Same staging pattern as the description editor: files pasted/dropped into
+  // the comment box don't upload until the comment is actually posted.
+  const inlineFilesRef = useRef<Map<string, File>>(new Map());
+
   const comments = q.data?.items ?? [];
   const mentionableUsers = usersQ.data ?? [];
 
+  useEffect(() => {
+    ensure(extractAttachmentRefs(bodyHtml));
+  }, [bodyHtml, ensure]);
+
+  const stageInlineFile = useCallback(
+    (file: File): string => {
+      const used = new Set<string>([...inlineFilesRef.current.keys(), ...extractAttachmentRefs(bodyHtml), ...existingAttachmentNames]);
+      const fileName = uniqueFileName(file.name, used);
+      const staged = fileName === file.name ? file : new File([file], fileName, { type: file.type });
+      inlineFilesRef.current.set(fileName, staged);
+      return fileName;
+    },
+    [bodyHtml, existingAttachmentNames],
+  );
+
+  const handleBodyChange = useCallback((html: string) => {
+    setBodyHtml(html);
+    const stillReferenced = new Set(extractAttachmentRefs(html));
+    for (const name of [...inlineFilesRef.current.keys()]) {
+      if (!stillReferenced.has(name)) {
+        inlineFilesRef.current.delete(name);
+      }
+    }
+  }, []);
+
   const submit = async () => {
-    if (!text.trim()) return;
-    await add.mutateAsync(text.trim());
-    setText("");
+    let markdown = htmlToMarkdown(bodyHtml);
+    if (!markdown.trim()) return;
+
+    const referenced = new Set(extractAttachmentRefs(bodyHtml));
+    const staged = [...inlineFilesRef.current.entries()].filter(([name]) => referenced.has(name));
+
+    if (staged.length > 0) {
+      const results = await Promise.allSettled(staged.map(([, file]) => issuesApi.uploadAttachment(id, file)));
+
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed > 0) {
+        toast.error(failed === staged.length ? "Failed to upload attached files" : `${failed} of ${staged.length} attached file(s) failed to upload`);
+      }
+
+      staged.forEach(([stagedName], i) => {
+        const r = results[i];
+        if (r.status === "fulfilled" && r.value.fileName !== stagedName) {
+          markdown = markdown.split(`](${stagedName})`).join(`](${r.value.fileName})`);
+        }
+      });
+
+      await qc.invalidateQueries({ queryKey: issuesKeys.attachments(id) });
+    }
+
+    await add.mutateAsync(markdown);
+    inlineFilesRef.current = new Map();
+    setBodyHtml("");
   };
 
   return (
@@ -370,7 +427,7 @@ function CommentsArea({ id }: { id: string }) {
                     <span className="text-muted-foreground">•</span>
                     <span className="text-muted-foreground">Commented {formatRelative(c.createdOnUtc)}</span>
                   </div>
-                  <CommentBody body={c.body} users={mentionableUsers} className="mt-1 text-sm" />
+                  <RichTextContent markdown={c.body} attachmentUrls={attachmentUrls} onReferences={ensure} mentionUsers={mentionableUsers} className="mt-1 text-sm" />
                 </div>
               </li>
             );
@@ -381,9 +438,25 @@ function CommentsArea({ id }: { id: string }) {
       {canComment && (
         <div className="flex gap-3">
           <UserAvatar name={user?.fullName} seed={user?.id} className="h-8 w-8" />
-          <div className="flex-1 space-y-2">
-            <MentionTextarea placeholder="Write a comment" value={text} onChange={setText} users={mentionableUsers} rows={2} />
-            {text.trim() && (
+          <div className="min-w-0 flex-1 space-y-2">
+            {usersQ.isLoading ? (
+              <Skeleton className="h-20 w-full" />
+            ) : (
+              <RichTextEditor
+                value={bodyHtml}
+                onChange={handleBodyChange}
+                placeholder="Write a comment"
+                minHeight={60}
+                maxHeight={600}
+                onUploadFile={async (file) => stageInlineFile(file)}
+                attachmentUrls={attachmentUrls}
+                mentionUsers={mentionableUsers}
+                editorClassName="border-x border-b rounded-b-md border-border"
+                toolbarClassName="border border-input rounded-t-md"
+                // className="border rounded-md border-input shadow-none overflow-hidden"
+              />
+            )}
+            {bodyHtml.trim() && (
               <div className="flex justify-end">
                 <Button onClick={submit} disabled={add.isPending} size="sm">
                   {add.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

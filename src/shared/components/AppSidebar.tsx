@@ -32,7 +32,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-4">
         <div className="flex items-center gap-2">
-          <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-md font-bold">Y</div>
+          <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-md font-bold">Y</div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold">YTInterface</span>
             <span className="text-muted-foreground text-xs">Internal portal</span>

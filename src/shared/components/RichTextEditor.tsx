@@ -1,4 +1,6 @@
+import { mergeAttributes } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
+import Mention from "@tiptap/extension-mention";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -8,9 +10,11 @@ import { toast } from "sonner";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { MentionableUser } from "@/features/users";
 import { cn } from "@/lib/utils";
 import { AttachmentImage } from "./rich-text/attachmentImage";
 import { FileAttachment } from "./rich-text/fileAttachment";
+import { createMentionSuggestion } from "./rich-text/mentionSuggestion";
 
 interface Props {
   value: string;
@@ -18,6 +22,7 @@ interface Props {
   placeholder?: string;
   className?: string;
   minHeight?: number;
+  maxHeight?: number;
   /**
    * Uploads (or stages) a file dropped/selected inside the editor and resolves
    * to the attachment file name to reference. When provided, inline files are
@@ -29,9 +34,29 @@ interface Props {
    * files (e.g. when editing an existing description).
    */
   attachmentUrls?: Record<string, string>;
+  /**
+   * When provided, enables @mention autocomplete against this user list.
+   * Mentions render and serialize as plain "@mentionHandle" text, matching
+   * the existing MentionTextarea output format.
+   */
+  mentionUsers?: MentionableUser[];
+  editorClassName?: string;
+  toolbarClassName?: string;
 }
 
-export function RichTextEditor({ value, onChange, placeholder = "Type or paste a description here", className, minHeight = 280, onUploadFile, attachmentUrls }: Props) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder = "Type or paste a description here",
+  className,
+  minHeight = 280,
+  maxHeight,
+  onUploadFile,
+  attachmentUrls,
+  mentionUsers,
+  editorClassName,
+  toolbarClassName,
+}: Props) {
   // Object URLs created for live previews of just-inserted files; revoked on
   // unmount so we don't leak blobs.
   const previewUrlsRef = useRef<string[]>([]);
@@ -49,11 +74,22 @@ export function RichTextEditor({ value, onChange, placeholder = "Type or paste a
       Placeholder.configure({ placeholder }),
       AttachmentImage.configure({ inline: false, allowBase64: true }),
       FileAttachment,
+      ...(mentionUsers
+        ? [
+            Mention.configure({
+              HTMLAttributes: { class: "text-sky-500 font-medium" },
+
+              renderText: ({ node }) => `@${node.attrs.label ?? node.attrs.id}`,
+              renderHTML: ({ node, options }) => ["span", mergeAttributes(options.HTMLAttributes), `@${node.attrs.label ?? node.attrs.id}`],
+              suggestion: createMentionSuggestion(mentionUsers),
+            }),
+          ]
+        : []),
     ],
     content: value || "",
     editorProps: {
       attributes: {
-        class: cn("rte-content max-w-none focus:outline-none", "min-h-[var(--rte-min-h)] py-2"),
+        class: cn("rte-content text-sm max-w-none focus:outline-none break-words overflow-wrap-anywhere", "min-h-[var(--rte-min-h)] py-2"),
         style: `--rte-min-h: ${minHeight}px`,
       },
       // Pasting/dropping files (e.g. a pasted screenshot) goes through the same
@@ -146,9 +182,9 @@ export function RichTextEditor({ value, onChange, placeholder = "Type or paste a
   }, []);
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      <Toolbar editor={editor} insertFiles={insertFiles} />
-      <div className="px-5 py-2">
+    <div className={cn("flex min-w-0 flex-col", className)}>
+      <Toolbar editor={editor} insertFiles={insertFiles} toolbarClassName={toolbarClassName} />
+      <div className={cn("min-w-0 px-5 py-2", maxHeight && "overflow-y-auto", editorClassName)} style={maxHeight ? { maxHeight } : undefined}>
         <EditorContent editor={editor} />
       </div>
     </div>
@@ -240,7 +276,7 @@ async function insertViaBase64(editor: Editor, file: File, at?: number) {
   }
 }
 
-function Toolbar({ editor, insertFiles }: { editor: Editor | null; insertFiles: (files: File[], at?: number) => void }) {
+function Toolbar({ editor, insertFiles, toolbarClassName }: { editor: Editor | null; insertFiles: (files: File[], at?: number) => void; toolbarClassName?: string }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const blockValue = !editor ? "p" : editor.isActive("heading", { level: 1 }) ? "h1" : editor.isActive("heading", { level: 2 }) ? "h2" : editor.isActive("heading", { level: 3 }) ? "h3" : "p";
@@ -265,9 +301,9 @@ function Toolbar({ editor, insertFiles }: { editor: Editor | null; insertFiles: 
   };
 
   return (
-    <div className="bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-1 border-y px-3 py-1.5">
+    <div className={cn("bg-muted/40 text-muted-foreground flex flex-wrap items-center gap-1 border-y px-3 py-1.5", toolbarClassName)}>
       <Select value={blockValue} onValueChange={setBlock}>
-        <SelectTrigger className="h-7 w-[120px] border-0 bg-transparent text-xs shadow-none focus:ring-0">
+        <SelectTrigger className="h-7 w-30 border-0 bg-transparent text-xs shadow-none focus:ring-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
