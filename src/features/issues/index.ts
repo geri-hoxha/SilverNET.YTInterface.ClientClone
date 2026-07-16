@@ -1,10 +1,9 @@
-export * from "./types";
-export * from "./schemas";
-export * from "./utils";
 export * from "./api";
+export { CreateIssueDialog } from "./components/CreateIssueDialog";
+export { IssuesListPage } from "./components/IssuesListPage";
+export { IssueDetailPage } from "./components/single-issue/IssueDetailPage";
 export * from "./hooks";
 export * from "./route";
-export { IssuesListPage } from "./components/IssuesListPage";
-export { IssueDetailPage } from "./components/IssueDetailPage";
-export { EditIssuePage } from "./components/IssueEditPage";
-export { CreateIssueDialog } from "./components/CreateIssueDialog";
+export * from "./schemas";
+export * from "./types";
+export * from "./utils";

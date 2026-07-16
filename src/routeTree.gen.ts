@@ -12,17 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated.users'
-import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated.projects'
-import { Route as AuthenticatedOrganizationsRouteImport } from './routes/_authenticated.organizations'
-import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated.users.index'
-import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated.projects.index'
-import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated.organizations.index'
-import { Route as AuthenticatedIssuesIndexRouteImport } from './routes/_authenticated.issues.index'
-import { Route as AuthenticatedUsersIdRouteImport } from './routes/_authenticated.users.$id'
-import { Route as AuthenticatedIssuesNewRouteImport } from './routes/_authenticated.issues.new'
-import { Route as AuthenticatedIssuesIdRouteImport } from './routes/_authenticated.issues.$id'
-import { Route as AuthenticatedIssuesIdEditRouteImport } from './routes/_authenticated.issues.$id.edit'
+import { Route as AuthenticatedUsersRouteRouteImport } from './routes/_authenticated/users/route'
+import { Route as AuthenticatedProjectsRouteRouteImport } from './routes/_authenticated/projects/route'
+import { Route as AuthenticatedOrganizationsRouteRouteImport } from './routes/_authenticated/organizations/route'
+import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
+import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations/index'
+import { Route as AuthenticatedIssuesIndexRouteImport } from './routes/_authenticated/issues/index'
+import { Route as AuthenticatedUsersIdRouteImport } from './routes/_authenticated/users/$id'
+import { Route as AuthenticatedIssuesIdRouteImport } from './routes/_authenticated/issues/$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -38,18 +36,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+const AuthenticatedUsersRouteRoute = AuthenticatedUsersRouteRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedOrganizationsRoute =
-  AuthenticatedOrganizationsRouteImport.update({
+const AuthenticatedProjectsRouteRoute =
+  AuthenticatedProjectsRouteRouteImport.update({
+    id: '/projects',
+    path: '/projects',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedOrganizationsRouteRoute =
+  AuthenticatedOrganizationsRouteRouteImport.update({
     id: '/organizations',
     path: '/organizations',
     getParentRoute: () => AuthenticatedRoute,
@@ -57,19 +56,19 @@ const AuthenticatedOrganizationsRoute =
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedUsersRoute,
+  getParentRoute: () => AuthenticatedUsersRouteRoute,
 } as any)
 const AuthenticatedProjectsIndexRoute =
   AuthenticatedProjectsIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedProjectsRoute,
+    getParentRoute: () => AuthenticatedProjectsRouteRoute,
   } as any)
 const AuthenticatedOrganizationsIndexRoute =
   AuthenticatedOrganizationsIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedOrganizationsRoute,
+    getParentRoute: () => AuthenticatedOrganizationsRouteRoute,
   } as any)
 const AuthenticatedIssuesIndexRoute =
   AuthenticatedIssuesIndexRouteImport.update({
@@ -80,68 +79,51 @@ const AuthenticatedIssuesIndexRoute =
 const AuthenticatedUsersIdRoute = AuthenticatedUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => AuthenticatedUsersRoute,
-} as any)
-const AuthenticatedIssuesNewRoute = AuthenticatedIssuesNewRouteImport.update({
-  id: '/issues/new',
-  path: '/issues/new',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => AuthenticatedUsersRouteRoute,
 } as any)
 const AuthenticatedIssuesIdRoute = AuthenticatedIssuesIdRouteImport.update({
   id: '/issues/$id',
   path: '/issues/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedIssuesIdEditRoute =
-  AuthenticatedIssuesIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedIssuesIdRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
-  '/projects': typeof AuthenticatedProjectsRouteWithChildren
-  '/users': typeof AuthenticatedUsersRouteWithChildren
-  '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
-  '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/organizations': typeof AuthenticatedOrganizationsRouteRouteWithChildren
+  '/projects': typeof AuthenticatedProjectsRouteRouteWithChildren
+  '/users': typeof AuthenticatedUsersRouteRouteWithChildren
+  '/issues/$id': typeof AuthenticatedIssuesIdRoute
   '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues/': typeof AuthenticatedIssuesIndexRoute
   '/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
-  '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
-  '/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/issues/$id': typeof AuthenticatedIssuesIdRoute
   '/users/$id': typeof AuthenticatedUsersIdRoute
   '/issues': typeof AuthenticatedIssuesIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteWithChildren
-  '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
-  '/_authenticated/users': typeof AuthenticatedUsersRouteWithChildren
-  '/_authenticated/issues/$id': typeof AuthenticatedIssuesIdRouteWithChildren
-  '/_authenticated/issues/new': typeof AuthenticatedIssuesNewRoute
+  '/_authenticated/organizations': typeof AuthenticatedOrganizationsRouteRouteWithChildren
+  '/_authenticated/projects': typeof AuthenticatedProjectsRouteRouteWithChildren
+  '/_authenticated/users': typeof AuthenticatedUsersRouteRouteWithChildren
+  '/_authenticated/issues/$id': typeof AuthenticatedIssuesIdRoute
   '/_authenticated/users/$id': typeof AuthenticatedUsersIdRoute
   '/_authenticated/issues/': typeof AuthenticatedIssuesIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/issues/$id/edit': typeof AuthenticatedIssuesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -152,25 +134,21 @@ export interface FileRouteTypes {
     | '/projects'
     | '/users'
     | '/issues/$id'
-    | '/issues/new'
     | '/users/$id'
     | '/issues/'
     | '/organizations/'
     | '/projects/'
     | '/users/'
-    | '/issues/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/issues/$id'
-    | '/issues/new'
     | '/users/$id'
     | '/issues'
     | '/organizations'
     | '/projects'
     | '/users'
-    | '/issues/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -180,13 +158,11 @@ export interface FileRouteTypes {
     | '/_authenticated/projects'
     | '/_authenticated/users'
     | '/_authenticated/issues/$id'
-    | '/_authenticated/issues/new'
     | '/_authenticated/users/$id'
     | '/_authenticated/issues/'
     | '/_authenticated/organizations/'
     | '/_authenticated/projects/'
     | '/_authenticated/users/'
-    | '/_authenticated/issues/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -222,21 +198,21 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated/users'
       path: '/users'
       fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      preLoaderRoute: typeof AuthenticatedUsersRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/projects': {
       id: '/_authenticated/projects'
       path: '/projects'
       fullPath: '/projects'
-      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      preLoaderRoute: typeof AuthenticatedProjectsRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/organizations': {
       id: '/_authenticated/organizations'
       path: '/organizations'
       fullPath: '/organizations'
-      preLoaderRoute: typeof AuthenticatedOrganizationsRouteImport
+      preLoaderRoute: typeof AuthenticatedOrganizationsRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users/': {
@@ -244,21 +220,21 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/users/'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
-      parentRoute: typeof AuthenticatedUsersRoute
+      parentRoute: typeof AuthenticatedUsersRouteRoute
     }
     '/_authenticated/projects/': {
       id: '/_authenticated/projects/'
       path: '/'
       fullPath: '/projects/'
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
-      parentRoute: typeof AuthenticatedProjectsRoute
+      parentRoute: typeof AuthenticatedProjectsRouteRoute
     }
     '/_authenticated/organizations/': {
       id: '/_authenticated/organizations/'
       path: '/'
       fullPath: '/organizations/'
       preLoaderRoute: typeof AuthenticatedOrganizationsIndexRouteImport
-      parentRoute: typeof AuthenticatedOrganizationsRoute
+      parentRoute: typeof AuthenticatedOrganizationsRouteRoute
     }
     '/_authenticated/issues/': {
       id: '/_authenticated/issues/'
@@ -272,14 +248,7 @@ declare module '@tanstack/react-router' {
       path: '/$id'
       fullPath: '/users/$id'
       preLoaderRoute: typeof AuthenticatedUsersIdRouteImport
-      parentRoute: typeof AuthenticatedUsersRoute
-    }
-    '/_authenticated/issues/new': {
-      id: '/_authenticated/issues/new'
-      path: '/issues/new'
-      fullPath: '/issues/new'
-      preLoaderRoute: typeof AuthenticatedIssuesNewRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedUsersRouteRoute
     }
     '/_authenticated/issues/$id': {
       id: '/_authenticated/issues/$id'
@@ -288,84 +257,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIssuesIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/issues/$id/edit': {
-      id: '/_authenticated/issues/$id/edit'
-      path: '/edit'
-      fullPath: '/issues/$id/edit'
-      preLoaderRoute: typeof AuthenticatedIssuesIdEditRouteImport
-      parentRoute: typeof AuthenticatedIssuesIdRoute
-    }
   }
 }
 
-interface AuthenticatedOrganizationsRouteChildren {
+interface AuthenticatedOrganizationsRouteRouteChildren {
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
 }
 
-const AuthenticatedOrganizationsRouteChildren: AuthenticatedOrganizationsRouteChildren =
+const AuthenticatedOrganizationsRouteRouteChildren: AuthenticatedOrganizationsRouteRouteChildren =
   {
     AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   }
 
-const AuthenticatedOrganizationsRouteWithChildren =
-  AuthenticatedOrganizationsRoute._addFileChildren(
-    AuthenticatedOrganizationsRouteChildren,
+const AuthenticatedOrganizationsRouteRouteWithChildren =
+  AuthenticatedOrganizationsRouteRoute._addFileChildren(
+    AuthenticatedOrganizationsRouteRouteChildren,
   )
 
-interface AuthenticatedProjectsRouteChildren {
+interface AuthenticatedProjectsRouteRouteChildren {
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
 }
 
-const AuthenticatedProjectsRouteChildren: AuthenticatedProjectsRouteChildren = {
-  AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
-}
+const AuthenticatedProjectsRouteRouteChildren: AuthenticatedProjectsRouteRouteChildren =
+  {
+    AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  }
 
-const AuthenticatedProjectsRouteWithChildren =
-  AuthenticatedProjectsRoute._addFileChildren(
-    AuthenticatedProjectsRouteChildren,
+const AuthenticatedProjectsRouteRouteWithChildren =
+  AuthenticatedProjectsRouteRoute._addFileChildren(
+    AuthenticatedProjectsRouteRouteChildren,
   )
 
-interface AuthenticatedUsersRouteChildren {
+interface AuthenticatedUsersRouteRouteChildren {
   AuthenticatedUsersIdRoute: typeof AuthenticatedUsersIdRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
-const AuthenticatedUsersRouteChildren: AuthenticatedUsersRouteChildren = {
-  AuthenticatedUsersIdRoute: AuthenticatedUsersIdRoute,
-  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
-}
+const AuthenticatedUsersRouteRouteChildren: AuthenticatedUsersRouteRouteChildren =
+  {
+    AuthenticatedUsersIdRoute: AuthenticatedUsersIdRoute,
+    AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  }
 
-const AuthenticatedUsersRouteWithChildren =
-  AuthenticatedUsersRoute._addFileChildren(AuthenticatedUsersRouteChildren)
-
-interface AuthenticatedIssuesIdRouteChildren {
-  AuthenticatedIssuesIdEditRoute: typeof AuthenticatedIssuesIdEditRoute
-}
-
-const AuthenticatedIssuesIdRouteChildren: AuthenticatedIssuesIdRouteChildren = {
-  AuthenticatedIssuesIdEditRoute: AuthenticatedIssuesIdEditRoute,
-}
-
-const AuthenticatedIssuesIdRouteWithChildren =
-  AuthenticatedIssuesIdRoute._addFileChildren(
-    AuthenticatedIssuesIdRouteChildren,
+const AuthenticatedUsersRouteRouteWithChildren =
+  AuthenticatedUsersRouteRoute._addFileChildren(
+    AuthenticatedUsersRouteRouteChildren,
   )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedOrganizationsRoute: typeof AuthenticatedOrganizationsRouteWithChildren
-  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRouteWithChildren
-  AuthenticatedUsersRoute: typeof AuthenticatedUsersRouteWithChildren
-  AuthenticatedIssuesIdRoute: typeof AuthenticatedIssuesIdRouteWithChildren
-  AuthenticatedIssuesNewRoute: typeof AuthenticatedIssuesNewRoute
+  AuthenticatedOrganizationsRouteRoute: typeof AuthenticatedOrganizationsRouteRouteWithChildren
+  AuthenticatedProjectsRouteRoute: typeof AuthenticatedProjectsRouteRouteWithChildren
+  AuthenticatedUsersRouteRoute: typeof AuthenticatedUsersRouteRouteWithChildren
+  AuthenticatedIssuesIdRoute: typeof AuthenticatedIssuesIdRoute
   AuthenticatedIssuesIndexRoute: typeof AuthenticatedIssuesIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedOrganizationsRoute: AuthenticatedOrganizationsRouteWithChildren,
-  AuthenticatedProjectsRoute: AuthenticatedProjectsRouteWithChildren,
-  AuthenticatedUsersRoute: AuthenticatedUsersRouteWithChildren,
-  AuthenticatedIssuesIdRoute: AuthenticatedIssuesIdRouteWithChildren,
-  AuthenticatedIssuesNewRoute: AuthenticatedIssuesNewRoute,
+  AuthenticatedOrganizationsRouteRoute:
+    AuthenticatedOrganizationsRouteRouteWithChildren,
+  AuthenticatedProjectsRouteRoute: AuthenticatedProjectsRouteRouteWithChildren,
+  AuthenticatedUsersRouteRoute: AuthenticatedUsersRouteRouteWithChildren,
+  AuthenticatedIssuesIdRoute: AuthenticatedIssuesIdRoute,
   AuthenticatedIssuesIndexRoute: AuthenticatedIssuesIndexRoute,
 }
 
