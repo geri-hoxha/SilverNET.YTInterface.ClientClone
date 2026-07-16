@@ -5,8 +5,8 @@ function SidebarField({ label, badge, children }: { label: string; badge?: React
   return (
     <div>
       <div className="text-muted-foreground mb-0.5 text-xs">{label}</div>
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 truncate text-sm font-medium">{children}</div>
+      <div className="flex items-center justify-between gap-6">
+        <div className="min-w-0 text-nowrap text-sm font-medium">{children}</div>
         {badge}
       </div>
     </div>

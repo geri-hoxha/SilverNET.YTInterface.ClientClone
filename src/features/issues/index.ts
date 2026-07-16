@@ -1,5 +1,5 @@
 export * from "./api";
-export { CreateIssueDialog } from "./components/CreateIssueDialog";
+export { CreateIssueDialog } from "./components/issue-dialogs/CreateIssueDialog";
 export { IssuesListPage } from "./components/IssuesListPage";
 export { IssueDetailPage } from "./components/single-issue/IssueDetailPage";
 export * from "./hooks";

@@ -20,10 +20,10 @@ import { EntityLogo } from "@/shared/components/EntityLogo";
 import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
 import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
-import { issuesApi } from "../api";
-import { issuesKeys, useCreateIssue } from "../hooks";
-import { createIssueSchema, type CreateIssueFormValues } from "../schemas";
-import { fileTypeMeta, formatBytes, uniqueFileName } from "../utils";
+import { issuesApi } from "../../api";
+import { issuesKeys, useCreateIssue } from "../../hooks";
+import { createIssueSchema, type CreateIssueFormValues } from "../../schemas";
+import { fileTypeMeta, formatBytes, uniqueFileName } from "../../utils";
 
 // Maps a project's YouTrack priority name to a badge color. Falls back to a
 // neutral color for any custom/unknown priority value.

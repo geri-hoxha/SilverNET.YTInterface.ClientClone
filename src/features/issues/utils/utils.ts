@@ -45,3 +45,7 @@ export function filtersMatchSaved(current: IssuesSearch, saved: SavedSearchFilte
 export function toSavedFilters(search: IssuesSearch): SavedSearchFilters {
   return normalizeSavedCriteria(search);
 }
+
+export function hasActiveCriteria(search: IssuesSearch) {
+  return Boolean(search.search || search.projectId || search.priority?.length || search.status?.length || search.from || search.to || search.closedFrom || search.closedTo);
+}

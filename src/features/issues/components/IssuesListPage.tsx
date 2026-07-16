@@ -5,56 +5,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useProjects } from "@/features/projects/hooks";
 import { cn } from "@/lib/utils";
-import { clientStateTextColor, IssueTypeBadge, PriorityBadge } from "@/shared/components/StatusBadge";
 import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
-import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckSquare, ChevronDown, Download, Star } from "lucide-react";
+import { CheckSquare, ChevronDown, Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
+import type { z } from "zod";
 import { useApproveEstimation, useIssues, useSavedSearches, useUpdateSavedSearch } from "../hooks";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
-import type { Issue, IssueSortField } from "../types";
-import { issueReadableId } from "../utils";
-import { filtersMatchSaved, normalizeSavedCriteria } from "../utils/utils";
-import { ApproveEstimationButton } from "./ApproveEstimationButton";
-import { CreateIssueDialog } from "./CreateIssueDialog";
-import { ExportIssuesDialog } from "./ExportIssuesDialog";
+import type { IssueSortField } from "../types";
+import { filtersMatchSaved, hasActiveCriteria, normalizeSavedCriteria } from "../utils/utils";
+
+import { IssueRow } from "./IssueRow";
+
+import { FILTER_RESET, ISSUE_GRID } from "../constants/constants";
+import { CreateIssueDialog } from "./issue-dialogs/CreateIssueDialog";
+import { ExportIssuesDialog } from "./issue-dialogs/ExportIssuesDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
 import { SavedSearchesList } from "./saved-search/SavedSearchesList";
 import { SaveSearchDialog, toSavedFilters } from "./saved-search/SaveSearchDialog";
-
-const ISSUE_GRID =
-  "grid grid-cols-[36px_72px_minmax(0,1fr)_72px_88px] md:grid-cols-[36px_96px_minmax(220px,1fr)_minmax(150px,0.85fr)_100px_80px_minmax(130px,0.85fr)_88px_112px_112px_minmax(120px,0.75fr)] items-center gap-2";
+import { SortHead } from "./SortHead";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
-
-// Same rationale as SavedSearchesList: reset every key before merging saved
-// criteria on top of live search state, so absence in the saved criteria
-// actually clears the field instead of inheriting whatever was there before.
-const FILTER_RESET: Partial<IssuesSearch> = {
-  projectId: undefined,
-  status: undefined,
-  priority: undefined,
-  from: undefined,
-  to: undefined,
-  closedFrom: undefined,
-  closedTo: undefined,
-  search: undefined,
-  sortBy: undefined,
-  sortDescending: undefined,
-  pageSize: undefined,
-};
-
-function hasActiveCriteria(search: IssuesSearch) {
-  return Boolean(search.search || search.projectId || search.priority?.length || search.status?.length || search.from || search.to || search.closedFrom || search.closedTo);
-}
 
 export function IssuesListPage() {
   const navigate = useNavigate({ from: "/issues/" });
   const search = issuesRouteApi.useSearch();
   const { page, pageSize, savedSearchId, status, projectId, priority, from, to, closedFrom, closedTo, search: searchText, sortBy, sortDescending } = search;
+
   const [createOpen, setCreateOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
@@ -119,6 +97,7 @@ export function IssuesListPage() {
     sortBy,
     sortDescending,
   });
+
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
 
@@ -129,7 +108,11 @@ export function IssuesListPage() {
 
   const setPageSize = (nextPageSize: number) =>
     navigate({
-      search: (p: IssuesSearch) => ({ ...p, page: 1, pageSize: nextPageSize }),
+      search: (p: IssuesSearch) => ({
+        ...p,
+        page: 1,
+        pageSize: nextPageSize,
+      }),
     });
 
   const setSort = (field: IssueSortField) =>
@@ -143,6 +126,7 @@ export function IssuesListPage() {
     });
 
   const allChecked = items.length > 0 && items.every((i) => selected[i.id]);
+
   const toggleAll = (v: boolean) => {
     const next: Record<string, boolean> = {};
     if (v) items.forEach((i) => (next[i.id] = true));
@@ -177,14 +161,12 @@ export function IssuesListPage() {
 
           <span className="text-muted-foreground text-xs">{total}</span>
 
-          {/* No active saved search + has filters */}
           {!savedSearchId && hasActiveCriteria(search) && (
             <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="px-0 text-xs font-medium text-pink-600 hover:underline">
               Save as new search
             </Button>
           )}
 
-          {/* Active saved search + dirty */}
           {savedSearchId && activeSavedSearch && isDirty && (
             <div className="ml-3 flex items-center gap-4">
               <Button
@@ -280,7 +262,12 @@ export function IssuesListPage() {
                 issue={issue}
                 checked={!!selected[issue.id]}
                 onCheck={(v) => setSelected((s) => ({ ...s, [issue.id]: v }))}
-                onOpen={() => navigate({ to: "/issues/$id", params: { id: issue.id } })}
+                onOpen={() =>
+                  navigate({
+                    to: "/issues/$id",
+                    params: { id: issue.id },
+                  })
+                }
                 onApproveEstimation={() => approveEstimation.mutate(issue.id)}
                 isApprovingEstimation={approveEstimation.isPending && approveEstimation.variables === issue.id}
                 canApproveEstimation={canApproveEstimation}
@@ -288,6 +275,7 @@ export function IssuesListPage() {
             ))
           )}
         </div>
+
         <TablePaginationToolbar
           page={page}
           pageSize={pageSize}
@@ -324,114 +312,12 @@ export function IssuesListPage() {
         mode="create"
         currentSearch={search}
         projects={projectsQ.data ?? []}
-        onSaved={(id) => navigate({ search: (p) => ({ ...p, savedSearchId: id }) })}
+        onSaved={(id) =>
+          navigate({
+            search: (p) => ({ ...p, savedSearchId: id }),
+          })
+        }
       />
-    </div>
-  );
-}
-
-function SortHead({
-  label,
-  field,
-  sortBy,
-  sortDescending,
-  onSort,
-}: {
-  label: string;
-  field: IssueSortField;
-  sortBy?: IssueSortField;
-  sortDescending?: boolean;
-  onSort: (field: IssueSortField) => void;
-}) {
-  const active = sortBy === field;
-  return (
-    <button type="button" onClick={() => onSort(field)} className={cn("hover:text-foreground flex items-center gap-1 text-left", active && "text-foreground")}>
-      {label}
-      <span className="text-[10px] opacity-60">{active ? (sortDescending ? "↓" : "↑") : "⇅"}</span>
-    </button>
-  );
-}
-
-function projectBadge(issue: Issue) {
-  const code = issue.youTrackReadableId?.split("-")[0] ?? issue.projectShortCode ?? (issue.key ? issue.key.split("-")[0] : (issue.projectName?.[0] ?? "?"));
-  const letter = code[0]?.toUpperCase() ?? "?";
-  const isS = letter === "S";
-  return (
-    <span className={cn("inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold text-white", isS ? "bg-orange-500" : "bg-emerald-600")} title={code}>
-      {letter}
-    </span>
-  );
-}
-
-function IssueRow({
-  issue,
-  checked,
-  onCheck,
-  onOpen,
-  onApproveEstimation,
-  isApprovingEstimation,
-  canApproveEstimation,
-}: {
-  issue: Issue;
-  checked: boolean;
-  onCheck: (v: boolean) => void;
-  onOpen: () => void;
-  onApproveEstimation: () => void;
-  isApprovingEstimation: boolean;
-  canApproveEstimation: boolean;
-}) {
-  const priorityLabel = issue.priorityLabel ?? issue.priority;
-  const readableId = issueReadableId(issue);
-
-  return (
-    <div onClick={onOpen} className={cn(ISSUE_GRID, "hover:bg-accent/40 cursor-pointer border-b px-4 py-2 text-sm", checked && "bg-accent/30")}>
-      <div onClick={(e) => e.stopPropagation()}>
-        <Checkbox checked={checked} onCheckedChange={(v) => onCheck(!!v)} />
-      </div>
-      <div className="flex items-center gap-1.5 font-mono text-xs">
-        {issue.starred ? <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> : <span className="w-3.5" />}
-        <span className="text-foreground truncate" title={readableId}>
-          {readableId}
-        </span>
-      </div>
-      <div className="flex min-w-0 items-center gap-2">
-        {projectBadge(issue)}
-        <span className="truncate font-medium">{issue.title}</span>
-        {canApproveEstimation && (
-          <div onClick={(e) => e.stopPropagation()}>
-            <ApproveEstimationButton
-              variant="compact"
-              clientState={issue.clientState}
-              issueTitle={issue.title}
-              confirmBeforeApprove
-              onApprove={onApproveEstimation}
-              isPending={isApprovingEstimation}
-            />
-          </div>
-        )}
-      </div>
-      <div className="text-muted-foreground hidden min-w-0 truncate md:block" title={issue.projectName}>
-        {issue.projectName}
-      </div>
-      <div className="w-max">
-        <PriorityBadge priority={priorityLabel} />
-      </div>
-      <div className="w-max">{issue.issueType ? <IssueTypeBadge issueType={issue.issueType} /> : <span className="text-muted-foreground">—</span>}</div>
-      <div className={cn("hidden truncate md:block", issue.clientState ? clientStateTextColor(issue.clientState) : "text-muted-foreground italic")} title={issue.clientState || "No state"}>
-        {issue.clientState || "—"}
-      </div>
-      <div className="text-muted-foreground hidden truncate md:block" title={issue.estimation || "No estimation"}>
-        {issue.estimation || "—"}
-      </div>
-      <div className="text-muted-foreground hidden truncate text-xs md:block" title={formatShortDate(issue.createdOnUtc)}>
-        {formatRelative(issue.createdOnUtc)}
-      </div>
-      <div className="text-muted-foreground hidden truncate text-xs md:block" title={issue.closedAt ? formatShortDate(issue.closedAt) : undefined}>
-        {issue.closedAt ? formatRelative(issue.closedAt) : "—"}
-      </div>
-      <div className="hidden min-w-0 truncate md:block" onClick={(e) => e.stopPropagation()}>
-        {issue.createdByUserFullName ? <div className=" ">{issue.createdByUserFullName}</div> : <span className="text-muted-foreground">—</span>}
-      </div>
     </div>
   );
 }
