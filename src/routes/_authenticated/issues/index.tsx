@@ -1,8 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { zodValidator } from "@tanstack/zod-adapter";
 import { IssuesListPage, issuesSearchSchema } from "@/features/issues";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/issues/")({
-  validateSearch: zodValidator(issuesSearchSchema),
+  validateSearch: issuesSearchSchema,
   component: IssuesListPage,
 });

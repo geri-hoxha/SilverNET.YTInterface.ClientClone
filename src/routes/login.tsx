@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { zodValidator } from "@tanstack/zod-adapter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -16,7 +15,7 @@ import type { ApiError } from "@/shared/api/errors";
 type FormValues = LoginFormValues;
 
 export const Route = createFileRoute("/login")({
-  validateSearch: zodValidator(loginSearchSchema),
+  validateSearch: loginSearchSchema,
   beforeLoad: requireGuest,
   component: LoginPage,
 });
