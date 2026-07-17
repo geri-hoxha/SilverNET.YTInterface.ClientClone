@@ -39,7 +39,7 @@ export function StatusBadge({ status }: { status: IssueStatus }) {
 
 export function PriorityBadge({ priority }: { priority: IssuePriority | string }) {
   return (
-    <Badge variant="outline" className={cn("font-medium", priorityStyle(priority))}>
+    <Badge variant="outline" className={cn("font-medium text-nowrap", priorityStyle(priority))}>
       {priority}
     </Badge>
   );

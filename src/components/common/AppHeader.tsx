@@ -1,9 +1,9 @@
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import ThemeToggle from "@/features/theme/ThemeToggle";
-import { UserAvatar } from "@/shared/components/UserAvatar";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 

@@ -1,19 +1,22 @@
-import { useState } from "react";
-import { HelpCircle, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { HelpCircle, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 
+import { EntityLogo } from "@/components/common/EntityLogo";
+import { PERMISSIONS, useAuth } from "@/features/auth";
+import { cn } from "@/lib/utils";
 import { useCreateOrganization, useDeleteOrganization, useOrganizations, useUpdateOrganization } from "../hooks";
 import {
   createOrganizationSchema as createFormSchema,
@@ -21,9 +24,6 @@ import {
   type CreateOrganizationFormValues as CreateFormValues,
   type EditOrganizationFormValues as EditFormValues,
 } from "../schemas";
-import { EntityLogo } from "@/shared/components/EntityLogo";
-import { cn } from "@/lib/utils";
-import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Organization } from "../types";
 
 export function OrganizationsListPage() {

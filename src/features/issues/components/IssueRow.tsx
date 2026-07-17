@@ -1,6 +1,6 @@
+import { clientStateTextColor, IssueTypeBadge, PriorityBadge } from "@/components/common/StatusBadge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { clientStateTextColor, IssueTypeBadge, PriorityBadge } from "@/shared/components/StatusBadge";
 import { formatRelative, formatShortDate } from "@/shared/utils/format";
 import { Star } from "lucide-react";
 import { ISSUE_GRID } from "../constants/constants";

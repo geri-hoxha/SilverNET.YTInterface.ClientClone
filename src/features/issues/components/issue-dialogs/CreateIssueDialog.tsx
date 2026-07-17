@@ -13,13 +13,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { EntityLogo } from "@/components/common/EntityLogo";
+import { extractAttachmentRefs } from "@/components/common/rich-text/attachmentRefs";
+import { htmlToMarkdown } from "@/components/common/rich-text/markdown";
+import { RichTextEditor } from "@/components/common/rich-text/RichTextEditor";
 import { useProjects } from "@/features/projects/hooks";
 import { useMentionableUsers } from "@/features/users/hooks";
 import { cn } from "@/lib/utils";
-import { EntityLogo } from "@/shared/components/EntityLogo";
-import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
-import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
-import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { issuesApi } from "../../api";
 import { issuesKeys, useCreateIssue } from "../../hooks";
 import { createIssueSchema, type CreateIssueFormValues } from "../../schemas";

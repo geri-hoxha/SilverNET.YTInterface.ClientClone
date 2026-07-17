@@ -1,9 +1,9 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/shared/components/AppSidebar";
-import { AppHeader } from "@/shared/components/AppHeader";
+import { AppHeader } from "@/components/common/AppHeader";
+import { AppSidebar } from "@/components/common/AppSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { requireAuth } from "@/features/auth";
 import { NotificationsProvider } from "@/features/notifications/components/NotificationsProvider";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: requireAuth,

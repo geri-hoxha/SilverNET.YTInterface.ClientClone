@@ -1,31 +1,31 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { MoreHorizontal, Pencil, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { MoreHorizontal, Pencil, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+import { TablePaginationToolbar } from "@/components/common/TablePaginationToolbar";
+import { UserAvatar } from "@/components/common/UserAvatar";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
-import { PERMISSIONS, useAuth } from "@/features/auth";
-import { usersRouteApi } from "../route";
-import { useUsers, useCreateUser } from "../hooks";
-import { usersSearchSchema, createUserSchema, type CreateUserFormValues } from "../schemas";
-import { UserAvatar } from "@/shared/components/UserAvatar";
-import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { formatShortDate } from "@/shared/utils/format";
+import { useCreateUser, useUsers } from "../hooks";
+import { usersRouteApi } from "../route";
+import { createUserSchema, usersSearchSchema, type CreateUserFormValues } from "../schemas";
 
 export function UsersListPage() {
   const navigate = useNavigate({ from: "/users" });

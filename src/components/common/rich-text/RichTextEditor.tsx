@@ -12,9 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { MentionableUser } from "@/features/users";
 import { cn } from "@/lib/utils";
-import { AttachmentImage } from "./rich-text/attachmentImage";
-import { FileAttachment } from "./rich-text/fileAttachment";
-import { createMentionSuggestion } from "./rich-text/mentionSuggestion";
+import { AttachmentImage } from "./attachmentImage";
+import { FileAttachment } from "./fileAttachment";
+import { createMentionSuggestion } from "./mentionSuggestion";
 
 interface Props {
   value: string;

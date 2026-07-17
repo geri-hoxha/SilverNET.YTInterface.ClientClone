@@ -1,14 +1,13 @@
+import { TablePaginationToolbar } from "@/components/common/TablePaginationToolbar";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useProjects } from "@/features/projects/hooks";
 import { cn } from "@/lib/utils";
-import { TablePaginationToolbar } from "@/shared/components/TablePaginationToolbar";
 import { useNavigate } from "@tanstack/react-router";
+import type { OnChangeFn, RowSelectionState, SortingState } from "@tanstack/react-table";
 import { CheckSquare, ChevronDown, Download } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { z } from "zod";
 import { useApproveEstimation, useIssues, useSavedSearches, useUpdateSavedSearch } from "../hooks";
 import { issuesRouteApi } from "../route";
@@ -16,15 +15,14 @@ import { issuesSearchSchema } from "../schemas";
 import type { IssueSortField } from "../types";
 import { filtersMatchSaved, hasActiveCriteria, normalizeSavedCriteria } from "../utils/utils";
 
-import { IssueRow } from "./IssueRow";
-
-import { FILTER_RESET, ISSUE_GRID } from "../constants/constants";
+import { DataTable } from "@/components/common/table/DataTable";
+import { FILTER_RESET } from "../constants/constants";
 import { CreateIssueDialog } from "./issue-dialogs/CreateIssueDialog";
 import { ExportIssuesDialog } from "./issue-dialogs/ExportIssuesDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
 import { SavedSearchesList } from "./saved-search/SavedSearchesList";
 import { SaveSearchDialog, toSavedFilters } from "./saved-search/SaveSearchDialog";
-import { SortHead } from "./SortHead";
+import { getIssueColumns, IssuesTableMeta } from "./table/issues-columns";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -36,7 +34,7 @@ export function IssuesListPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [saveSearchOpen, setSaveSearchOpen] = useState(false);
-  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [searchesListOpen, setSearchesListOpen] = useState(false);
 
   const { hasPermission } = useAuth();
@@ -101,6 +99,11 @@ export function IssuesListPage() {
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
 
+  const columns = useMemo(() => getIssueColumns(), []);
+
+  // URL → TanStack sorting state
+  const sorting: SortingState = useMemo(() => (sortBy ? [{ id: sortBy, desc: !!sortDescending }] : []), [sortBy, sortDescending]);
+
   const setPage = (nextPage: number) =>
     navigate({
       search: (p: IssuesSearch) => ({ ...p, page: nextPage }),
@@ -115,7 +118,15 @@ export function IssuesListPage() {
       }),
     });
 
-  const setSort = (field: IssueSortField) =>
+  // Product rule: new field → asc, same field → toggle.
+  // Ignore TanStack's derived desc so first click on a new column is always asc.
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    const next = typeof updater === "function" ? updater(sorting) : updater;
+    const first = next[0];
+    if (!first) return;
+
+    const field = first.id as IssueSortField;
+
     navigate({
       search: (p: IssuesSearch) => ({
         ...p,
@@ -124,13 +135,12 @@ export function IssuesListPage() {
         sortDescending: p.sortBy === field ? !p.sortDescending : false,
       }),
     });
+  };
 
-  const allChecked = items.length > 0 && items.every((i) => selected[i.id]);
-
-  const toggleAll = (v: boolean) => {
-    const next: Record<string, boolean> = {};
-    if (v) items.forEach((i) => (next[i.id] = true));
-    setSelected(next);
+  const tableMeta: IssuesTableMeta = {
+    canApproveEstimation,
+    onApproveEstimation: (id) => approveEstimation.mutate(id),
+    isApprovingEstimation: (id) => approveEstimation.isPending && approveEstimation.variables === id,
   };
 
   return (
@@ -210,70 +220,27 @@ export function IssuesListPage() {
 
       <main className="flex flex-1 flex-col overflow-hidden">
         <div className="min-w-full flex-1 overflow-auto">
-          <div className={cn(ISSUE_GRID, "bg-muted/30 text-muted-foreground border-b px-4 py-2 text-xs font-medium")}>
-            <Checkbox checked={allChecked} onCheckedChange={(v) => toggleAll(!!v)} />
-            <SortHead label="ID" field="YouTrackReadableId" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            <SortHead label="Summary" field="Title" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            <span className="hidden md:block">
-              <SortHead label="Project" field="ProjectName" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            </span>
-            <SortHead label="Priority" field="Priority" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            <span>Type</span>
-            <span className="hidden md:block">
-              <SortHead label="State" field="ClientState" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            </span>
-            <span className="hidden md:block">Estimation</span>
-            <span className="hidden md:block">
-              <SortHead label="Created" field="CreatedOnUtc" sortBy={sortBy} sortDescending={sortDescending} onSort={setSort} />
-            </span>
-            <span className="hidden md:block">Closed</span>
-            <span className="hidden md:block">Created by</span>
-          </div>
-
-          {query.isLoading ? (
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className={cn(ISSUE_GRID, "border-b px-4 py-2.5")}>
-                <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="hidden h-4 w-28 md:block" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-14" />
-                <Skeleton className="hidden h-4 w-20 md:block" />
-                <Skeleton className="hidden h-4 w-16 md:block" />
-                <Skeleton className="hidden h-4 w-20 md:block" />
-                <Skeleton className="hidden h-4 w-20 md:block" />
-                <Skeleton className="hidden h-4 w-24 md:block" />
-              </div>
-            ))
-          ) : query.isError ? (
-            <div className="px-4 py-16 text-center">
-              <p className="text-destructive text-sm font-medium">Failed to load issues</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => query.refetch()}>
-                Try again
-              </Button>
-            </div>
-          ) : !items.length ? (
-            <div className="text-muted-foreground px-4 py-16 text-center text-sm">No issues match your filters.</div>
-          ) : (
-            items.map((issue) => (
-              <IssueRow
-                key={issue.id}
-                issue={issue}
-                checked={!!selected[issue.id]}
-                onCheck={(v) => setSelected((s) => ({ ...s, [issue.id]: v }))}
-                onOpen={() =>
-                  navigate({
-                    to: "/issues/$id",
-                    params: { id: issue.id },
-                  })
-                }
-                onApproveEstimation={() => approveEstimation.mutate(issue.id)}
-                isApprovingEstimation={approveEstimation.isPending && approveEstimation.variables === issue.id}
-                canApproveEstimation={canApproveEstimation}
-              />
-            ))
-          )}
+          <DataTable
+            columns={columns}
+            data={items}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+            rowSelection={rowSelection}
+            onRowSelectionChange={setRowSelection}
+            isLoading={query.isLoading}
+            isError={query.isError}
+            isFetching={query.isFetching}
+            onRetry={() => query.refetch()}
+            emptyMessage="No issues match your filters."
+            skeletonRows={12}
+            onRowClick={(issue) =>
+              navigate({
+                to: "/issues/$id",
+                params: { id: issue.id },
+              })
+            }
+            meta={tableMeta}
+          />
         </div>
 
         <TablePaginationToolbar

@@ -1,30 +1,30 @@
-import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, MoreHorizontal, Pencil, Plus, RefreshCw, Settings as SettingsIcon, Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "@tanstack/react-router";
+import { ChevronDown, ChevronRight, MoreHorizontal, Pencil, Plus, RefreshCw, Settings as SettingsIcon, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 
+import { EntityLogo } from "@/components/common/EntityLogo";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useOrganizations } from "@/features/organizations/hooks";
+import type { Organization } from "@/features/organizations/types";
+import { cn } from "@/lib/utils";
 import { useCreateProject, useDeleteProject, useProjects, useSyncPriorities, useUpdateProject } from "../hooks";
 import { projectFormSchema as formSchema, type ProjectFormValues as FormValues } from "../schemas";
-import { groupProjectsByOrganization } from "../utils";
-import { EntityLogo } from "@/shared/components/EntityLogo";
-import { cn } from "@/lib/utils";
-import { PERMISSIONS, useAuth } from "@/features/auth";
 import type { Project } from "../types";
-import type { Organization } from "@/features/organizations/types";
+import { groupProjectsByOrganization } from "../utils";
 
 const PROJECT_GRID_COLS = "grid-cols-[minmax(7rem,1.2fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5rem,0.45fr)_minmax(5.5rem,0.5fr)_auto]";
 const PROJECT_ROW_LAYOUT = "col-span-full grid grid-cols-subgrid items-center gap-x-3 px-3";

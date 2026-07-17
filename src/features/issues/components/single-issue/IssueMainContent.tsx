@@ -3,14 +3,14 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { RichTextContent } from "@/components/common/RichTextContent";
+import { RichTextEditor } from "@/components/common/rich-text/RichTextEditor";
+import { extractAttachmentRefs } from "@/components/common/rich-text/attachmentRefs";
+import { htmlToMarkdown, markdownToHtml } from "@/components/common/rich-text/markdown";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useMentionableUsers } from "@/features/users/hooks";
-import { RichTextContent } from "@/shared/components/RichTextContent";
-import { RichTextEditor } from "@/shared/components/RichTextEditor";
-import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
-import { htmlToMarkdown, markdownToHtml } from "@/shared/components/rich-text/markdown";
 
 import { issuesApi } from "../../api";
 import { issuesKeys, useApproveEstimation, useIssueAttachments, useIssueAttachmentUrls, useUpdateIssue } from "../../hooks";

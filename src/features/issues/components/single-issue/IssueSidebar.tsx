@@ -1,4 +1,4 @@
-import { IssueTypeBadge } from "@/shared/components/StatusBadge";
+import { IssueTypeBadge } from "@/components/common/StatusBadge";
 import { formatDate } from "@/shared/utils/format";
 
 import { Button } from "@/components/ui/button";

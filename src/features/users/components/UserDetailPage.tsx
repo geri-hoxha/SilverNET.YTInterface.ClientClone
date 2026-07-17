@@ -1,21 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { ArrowLeft, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { UserAvatar } from "@/components/common/UserAvatar";
+import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useOrganizations } from "@/features/organizations/hooks";
 import { useRoles } from "@/features/roles/hooks";
 import { formatRoleLabel } from "@/features/roles/utils";
-import { PERMISSIONS, useAuth } from "@/features/auth";
-import { UserAvatar } from "@/shared/components/UserAvatar";
-import { useUser, useUpdateUser } from "../hooks";
+import { useUpdateUser, useUser } from "../hooks";
 import { userDetailRouteApi } from "../route";
 
 export function UserDetailPage() {

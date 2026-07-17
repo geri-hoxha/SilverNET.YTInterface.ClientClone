@@ -3,15 +3,15 @@ import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { extractAttachmentRefs } from "@/components/common/rich-text/attachmentRefs";
+import { htmlToMarkdown } from "@/components/common/rich-text/markdown";
+import { RichTextEditor } from "@/components/common/rich-text/RichTextEditor";
+import { RichTextContent } from "@/components/common/RichTextContent";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PERMISSIONS, useAuth } from "@/features/auth";
 import { useMentionableUsers } from "@/features/users/hooks";
-import { extractAttachmentRefs } from "@/shared/components/rich-text/attachmentRefs";
-import { htmlToMarkdown } from "@/shared/components/rich-text/markdown";
-import { RichTextContent } from "@/shared/components/RichTextContent";
-import { RichTextEditor } from "@/shared/components/RichTextEditor";
-import { UserAvatar } from "@/shared/components/UserAvatar";
 import { formatRelative } from "@/shared/utils/format";
 
 import { issuesApi } from "../../api";
