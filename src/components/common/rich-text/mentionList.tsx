@@ -55,7 +55,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items
             e.preventDefault();
             select(i);
           }}
-          className={cn("flex w-full hover:bg-primary/10 cursor-pointer items-baseline justify-between gap-20 rounded px-2 py-1.5 text-left text-sm", i === selected && "bg-accent")}
+          className={cn("hover:bg-primary/10 flex w-full cursor-pointer items-baseline justify-between gap-20 rounded px-2 py-1.5 text-left text-sm", i === selected && "bg-accent")}
         >
           <span className="truncate">{item.fullName}</span>
           <span className="text-muted-foreground shrink-0 text-xs">@{item.mentionHandle}</span>

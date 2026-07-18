@@ -86,28 +86,14 @@ type DataTableBodyProps<TData, TValue> = {
   getRowClassName?: (row: TData) => string;
 };
 
-function DataTableBodyInner<TData, TValue>({
-  table,
-  columns,
-  isLoading,
-  isError,
-  onRetry,
-  emptyMessage,
-  skeletonRows,
-  onRowClick,
-  getRowClassName,
-}: DataTableBodyProps<TData, TValue>) {
+function DataTableBodyInner<TData, TValue>({ table, columns, isLoading, isError, onRetry, emptyMessage, skeletonRows, onRowClick, getRowClassName }: DataTableBodyProps<TData, TValue>) {
   return (
     <TableBody>
       {isLoading ? (
         Array.from({ length: skeletonRows }).map((_, i) => (
           <TableRow key={i} className="hover:bg-transparent">
             {table.getVisibleFlatColumns().map((column) => (
-              <TableCell
-                key={column.id}
-                className={cn("px-2 py-2.5 first:pl-4 last:pr-4", column.id === "select" && "w-10 px-2 first:pl-4", "overflow-hidden")}
-                style={getColumnVarStyle(column.id)}
-              >
+              <TableCell key={column.id} className={cn("px-2 py-2.5 first:pl-4 last:pr-4", column.id === "select" && "w-10 px-2 first:pl-4", "overflow-hidden")} style={getColumnVarStyle(column.id)}>
                 <Skeleton className="h-4 w-full max-w-[12rem]" />
               </TableCell>
             ))}
@@ -293,7 +279,7 @@ export function DataTable<TData, TValue = unknown>({
                         <span className="shrink-0 text-[10px] opacity-60">{sorted === "asc" ? "↑" : sorted === "desc" ? "↓" : "⇅"}</span>
                       </button>
                     ) : (
-                      <div className="min-w-0 overflow-hidden truncate">{flexRender(header.column.columnDef.header, header.getContext())}</div>
+                      <div className="min-w-0 truncate overflow-hidden">{flexRender(header.column.columnDef.header, header.getContext())}</div>
                     )}
 
                     {canResize && (
@@ -302,21 +288,14 @@ export function DataTable<TData, TValue = unknown>({
                         onTouchStart={header.getResizeHandler()}
                         onDoubleClick={() => header.column.resetSize()}
                         onClick={(e) => e.stopPropagation()}
-                        className={cn(
-                          "group/resize absolute top-0 right-0 z-10 flex h-full w-4 -translate-x-1/2 cursor-col-resize touch-none items-center justify-center select-none",
-                        )}
+                        className={cn("group/resize absolute top-0 right-0 z-10 flex h-full w-4 -translate-x-1/2 cursor-col-resize touch-none items-center justify-center select-none")}
                       >
-                       
-
                         {/* Icon + preview line move together as one unit while dragging
                             in "onEnd" mode, so the icon itself tracks the cursor instead
                             of lagging behind a separately-animated line. In "onChange"
                             mode the column itself already moves live, so no extra
                             transform is applied here (see showDeltaPreview above). */}
-                        <div
-                          className="relative flex h-full items-center justify-center"
-                          style={showDeltaPreview && isResizing ? { transform: `translateX(${deltaOffset ?? 0}px)` } : undefined}
-                        >
+                        <div className="relative flex h-full items-center justify-center" style={showDeltaPreview && isResizing ? { transform: `translateX(${deltaOffset ?? 0}px)` } : undefined}>
                           {showDeltaPreview && isResizing && <div className="bg-primary absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" />}
                           <GripVertical
                             className={cn(

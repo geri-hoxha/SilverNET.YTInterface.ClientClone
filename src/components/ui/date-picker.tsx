@@ -38,9 +38,8 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date", disab
             onSelect={onChange}
             defaultMonth={value}
             captionLayout="dropdown"
-
-            fromDate={fromDate}
-            toDate={toDate}
+            startMonth={fromDate}
+            endMonth={toDate}
             disabled={(date) => {
               const day = startOfDay(date);
               if (fromDate && isBefore(day, startOfDay(fromDate))) return true;

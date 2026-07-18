@@ -6,7 +6,7 @@ function SidebarField({ label, badge, children }: { label: string; badge?: React
     <div>
       <div className="text-muted-foreground mb-0.5 text-xs">{label}</div>
       <div className="flex items-center justify-between gap-6">
-        <div className="min-w-0 text-nowrap text-sm font-medium">{children}</div>
+        <div className="min-w-0 text-sm font-medium text-nowrap">{children}</div>
         {badge}
       </div>
     </div>
