@@ -25,7 +25,7 @@ function projectBadge(issue: Issue) {
   );
 }
 
-export function getIssueColumns(): ColumnDef<Issue>[] {
+export function getIssueColumns(isDesktop: boolean): ColumnDef<Issue>[] {
   return [
     {
       id: "YouTrackReadableId",
@@ -57,15 +57,15 @@ export function getIssueColumns(): ColumnDef<Issue>[] {
         const title = row.original.title;
 
         return (
-          <HoverCard openDelay={200} closeDelay={100}>
+          <HoverCard openDelay={200} closeDelay={0}>
             <HoverCardTrigger asChild>
               <div className="group flex min-w-0 items-center gap-1.5">
                 {projectBadge(row.original)}
                 <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
               </div>
             </HoverCardTrigger>
-            <HoverCardContent align="start" className="border-primary/10 bg-muted w-fit p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <p className="text-sm leading-relaxed font-medium text-nowrap">{title}</p>
+            <HoverCardContent align={isDesktop ? "start" : "center"} className="border-primary/10 bg-muted w-fit max-w-70 md:max-w-md xl:max-w-auto p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm leading-relaxed font-medium text-wrap xl:text-nowrap">{title}</p>
             </HoverCardContent>
           </HoverCard>
         );

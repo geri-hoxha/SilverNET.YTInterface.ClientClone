@@ -15,9 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useClientStates, usePriorities, useProjects } from "@/features/projects/hooks";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "usehooks-ts";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
-import { useMediaQuery } from "usehooks-ts";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -178,7 +178,7 @@ export function IssuesFilterBar({ search }: Props) {
   if (!isDesktop) {
     return (
       <>
-        <div className="bg-muted/20 border-b px-3 py-2.5">
+        <div className="bg-background border-b px-3 py-2.5">
           <div className="flex items-center gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
@@ -252,7 +252,7 @@ export function IssuesFilterBar({ search }: Props) {
   }
 
   return (
-    <div className="bg-muted/20 border-b px-4 py-3">
+    <div className="bg-background border-b px-4 py-3">
       <div className="flex flex-wrap items-end gap-3">
         <FilterField label="Search" className="w-85 shrink-0">
           <div className="relative">

@@ -16,6 +16,7 @@ import type { IssueSortField } from "../types";
 import { filtersMatchSaved, hasActiveCriteria, normalizeSavedCriteria } from "../utils/utils";
 
 import { DataTable } from "@/components/common/table/DataTable";
+import { useMediaQuery } from "usehooks-ts";
 import { FILTER_RESET } from "../constants/constants";
 import { CreateIssueDialog } from "./issue-dialogs/CreateIssueDialog";
 import { ExportIssuesDialog } from "./issue-dialogs/ExportIssuesDialog";
@@ -55,6 +56,8 @@ export function IssuesListPage() {
   // search, no sort. This intentionally won't fire again after the user
   // clears filters mid-session, and won't override an explicit deep link.
   const appliedDefaultSearchRef = useRef(false);
+
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
     if (appliedDefaultSearchRef.current) return;
@@ -99,7 +102,7 @@ export function IssuesListPage() {
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
 
-  const columns = useMemo(() => getIssueColumns(), []);
+  const columns = useMemo(() => getIssueColumns(isDesktop), [isDesktop]);
 
   // URL → TanStack sorting state
   const sorting: SortingState = useMemo(() => (sortBy ? [{ id: sortBy, desc: !!sortDescending }] : []), [sortBy, sortDescending]);
@@ -144,7 +147,7 @@ export function IssuesListPage() {
   };
 
   return (
-    <div className="-mx-3 -my-3 flex h-[calc(100vh-3.5rem)] flex-col sm:-mx-6 sm:-my-6">
+    <div className="flex h-full flex-col">
       {/* Top bar */}
       <div className="bg-background flex items-center justify-between border-b px-5 py-3">
         <div className="flex items-center gap-2">
@@ -218,8 +221,8 @@ export function IssuesListPage() {
 
       <IssuesFilterBar search={search} />
 
-      <main className="flex flex-1 flex-col overflow-hidden">
-        <div className="min-w-full flex-1 overflow-auto">
+      <div className="flex grow flex-col overflow-hidden">
+        <div className="min-w-full grow overflow-auto">
           <DataTable
             columns={columns}
             data={items}
@@ -252,7 +255,7 @@ export function IssuesListPage() {
           pageSizeOptions={[25, 50, 100]}
           className="bg-background shrink-0"
         />
-      </main>
+      </div>
 
       <CreateIssueDialog open={createOpen} onOpenChange={setCreateOpen} defaultProjectId={projectId} onCreated={(id) => navigate({ to: "/issues/$id", params: { id } })} />
 

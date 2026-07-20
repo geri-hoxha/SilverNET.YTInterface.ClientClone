@@ -83,7 +83,7 @@ function Sidebar({ side = "left", collapsible = "icon", className, children, dir
 }
 
 function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
-  return <main data-slot="sidebar-inset" className={cn("bg-background relative flex min-w-0 flex-1 flex-col", className)} {...props} />;
+  return <main data-slot="sidebar-inset" className={cn("bg-background relative flex min-w-0 h-svh flex-1 flex-col", className)} {...props} />;
 }
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {

@@ -3,6 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
   type ColumnDef,
   type ColumnResizeMode,
   type ColumnSizingState,
@@ -10,9 +13,6 @@ import {
   type RowSelectionState,
   type SortingState,
   type Table as TanstackTable,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
 } from "@tanstack/react-table";
 import { GripVertical } from "lucide-react";
 import { memo, useMemo, type CSSProperties } from "react";
@@ -250,7 +250,7 @@ export function DataTable<TData, TValue = unknown>({
             <col key={col.id} style={getColumnVarStyle(col.id)} />
           ))}
         </colgroup>
-        <TableHeader className="bg-muted/30 sticky top-0 z-10">
+        <TableHeader className="bg-zinc-100 dark:bg-muted sticky top-0 z-10">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
@@ -299,7 +299,7 @@ export function DataTable<TData, TValue = unknown>({
                           {showDeltaPreview && isResizing && <div className="bg-primary absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" />}
                           <GripVertical
                             className={cn(
-                              "text-muted-foreground/50 bg-background relative h-3.5 w-3.5 shrink-0 rounded-sm",
+                              "text-muted-foreground/50 bg-transparent relative h-3.5 w-3.5 shrink-0 rounded-sm",
                               "group-hover/resize:text-foreground group-hover/resize:opacity-100",
                               isResizing ? "text-primary opacity-100" : "opacity-70",
                             )}

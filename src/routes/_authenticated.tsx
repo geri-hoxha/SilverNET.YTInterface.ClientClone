@@ -17,11 +17,11 @@ function AuthenticatedLayout() {
     <NotificationsProvider>
       <SidebarProvider>
         <TooltipProvider>
-          <div className="bg-muted/30 flex min-h-screen w-full">
+          <div className="bg-background flex min-h-screen w-full overflow-hidden">
             <AppSidebar />
             <SidebarInset className="flex flex-1 flex-col">
               <AppHeader />
-              <main className="min-w-0 flex-1 overflow-x-hidden p-3 sm:p-6">
+              <main className="min-w-0 flex-1 overflow-hidden h-full grow ">
                 <Outlet />
               </main>
             </SidebarInset>
