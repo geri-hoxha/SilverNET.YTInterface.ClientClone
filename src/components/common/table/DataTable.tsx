@@ -94,7 +94,7 @@ function DataTableBodyInner<TData, TValue>({ table, columns, isLoading, isError,
           <TableRow key={i} className="hover:bg-transparent">
             {table.getVisibleFlatColumns().map((column) => (
               <TableCell key={column.id} className={cn("px-2 py-2.5 first:pl-4 last:pr-4", column.id === "select" && "w-10 px-2 first:pl-4", "overflow-hidden")} style={getColumnVarStyle(column.id)}>
-                <Skeleton className="h-4 w-full max-w-[12rem]" />
+                <Skeleton className="h-4 w-full max-w-48" />
               </TableCell>
             ))}
           </TableRow>
@@ -240,7 +240,7 @@ export function DataTable<TData, TValue = unknown>({
     <div className={cn("relative w-full", className)}>
       {isFetching && !isLoading && (
         <div className="bg-background/40 absolute inset-x-0 top-0 z-20 h-0.5 overflow-hidden">
-          <div className="bg-primary h-full w-1/3 animate-pulse" />
+          <div className="bg-primary h-full w-full animate-pulse" />
         </div>
       )}
 
