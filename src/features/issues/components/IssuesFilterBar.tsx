@@ -14,10 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useClientStates, usePriorities, useProjects } from "@/features/projects/hooks";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { issuesRouteApi } from "../route";
 import { issuesSearchSchema } from "../schemas";
+import { useMediaQuery } from "usehooks-ts";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
 
@@ -97,7 +97,7 @@ interface Props {
 }
 
 export function IssuesFilterBar({ search }: Props) {
-  const isMobile = useIsMobile();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const navigate = issuesRouteApi.useNavigate();
   const projectsQ = useProjects();
   const prioritiesQ = usePriorities();
@@ -175,7 +175,7 @@ export function IssuesFilterBar({ search }: Props) {
 
   const searchDraftDirty = searchDraft.trim() !== (search.search ?? "").trim();
 
-  if (isMobile) {
+  if (!isDesktop) {
     return (
       <>
         <div className="bg-muted/20 border-b px-3 py-2.5">

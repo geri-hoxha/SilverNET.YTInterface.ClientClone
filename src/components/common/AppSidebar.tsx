@@ -1,17 +1,20 @@
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@/components/ui/sidebar";
+import { Link, useRouterState } from "@tanstack/react-router";
+import type { LucideIcon } from "lucide-react";
+import { Building2, FolderKanban, ListChecks, Users } from "lucide-react";
+import type { ComponentProps } from "react";
+
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { Permission } from "@/features/auth";
 import { PERMISSIONS, useAuth } from "@/features/auth";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Building2, FolderKanban, ListChecks, Users } from "lucide-react";
 
 interface NavItem {
   title: string;
   url: string;
-  icon: React.ComponentType;
+  icon: LucideIcon;
   permission: Permission;
 }
 
-const NAV: NavItem[] = [
+const NAV_ITEMS: NavItem[] = [
   {
     title: "Issues",
     url: "/issues",
@@ -38,22 +41,27 @@ const NAV: NavItem[] = [
   },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const path = useRouterState({ select: (s) => s.location.pathname });
+export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+
   const { hasPermission } = useAuth();
-  const navItems = NAV.filter((item) => hasPermission(item.permission));
+
+  const visibleItems = NAV_ITEMS.filter((item) => hasPermission(item.permission));
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="YTInterface">
+            <SidebarMenuButton size="lg" asChild>
               <Link to="/issues">
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md text-sm font-bold">Y</div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold">Y</div>
+
+                <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">YTInterface</span>
-                  <span className="truncate text-xs">Internal portal</span>
+                  <span className="text-muted-foreground truncate text-xs">Internal portal</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -61,31 +69,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="p-2">
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
-                const active = path === item.url || path.startsWith(`${item.url}/`);
+      <SidebarContent className="p-3">
+        <SidebarMenu>
+          {visibleItems.map((item) => {
+            const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
 
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
-                      <Link to={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            const Icon = item.icon;
+
+            return (
+              <SidebarMenuItem key={item.url}>
+                <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                  <Link to={item.url}>
+                    <Icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
       </SidebarContent>
-
-      <SidebarRail />
     </Sidebar>
   );
 }

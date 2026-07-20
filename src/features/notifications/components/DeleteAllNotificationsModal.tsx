@@ -1,14 +1,14 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMediaQuery } from "usehooks-ts";
 
 type DeleteAllNotificationsModalProps = { open: boolean; onOpenChange: (open: boolean) => void; onConfirm: () => void; isPending: boolean };
 
 function DeleteAllNotificationsModal({ open, onOpenChange, onConfirm, isPending }: DeleteAllNotificationsModalProps) {
-  const isMobile = useIsMobile();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  if (isMobile) {
+  if (!isDesktop) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent>

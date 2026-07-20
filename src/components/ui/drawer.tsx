@@ -23,13 +23,31 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
   return <DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn("fixed inset-0 z-50 bg-black/50", className)} {...props} />;
 }
 
-function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+function DrawerHandle({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Handle>) {
+  return <DrawerPrimitive.Handle data-slot="drawer-handle" className={cn("bg-primary/20! mx-auto mt-4 mb-0 h-1.5 w-14! shrink-0 rounded-full", className)} {...props} />;
+}
+
+interface DrawerContentProps extends React.ComponentProps<typeof DrawerPrimitive.Content> {
+  hasHandle?: boolean;
+  handleClassName?: string;
+}
+
+function DrawerContent({ className, hasHandle, handleClassName, children, ...props }: DrawerContentProps) {
   return (
     <DrawerPortal>
       <DrawerOverlay />
-
-      <DrawerPrimitive.Content data-slot="drawer-content" className={cn("bg-background fixed inset-x-0 bottom-0 z-50 mt-24", "flex h-auto flex-col rounded-t-[10px] border", className)} {...props}>
-        <div className="bg-primary/10 mx-auto mt-4 h-2 w-25 rounded-full" />
+      <DrawerPrimitive.Content
+        data-slot="drawer-content"
+        className={cn(
+          "bg-background fixed z-50 flex h-auto flex-col",
+          "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:rounded-t-[10px] data-[vaul-drawer-direction=bottom]:border",
+          "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=right]:sm:max-w-sm",
+          "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=left]:sm:max-w-sm",
+          className,
+        )}
+        {...props}
+      >
+        {hasHandle && <DrawerHandle className={handleClassName} />}
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>

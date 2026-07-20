@@ -1,11 +1,11 @@
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/features/auth";
 import { NotificationBell } from "@/features/notifications";
 import ThemeToggle from "@/features/theme/ThemeToggle";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
+import { SidebarTrigger } from "../ui/sidebar";
 
 function useBreadcrumbs() {
   const path = useRouterState({ select: (s) => s.location.pathname });

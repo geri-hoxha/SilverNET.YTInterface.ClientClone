@@ -1,6 +1,7 @@
 import { AppHeader } from "@/components/common/AppHeader";
 import { AppSidebar } from "@/components/common/AppSidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/common/sidebar/sidebar-provider";
+import { SidebarInset } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { requireAuth } from "@/features/auth";
 import { NotificationsProvider } from "@/features/notifications/components/NotificationsProvider";

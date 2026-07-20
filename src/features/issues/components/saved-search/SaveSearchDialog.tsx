@@ -4,7 +4,6 @@ import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useState } from "react";
 import { useCreateSavedSearch, useUpdateSavedSearch } from "../../hooks";
 import type { IssuesSearch } from "../../schemas";
@@ -16,6 +15,7 @@ interface FilterBadge {
   value: string;
 }
 
+import { useMediaQuery } from "usehooks-ts";
 import type { IssueSortField } from "../../types";
 
 const SORT_FIELD_LABELS: Record<IssueSortField, string> = {
@@ -152,7 +152,7 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
   const [isDefault, setIsDefault] = useState(false);
   const createSavedSearch = useCreateSavedSearch();
   const updateSavedSearch = useUpdateSavedSearch();
-  const isMobile = useIsMobile();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
     if (!open) return;
@@ -222,7 +222,7 @@ export function SaveSearchDialog({ open, onOpenChange, currentSearch, editingSea
     onCancel: () => onOpenChange(false),
   };
 
-  if (isMobile) {
+  if (!isDesktop) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent>
