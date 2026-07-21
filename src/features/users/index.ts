@@ -1,7 +1,7 @@
-export * from "./types";
-export * from "./schemas";
 export * from "./api";
+export { UserDetailPage } from "./components/single-user/UserDetailPage";
+export { UsersListPage } from "./components/UsersListPage";
 export * from "./hooks";
 export * from "./route";
-export { UsersListPage } from "./components/UsersListPage";
-export { UserDetailPage } from "./components/UserDetailPage";
+export * from "./schemas";
+export * from "./types";

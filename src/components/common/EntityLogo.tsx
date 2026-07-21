@@ -60,7 +60,7 @@ export function EntityLogo({ name, seed, src, shortCode, size = "md", className 
   const label = (shortCode || initials(name)).slice(0, 4);
   const color = PALETTE[hashIndex(seed ?? name, PALETTE.length)];
   return (
-    <div className={cn("flex items-center justify-center rounded-md font-bold tracking-tight text-white", sizes[size], color, className)} aria-hidden>
+    <div className={cn("flex shrink-0 items-center justify-center rounded-md font-bold tracking-tight text-white", sizes[size], color, className)} aria-hidden>
       {label}
     </div>
   );

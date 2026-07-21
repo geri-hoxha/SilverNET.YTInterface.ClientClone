@@ -28,7 +28,7 @@ function Sidebar({ side = "left", collapsible = "icon", className, children, dir
           data-slot="sidebar"
           data-mobile="true"
           hasHandle={false}
-          className={cn("bg-sidebar text-sidebar-foreground", "w-(--sidebar-width) p-0 sm:max-w-(--sidebar-width)")}
+          className={cn("bg-background text-foreground", "w-(--sidebar-width) p-0 sm:max-w-(--sidebar-width)")}
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
