@@ -64,7 +64,7 @@ export function getIssueColumns(isDesktop: boolean): ColumnDef<Issue>[] {
                 <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
               </div>
             </HoverCardTrigger>
-            <HoverCardContent align={isDesktop ? "start" : "center"} className="border-primary/10 bg-muted w-fit max-w-70 md:max-w-md xl:max-w-auto p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <HoverCardContent align={isDesktop ? "start" : "center"} className="border-primary/10 bg-muted w-fit max-w-70 md:max-w-md xl:max-w-fit p-2 shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <p className="text-sm leading-relaxed font-medium text-wrap xl:text-nowrap">{title}</p>
             </HoverCardContent>
           </HoverCard>

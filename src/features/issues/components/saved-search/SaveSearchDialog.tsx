@@ -17,6 +17,7 @@ interface FilterBadge {
 
 import { useMediaQuery } from "usehooks-ts";
 import type { IssueSortField } from "../../types";
+import { toSavedFilters } from "../../utils/utils";
 
 const SORT_FIELD_LABELS: Record<IssueSortField, string> = {
   YouTrackReadableId: "ID",
@@ -75,11 +76,6 @@ function buildFilterBadges(filters: SavedSearchFilters, projects: { id: string; 
   }
 
   return badges;
-}
-
-export function toSavedFilters(search: IssuesSearch): SavedSearchFilters {
-  const { page, saved, savedSearchId, ...filters } = search;
-  return filters;
 }
 
 interface FormContentProps {

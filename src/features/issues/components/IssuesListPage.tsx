@@ -21,8 +21,9 @@ import { FILTER_RESET } from "../constants/constants";
 import { CreateIssueDialog } from "./issue-dialogs/CreateIssueDialog";
 import { ExportIssuesDialog } from "./issue-dialogs/ExportIssuesDialog";
 import { IssuesFilterBar } from "./IssuesFilterBar";
+import { SaveAndUpdateSearchButtons } from "./saved-search/SaveAndUpdateSearchButtons";
 import { SavedSearchesList } from "./saved-search/SavedSearchesList";
-import { SaveSearchDialog, toSavedFilters } from "./saved-search/SaveSearchDialog";
+import { SaveSearchDialog } from "./saved-search/SaveSearchDialog";
 import { getIssueColumns, IssuesTableMeta } from "./table/issues-columns";
 
 type IssuesSearch = z.infer<typeof issuesSearchSchema>;
@@ -149,22 +150,28 @@ export function IssuesListPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Top bar */}
-      <div className="bg-background flex items-center justify-between border-b px-5 py-3">
-        <div className="flex items-center gap-2">
+      <div className="bg-background grid grid-cols-2 gap-x-4 gap-y-3 md:flex md:items-center md:justify-between border-b px-5 py-3">
+        {/* min-w-0 + flex-1: left cluster can shrink instead of pushing the right */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Popover open={searchesListOpen} onOpenChange={setSearchesListOpen}>
             <PopoverTrigger asChild>
-              <button type="button" className="text-foreground flex cursor-pointer items-center gap-1 text-base font-semibold hover:opacity-80">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-sm bg-emerald-500/15 text-emerald-600">
+              <button type="button" className="text-foreground flex max-w-full min-w-0 cursor-pointer items-center gap-1 text-base font-semibold hover:opacity-80">
+                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-emerald-500/15 text-emerald-600">
                   <CheckSquare className="h-3.5 w-3.5" />
                 </span>
-                Issues
+
+                <span className="shrink-0">Issues</span>
+
                 {activeSavedSearch && (
                   <>
-                    <span className="text-muted-foreground font-normal"> - </span>
-                    <span className="text-muted-foreground mt-0.5 text-xs text-nowrap">{activeSavedSearch.name}</span>
+                    <span className="text-muted-foreground shrink-0 font-normal"> - </span>
+                    <span className="text-muted-foreground mt-0.5 min-w-0 truncate text-xs" title={activeSavedSearch.name}>
+                      {activeSavedSearch.name}
+                    </span>
                   </>
                 )}
-                <ChevronDown className={cn("text-muted-foreground size-3.5 duration-200 ease-in-out", searchesListOpen && "rotate-180")} />
+
+                <ChevronDown className={cn("text-muted-foreground size-3.5 shrink-0 duration-200 ease-in-out", searchesListOpen && "rotate-180")} />
               </button>
             </PopoverTrigger>
             <PopoverContent align="start" className="min-w-64 p-2">
@@ -172,41 +179,20 @@ export function IssuesListPage() {
             </PopoverContent>
           </Popover>
 
-          <span className="text-muted-foreground text-xs">{total}</span>
+          <span className="text-muted-foreground shrink-0 text-xs">{total}</span>
 
-          {!savedSearchId && hasActiveCriteria(search) && (
-            <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="px-0 text-xs font-medium text-pink-600 hover:underline">
-              Save as new search
-            </Button>
-          )}
-
-          {savedSearchId && activeSavedSearch && isDirty && (
-            <div className="ml-3 flex items-center gap-4">
-              <Button
-                type="button"
-                variant="link"
-                onClick={() =>
-                  updateSavedSearch.mutate({
-                    id: activeSavedSearch.id,
-                    name: activeSavedSearch.name,
-                    criteria: toSavedFilters(search),
-                    isDefault: activeSavedSearch.isDefault,
-                    successMessage: "Search filters updated",
-                  })
-                }
-                disabled={updateSavedSearch.isPending}
-                className="px-0 text-xs font-medium text-emerald-600 hover:underline"
-              >
-                Update filters
-              </Button>
-              <Button type="button" variant="link" onClick={() => setSaveSearchOpen(true)} className="px-0 text-xs font-medium text-pink-600 hover:underline">
-                Save as new search
-              </Button>
-            </div>
-          )}
+          {isDesktop && <SaveAndUpdateSearchButtons
+            search={search}
+            savedSearchId={savedSearchId}
+            activeSavedSearch={activeSavedSearch}
+            isDirty={isDirty}
+            onOpenSaveSearch={() => setSaveSearchOpen(true)}
+            isDesktop={isDesktop}
+          />}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* shrink-0: actions never get crushed */}
+        <div className="flex shrink-0 items-center gap-2 justify-self-end">
           <Button size="sm" className="h-8 w-8 bg-emerald-600 text-white hover:bg-emerald-700 md:w-fit" onClick={() => setExportOpen(true)}>
             <Download className="h-3.5 w-3.5" />
             <span className="hidden md:block">Export</span>
@@ -217,6 +203,17 @@ export function IssuesListPage() {
             </Button>
           )}
         </div>
+
+        {
+          !isDesktop && <SaveAndUpdateSearchButtons
+            search={search}
+            savedSearchId={savedSearchId}
+            activeSavedSearch={activeSavedSearch}
+            isDirty={isDirty}
+            onOpenSaveSearch={() => setSaveSearchOpen(true)}
+            isDesktop={isDesktop}
+          />
+        }
       </div>
 
       <IssuesFilterBar search={search} />

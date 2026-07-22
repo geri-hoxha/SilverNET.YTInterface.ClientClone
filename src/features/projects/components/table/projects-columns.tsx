@@ -47,7 +47,7 @@ export function getProjectColumns(): ColumnDef<Project>[] {
       size: 80,
       header: "YouTrack ID",
       cell: ({ row }) => (
-        <Badge variant="outline" className="w-fit shrink-0 font-mono text-[10px]">
+        <Badge variant="outline" className="w-fit shrink-0 font-mono text-xs">
           {row.original.youTrackProjectId}
         </Badge>
       ),
@@ -108,7 +108,7 @@ export function getProjectColumns(): ColumnDef<Project>[] {
                 disabled={syncing}
                 title="Sync priorities and workflow states from YouTrack"
                 aria-label={syncing ? "Syncing from YouTrack" : "Sync from YouTrack"}
-                className="h-7 w-7 bg-green-600 text-white shadow-sm hover:bg-green-700"
+                className="h-7 w-7 bg-green-600 dark:bg-green-700 dark:hover:bg-green-800 text-white shadow-sm hover:bg-green-700 "
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
               </Button>
