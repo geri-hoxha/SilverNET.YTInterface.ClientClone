@@ -17,8 +17,8 @@ import { issuesKeys, useApproveEstimation, useIssueAttachments, useIssueAttachme
 import type { Issue } from "../../types";
 import { uniqueFileName } from "../../utils";
 import { ApproveEstimationButton } from "../ApproveEstimationButton";
-import { AttachmentsArea } from "./AttachmentsArea";
 import { CommentsArea } from "./CommentsArea";
+import { AttachmentsArea } from "./attachments/AttachmentsArea";
 
 export function IssueMainContent({ id, issue }: { id: string; issue: Issue }) {
   const qc = useQueryClient();

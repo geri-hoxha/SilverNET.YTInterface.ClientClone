@@ -4,8 +4,8 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, D
 import { Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
-import { useDeleteAttachment } from "../../hooks";
-import { IssueAttachment } from "../../types";
+import { useDeleteAttachment } from "../../../hooks";
+import { IssueAttachment } from "../../../types";
 
 type DeleteAttachmentDialogProps = {
   attachment: IssueAttachment;

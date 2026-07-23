@@ -51,7 +51,7 @@ function DialogContent({
           "data-closed:fade-out-0 data-open:fade-in-0",
           "data-closed:zoom-out-95 data-open:zoom-in-95",
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-lg",
-          "-translate-x-1/2 -translate-y-1/2 gap-4 border px-6 pb-6 pt-5",
+          "-translate-x-1/2 -translate-y-1/2 gap-4 border px-6 pb-6 pt-4",
           "shadow-lg duration-200 sm:rounded-lg",
           className,
         )}

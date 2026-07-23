@@ -65,3 +65,10 @@ export function getAttachmentPreviewKind(a: Pick<IssueAttachment, "contentType" 
   }
   return null;
 }
+
+export function openPdfInNewTab(blob: Blob) {
+  const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
+  const url = URL.createObjectURL(pdfBlob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
