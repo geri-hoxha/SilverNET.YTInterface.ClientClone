@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 
 import { getRouter } from "./router";
 import "./styles.css";
+import 'react-photo-view/dist/react-photo-view.css';
 
 const router = getRouter();
 
