@@ -1,5 +1,5 @@
-import { Download, FileText, Loader2, Paperclip } from "lucide-react";
-import { useRef, useState } from "react";
+import { Download, Eye, FileText, Loader2, Paperclip } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,19 +9,47 @@ import { cn } from "@/lib/utils";
 import type { ApiError } from "@/shared/api/errors";
 import { formatBytes } from "@/shared/utils/format";
 
-import { issuesApi } from "../../api";
-import { useIssueAttachments, useUploadAttachment } from "../../hooks";
+import { useDownloadAttachment, useIssueAttachments, useLoadAttachmentBlob, useUploadAttachment } from "../../hooks";
 import type { IssueAttachment } from "../../types";
 import { fileTypeMeta } from "../../utils";
+import { getAttachmentPreviewKind } from "../../utils/utils";
+import { AttachmentPreview } from "./AttachmentPreview";
+import DeleteAttachmentsDialog from "./DeleteAttachmentsDialog";
+
+function openPdfInNewTab(blob: Blob) {
+  const pdfBlob = blob.type === "application/pdf" ? blob : new Blob([blob], { type: "application/pdf" });
+  const url = URL.createObjectURL(pdfBlob);
+  const opened = window.open(url, "_blank", "noopener,noreferrer");
+  if (!opened) {
+    URL.revokeObjectURL(url);
+    toast.error("Pop-up blocked. Allow pop-ups to view this file.");
+    return;
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
 
 export function AttachmentsArea({ id }: { id: string }) {
   const { hasPermission } = useAuth();
   const canAttach = hasPermission(PERMISSIONS.issuesAttachmentsCreate);
+  const canDelete = hasPermission(PERMISSIONS.issuesAttachmentsDelete);
   const q = useIssueAttachments(id);
   const upload = useUploadAttachment(id);
+  const download = useDownloadAttachment(id);
+  const loadBlob = useLoadAttachmentBlob(id);
   const fileInput = useRef<HTMLInputElement>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const attachments = q.data?.items ?? [];
+
+  const [preview, setPreview] = useState<{
+    fileName: string;
+    url: string;
+  } | null>(null);
+
+  // Revoke image object URL when preview closes / changes / unmounts
+  useEffect(() => {
+    return () => {
+      if (preview?.url) URL.revokeObjectURL(preview.url);
+    };
+  }, [preview?.url]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,22 +57,36 @@ export function AttachmentsArea({ id }: { id: string }) {
     e.target.value = "";
   };
 
-  const handleDownload = async (attachment: IssueAttachment) => {
-    setDownloadingId(attachment.id);
+  const closePreview = (open: boolean) => {
+    if (!open) setPreview(null);
+  };
+
+  const handleView = async (a: IssueAttachment) => {
+    const kind = getAttachmentPreviewKind(a);
+    if (!kind) {
+      toast.error("Unable to view this file type. Please download it instead.");
+      return;
+    }
+
     try {
-      const blob = await issuesApi.downloadAttachment(id, attachment.id);
+      const blob = await loadBlob.mutateAsync(a.id);
+
+      if (kind === "pdf") {
+        openPdfInNewTab(blob);
+        return;
+      }
+
+      // image → modal / drawer
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = attachment.fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      setPreview((prev) => {
+        if (prev?.url) URL.revokeObjectURL(prev.url);
+        return { fileName: a.fileName, url };
+      });
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Failed to download file");
-    } finally {
-      setDownloadingId(null);
+      // onError toast already fired from the mutation; keep guard for mutateAsync
+      if (!(e as ApiError)?.message) {
+        toast.error("Failed to open file");
+      }
     }
   };
 
@@ -66,28 +108,57 @@ export function AttachmentsArea({ id }: { id: string }) {
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {attachments.map((a) => {
             const meta = fileTypeMeta(a.fileName);
+            const previewKind = getAttachmentPreviewKind(a);
+            const isDownloading = download.isPending && download.variables?.attachmentId === a.id;
+            const isViewing = loadBlob.isPending && loadBlob.variables === a.id;
+
             return (
               <div key={a.id} className={cn("flex items-center gap-3 rounded-md border px-3 py-2", meta.bg, meta.border)}>
                 <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded text-[10px] font-bold text-white uppercase", meta.badge)}>
                   {meta.label ? meta.label : <FileText className="h-4 w-4" />}
                 </div>
+
                 <div className="min-w-0 flex-1">
                   <div className="text-foreground truncate text-sm font-medium">{a.fileName}</div>
                   <div className="text-muted-foreground text-xs">
                     {meta.typeLabel} · {formatBytes(a.fileSize)}
                   </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-foreground h-8 w-8 shrink-0"
-                  disabled={downloadingId === a.id}
-                  onClick={() => handleDownload(a)}
-                  aria-label={`Download ${a.fileName}`}
-                >
-                  {downloadingId === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                </Button>
+
+                <div className="flex items-center">
+                  {previewKind && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-foreground h-8 w-8 shrink-0"
+                      disabled={isViewing}
+                      onClick={() => handleView(a)}
+                      aria-label={`View ${a.fileName}`}
+                    >
+                      {isViewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 shrink-0"
+                    disabled={isDownloading}
+                    onClick={() =>
+                      download.mutate({
+                        attachmentId: a.id,
+                        fileName: a.fileName,
+                      })
+                    }
+                    aria-label={`Download ${a.fileName}`}
+                  >
+                    {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  </Button>
+
+                  {canDelete && <DeleteAttachmentsDialog attachment={a} />}
+                </div>
               </div>
             );
           })}
@@ -107,6 +178,8 @@ export function AttachmentsArea({ id }: { id: string }) {
       )}
 
       {canAttach && <input ref={fileInput} type="file" className="hidden" onChange={handleFileSelect} />}
+
+      <AttachmentPreview open={preview !== null} onOpenChange={closePreview} fileName={preview?.fileName ?? ""} imageUrl={preview?.url ?? null} />
     </div>
   );
 }

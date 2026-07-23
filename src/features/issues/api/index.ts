@@ -127,6 +127,12 @@ export const issuesApi = {
       responseType: "blob",
     }),
 
+  deleteAttachment: (issueId: string, attachmentId: string) =>
+    apiRequest<void>({
+      method: "DELETE",
+      url: `/issues/${issueId}/attachments/${attachmentId}`,
+    }),
+
   approveEstimation: (id: string) =>
     apiRequest<Issue>({
       method: "POST",
@@ -156,5 +162,5 @@ export const savedSearchesApi = {
 
   update: (id: string, data: CreateSavedSearchType) => apiRequest<SavedSearch>({ method: "PUT", url: `/issues/saved-searches/${id}`, data }),
 
-  remove: (id: string) => apiRequest<void>({ method: "DELETE", url: `/issues/saved-searches/${id}` }),
+  delete: (id: string) => apiRequest<void>({ method: "DELETE", url: `/issues/saved-searches/${id}` }),
 };

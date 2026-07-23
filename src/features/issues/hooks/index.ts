@@ -47,11 +47,11 @@ export function useIssueAttachments(id: string) {
 }
 
 export function useCreateIssue() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateIssueDto) => issuesApi.create(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: issuesKeys.all });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.all });
       toast.success("Issue created");
     },
     onError: (e: ApiError) => toast.error(e.message),
@@ -59,12 +59,12 @@ export function useCreateIssue() {
 }
 
 export function useUpdateIssue(id: string) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateIssueDto) => issuesApi.update(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: issuesKeys.all });
-      qc.invalidateQueries({ queryKey: issuesKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.all });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.detail(id) });
       toast.success("Issue updated");
     },
     onError: (e: ApiError) => toast.error(e.message),
@@ -72,28 +72,69 @@ export function useUpdateIssue(id: string) {
 }
 
 export function useAddComment(id: string) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: string) => issuesApi.addComment(id, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: issuesKeys.comments(id) });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.comments(id) });
     },
     onError: (e: ApiError) => toast.error(e.message),
   });
 }
 
 export function useUploadAttachment(id: string) {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: File) => issuesApi.uploadAttachment(id, file),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: issuesKeys.attachments(id) });
-      toast.success("File uploaded");
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: issuesKeys.attachments(id) });
+      toast.success(`${data.fileName} has been uploaded successfully`);
     },
     onError: (e: ApiError) => toast.error(e.message),
   });
 }
 
+export function useLoadAttachmentBlob(issueId: string) {
+  return useMutation({
+    mutationFn: (attachmentId: string) => issuesApi.downloadAttachment(issueId, attachmentId),
+    onError: (e: ApiError) => toast.error(e.message ?? "Failed to open file"),
+  });
+}
+
+export function useDownloadAttachment(issueId: string) {
+  return useMutation({
+    mutationFn: async ({ attachmentId, fileName }: { attachmentId: string; fileName: string }) => {
+      const blob = await issuesApi.downloadAttachment(issueId, attachmentId);
+      return { blob, fileName };
+    },
+    onSuccess: ({ blob, fileName }) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    },
+    onError: (e: ApiError) => toast.error(e.message ?? "Failed to download file"),
+  });
+}
+
+export function useDeleteAttachment(issueId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ attachmentId, attachmentName }: { attachmentId: string; attachmentName: string }) => issuesApi.deleteAttachment(issueId, attachmentId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: issuesKeys.attachments(issueId),
+      });
+      toast.success(`${variables.attachmentName} has been deleted successfully`);
+    },
+    onError: (e: ApiError) => toast.error(e.message),
+  });
+}
 // Normalises an attachment reference/file name so a description's inline marker
 // resolves to its attachment even when they differ by case, surrounding
 // whitespace, URL-encoding, or a leading path segment (e.g. YouTrack may emit
@@ -182,12 +223,12 @@ export function useIssueAttachmentUrls(issueId: string) {
 }
 
 export function useApproveEstimation() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => issuesApi.approveEstimation(id),
     onSuccess: (_data, id) => {
-      qc.invalidateQueries({ queryKey: issuesKeys.all });
-      qc.invalidateQueries({ queryKey: issuesKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.all });
+      queryClient.invalidateQueries({ queryKey: issuesKeys.detail(id) });
       toast.success("Estimation approved");
     },
     onError: (e: ApiError) => toast.error(e.message),
@@ -236,7 +277,7 @@ export function useDeleteSavedSearch() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id }: { id: string; name: string }) => savedSearchesApi.remove(id),
+    mutationFn: ({ id }: { id: string; name: string }) => savedSearchesApi.delete(id),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: savedSearchesKeys.all });
       toast.success(`"${variables.name}" has been removed successfully!`);

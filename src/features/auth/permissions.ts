@@ -24,6 +24,7 @@ export const PERMISSIONS = {
   issuesEstimationApprove: "issues.estimation.approve",
   issuesCommentsCreate: "issues.comments.create",
   issuesAttachmentsCreate: "issues.attachments.create",
+  issuesAttachmentsDelete: "issues.attachments.delete",
 
   // Users
   usersRead: "users.read",

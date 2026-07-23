@@ -32,7 +32,7 @@ interface DrawerContentProps extends React.ComponentProps<typeof DrawerPrimitive
   handleClassName?: string;
 }
 
-function DrawerContent({ className, hasHandle, handleClassName, children, ...props }: DrawerContentProps) {
+function DrawerContent({ className, hasHandle = true, handleClassName, children, ...props }: DrawerContentProps) {
   return (
     <DrawerPortal>
       <DrawerOverlay />
@@ -63,7 +63,7 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DrawerTitle({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Title>) {
-  return <DrawerPrimitive.Title data-slot="drawer-title" className={cn("text-lg leading-none font-semibold tracking-tight", className)} {...props} />;
+  return <DrawerPrimitive.Title data-slot="drawer-title" className={cn("text-lg font-semibold tracking-tight", className)} {...props} />;
 }
 
 function DrawerDescription({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Description>) {

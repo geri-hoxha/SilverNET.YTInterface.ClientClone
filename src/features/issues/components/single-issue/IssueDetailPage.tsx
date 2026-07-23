@@ -32,8 +32,8 @@ export function IssueDetailPage() {
   const data = issue.data;
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="flex flex-col gap-6 lg:flex-row">
+    <div className="h-full w-full overflow-auto p-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 lg:flex-row">
         <IssueMainContent id={id} issue={data} />
         <IssueSidebar issue={data} />
       </div>

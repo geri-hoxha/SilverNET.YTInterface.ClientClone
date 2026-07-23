@@ -51,7 +51,7 @@ function DialogContent({
           "data-closed:fade-out-0 data-open:fade-in-0",
           "data-closed:zoom-out-95 data-open:zoom-in-95",
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-lg",
-          "-translate-x-1/2 -translate-y-1/2 gap-4 border p-6",
+          "-translate-x-1/2 -translate-y-1/2 gap-4 border px-6 pb-6 pt-5",
           "shadow-lg duration-200 sm:rounded-lg",
           className,
         )}
@@ -65,7 +65,7 @@ function DialogContent({
             className={cn(
               "ring-offset-background focus:ring-ring",
               "data-open:bg-accent data-open:text-muted-foreground",
-              "absolute top-4 right-4 cursor-pointer rounded-sm",
+              "absolute top-6 right-6 cursor-pointer rounded-sm",
               "opacity-70 transition-opacity hover:opacity-100",
               "focus:ring-2 focus:ring-offset-2 focus:outline-none",
               "disabled:pointer-events-none",
@@ -106,7 +106,7 @@ function DialogFooter({
 }
 
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title data-slot="dialog-title" className={cn("text-lg leading-none font-semibold tracking-tight", className)} {...props} />;
+  return <DialogPrimitive.Title data-slot="dialog-title" className={cn("text-lg font-semibold tracking-tight", className)} {...props} />;
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
