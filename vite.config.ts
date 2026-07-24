@@ -3,7 +3,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const API_PROXY_TARGET = process.env.VITE_API_PROXY_TARGET ?? "https://odsilvernet-001-site1.itempurl.com";
+const API_PROXY_TARGET = process.env.VITE_API_PROXY_TARGET ?? "https://api-yti.silvernet.al";
 
 export default defineConfig({
   plugins: [
